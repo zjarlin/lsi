@@ -58,7 +58,7 @@ fun LsiClass.getDatabaseForeignKeys(): List<ForeignKeyInfo> {
 
 /**
  * 获取索引定义
- * 
+ *
  * @deprecated 使用 getIndexDefinitions() 替代，该方法支持更完整的索引类型
  * @see site.addzero.util.lsi.database.getIndexDefinitions
  */

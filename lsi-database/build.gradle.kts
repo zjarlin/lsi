@@ -8,3 +8,4 @@ dependencies {
 
 }
 
+description = "Lsi数据库解析"

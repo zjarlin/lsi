@@ -15,3 +15,6 @@ fun Collection<TypeElement>.toLsiClasses(elements: Elements): List<LsiClass> {
     return map
 }
 
+fun TypeElement.toLsiClass(elements: Elements): LsiClass = AptLsiClass(elements, this)
+
+

@@ -103,4 +103,3 @@ class AptLsiClass(
     }
 }
 
-fun TypeElement.toLsiClass(elements: Elements): LsiClass = AptLsiClass(elements, this)
