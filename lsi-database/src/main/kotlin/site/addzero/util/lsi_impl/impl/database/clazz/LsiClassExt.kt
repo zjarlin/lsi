@@ -68,17 +68,6 @@ val LsiClass.primaryKeyName: String?
 val LsiClass.databaseFields: List<LsiField>
     get() = fields.filter { it.isDbField }
 
-/**
- * 获取主键列
- */
-val LsiClass.primaryKeyColumn: LsiField?
-    get() = fields.find { it.isPrimaryKey }
-
-/**
- * 获取主键名字
- */
-val LsiClass.primaryKeyName: String?
-    get() = fields.filter { it.isPrimaryKey }.map { it.name }.firstOrNull()
 
 /**
  * 获取所有非主键列
@@ -86,25 +75,7 @@ val LsiClass.primaryKeyName: String?
 val LsiClass.nonPrimaryColumns: List<LsiField>
     get() = fields.filter { !it.isPrimaryKey }
 
-/**
- * 获取数据库架构
- */
-val LsiClass.dataBaseOrSchemaName: String
-    get() = getArg("DataBaseSchema") ?: ""
 
-/**
- * 获取所有数据库字段（包括继承的字段）
- * 这个方法会递归获取父类的字段
- * @return 所有数据库字段列表
- */
-fun LsiClass.getAllDbFields(): List<LsiField> {
-    val result = mutableListOf<LsiField>()
-    result.addAll(databaseFields)
-    superClasses.forEach { superClass ->
-        result.addAll(superClass.getAllDbFields())
-    }
-    return result
-}
 
 /**
  * 获取所有外键定义
