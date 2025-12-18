@@ -42,7 +42,8 @@ fun LsiClass.filterPropertiesByAnnotations(vararg annotationFqNames: String): Li
 }
 
 /**
- * 获取字段注解的指定参数值
+ * 获取类注解的指定attr的值
+ * 例如@Entity(arg1=xxx)   =>   getArg("Entity","arg1") 就拿到了xxx
  * @param annotationSimpleName 注解全限定名
  * @param parameterName 参数名称
  * @return 参数值，如果不存在则返回 null

@@ -13,5 +13,5 @@ fun List<LsiAnnotation>.hasNonNullAnnotation(): Boolean =
 fun List<LsiAnnotation>.isNullable(): Boolean {
     if (hasNullableAnnotation()) return true
     if (hasNonNullAnnotation()) return false
-    return true // 保守策略：假设可空
+    return true
 }

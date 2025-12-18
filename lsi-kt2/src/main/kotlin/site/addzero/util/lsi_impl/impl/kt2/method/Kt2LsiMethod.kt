@@ -50,7 +50,7 @@ class Kt2LsiMethod(
         with(session) {
             returnType = Kt2LsiType(symbol.returnType, session)
             returnTypeName = symbol.returnType.render(KaTypeRendererForSource.WITH_SHORT_NAMES, Variance.INVARIANT)
-            annotations = symbol.annotations.map { Kt2LsiAnnotation(it, session) }
+            annotations = symbol.annotations.map { Kt2LsiAnnotation(it) }
             parameters = symbol.valueParameters.map { paramSymbol -> Kt2LsiParameter(paramSymbol, session) }
         }
     }
@@ -86,7 +86,7 @@ class Kt2LsiParameter(
         with(session) {
             type = Kt2LsiType(symbol.returnType, session)
             typeName = symbol.returnType.render(KaTypeRendererForSource.WITH_SHORT_NAMES, Variance.INVARIANT)
-            annotations = symbol.annotations.map { Kt2LsiAnnotation(it, session) }
+            annotations = symbol.annotations.map { Kt2LsiAnnotation(it) }
         }
     }
 }

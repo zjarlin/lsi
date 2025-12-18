@@ -49,8 +49,6 @@ val LsiField.length: Int
         return toInt ?: -1
     }
 
-
-
 val LsiField.guessLength: Int
     get() {
         // 先尝试获取明确指定的长度

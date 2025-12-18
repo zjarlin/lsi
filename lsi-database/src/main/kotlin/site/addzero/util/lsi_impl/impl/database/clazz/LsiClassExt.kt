@@ -1,10 +1,10 @@
 package site.addzero.util.lsi_impl.impl.database.clazz
 
-import site.addzero.util.lsi_impl.impl.database.field.isDbField
-import site.addzero.util.lsi_impl.impl.database.field.isPrimaryKey
 import site.addzero.util.lsi.clazz.LsiClass
 import site.addzero.util.lsi.clazz.getArg
 import site.addzero.util.lsi.field.LsiField
+import site.addzero.util.lsi_impl.impl.database.field.isDbField
+import site.addzero.util.lsi_impl.impl.database.field.isPrimaryKey
 
 
 /**
@@ -21,7 +21,7 @@ val LsiClass.primaryKeyColumn: LsiField?
  */
 val LsiClass.dataBaseOrSchemaName: String
     get() {
-        val arg = this.getArg("DataBaseSchema")
+        val arg = getArg("DataBaseSchema")
         return arg ?: ""
     }
 

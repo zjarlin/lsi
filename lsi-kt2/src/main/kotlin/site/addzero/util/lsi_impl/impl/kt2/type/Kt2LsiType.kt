@@ -50,7 +50,7 @@ class Kt2LsiType(
             }
 
             presentableText = kaType.render(KaTypeRendererForSource.WITH_SHORT_NAMES, Variance.INVARIANT)
-            annotations = kaType.annotations.map { Kt2LsiAnnotation(it, session) }
+            annotations = kaType.annotations.map { Kt2LsiAnnotation(it) }
             isNullable = kaType.isMarkedNullable
             isCollectionType = qualifiedName?.isCollectionType() ?: false
 

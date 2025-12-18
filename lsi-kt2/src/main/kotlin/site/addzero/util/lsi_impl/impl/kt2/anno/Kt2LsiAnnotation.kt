@@ -1,6 +1,5 @@
 package site.addzero.util.lsi_impl.impl.kt2.anno
 
-import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.annotations.KaAnnotation
 import org.jetbrains.kotlin.analysis.api.annotations.KaAnnotationValue
 import site.addzero.util.lsi.anno.LsiAnnotation
@@ -12,8 +11,7 @@ import site.addzero.util.lsi.anno.LsiAnnotation
  * 因为 KaSession 在 analyze 块结束后会失效。
  */
 class Kt2LsiAnnotation(
-    kaAnnotation: KaAnnotation,
-    session: KaSession
+    kaAnnotation: KaAnnotation
 ) : LsiAnnotation {
 
     // Eager evaluation - 在构造时计算所有需要 session 的值

@@ -25,16 +25,16 @@ import site.addzero.util.str.cleanDocComment
 import site.addzero.util.str.removeAnyQuote
 
 /**
- * 基于 K2 Analysis API 的 LsiField 实现
- * 
- * 基础属性在构造时计算（eager），关联类属性使用 lazy 延迟加载避免循环依赖
+ *  K2 Analysis API  比较特殊,需要init的时候 缓存计算
+ *
+ * 基础属性在构造时计算（eager），关联类属性使用 lazy 延迟加载避免循环依赖(但是lazy的话又有EDT线程问题)
  */
 class Kt2LsiField(
     private val ktProperty: KtProperty,
     symbol: KaPropertySymbol,
     session: KaSession
 ) : LsiField {
-    
+
     private val ownerKtClass: KtClass? get() = ktProperty.parent?.parent as? KtClass
 
     // Eager - 基础属性在构造时计算
@@ -44,7 +44,7 @@ class Kt2LsiField(
     override val isConstant: Boolean = ktProperty.hasModifier(KtTokens.CONST_KEYWORD)
     override val isLateInit: Boolean = ktProperty.hasModifier(KtTokens.LATEINIT_KEYWORD)
     override val defaultValue: String? = ktProperty.initializer?.text
-    
+
     override val type: LsiType?
     override val typeName: String?
     override val annotations: List<LsiAnnotation>
@@ -62,20 +62,19 @@ class Kt2LsiField(
         with(session) {
             type = Kt2LsiType(symbol.returnType, session)
             typeName = symbol.returnType.render(KaTypeRendererForSource.WITH_SHORT_NAMES, Variance.INVARIANT)
-            annotations = symbol.annotations.map { Kt2LsiAnnotation(it, session) }
+            annotations = symbol.annotations.map { Kt2LsiAnnotation(it) }
 
             val returnType = symbol.returnType
             _fieldTypeClassId = (returnType as? KaClassType)?.classId?.asFqNameString()
             isNestedObject = returnType is KaClassType &&
-                !returnType.classId.asFqNameString().startsWith("kotlin.") &&
-                !returnType.classId.asFqNameString().startsWith("java.")
+                    !returnType.classId.asFqNameString().startsWith("kotlin.") &&
+                    !returnType.classId.asFqNameString().startsWith("java.")
 
             // 计算类型可空性 - 在 init 块中计算，避免 EDT 线程问题
             _isNullable = returnType.isMarkedNullable
-            // 注解的可空性检查将在 isNullable getter 中进行
         }
     }
-    
+
     // Lazy - 关联类属性延迟加载
     override val declaringClass: LsiClass? by lazy {
         val ktClass = ownerKtClass ?: return@lazy null
@@ -84,7 +83,7 @@ class Kt2LsiField(
             Kt2LsiClass(ktClass, sym, this@analyze)
         }
     }
-    
+
     override val fieldTypeClass: LsiClass? by lazy {
         if (_fieldTypeClassId == null || _fieldTypeClassId.startsWith("kotlin.") || _fieldTypeClassId.startsWith("java.")) {
             return@lazy null

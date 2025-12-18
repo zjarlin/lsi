@@ -6,7 +6,6 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.Modifier
 import site.addzero.util.lsi.anno.LsiAnnotation
-import site.addzero.util.lsi.assist.isNullable
 import site.addzero.util.lsi.clazz.LsiClass
 import site.addzero.util.lsi.field.LsiField
 import site.addzero.util.lsi.str.toSnakeCaseLowerCase
@@ -122,14 +121,9 @@ class KspLsiField(
     // 可空性判断：基于 Kotlin 类型系统和 KSP 类型解析
     override val isNullable: Boolean by lazy {
         val resolvedType = ksPropertyDeclaration.type.resolve()
-
         // 基于类型可空性标记
         val typeNullability = resolvedType.isMarkedNullable
-
-        // 如果类型明确标记为可空，则返回 true
-        if (typeNullability) return@lazy true
-
-        return@lazy annotations.isNullable()
+        return@lazy typeNullability
     }
 
     private fun isPrimitiveOrString(): Boolean {

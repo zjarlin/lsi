@@ -51,7 +51,7 @@ class Kt2LsiClass(
                 } else null
             }
             
-            annotations = symbol.annotations.map { Kt2LsiAnnotation(it, session) }
+            annotations = symbol.annotations.map { Kt2LsiAnnotation(it) }
             _annotationNames = annotations.mapNotNull { it.simpleName }
         }
     }

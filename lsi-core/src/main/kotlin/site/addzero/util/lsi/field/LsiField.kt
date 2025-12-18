@@ -1,6 +1,7 @@
 package site.addzero.util.lsi.field
 
 import site.addzero.util.lsi.anno.LsiAnnotation
+import site.addzero.util.lsi.assist.isNullable
 import site.addzero.util.lsi.clazz.LsiClass
 import site.addzero.util.lsi.type.LsiType
 
@@ -101,5 +102,11 @@ interface LsiField {
      * 对于 Kotlin 字段：基于 Kotlin 语言的可空类型标记
      */
     val isNullable: Boolean
+        get() {
+            val isPrimitive = type?.isPrimitive
+            if (isPrimitive == true) return false
+            //这里ksp和k1,k2有isMarkedNullable方法,其余都看jspecify 注解短名称
+            return annotations.isNullable()
+        }
 
 }

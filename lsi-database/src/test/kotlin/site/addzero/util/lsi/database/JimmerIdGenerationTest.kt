@@ -201,6 +201,12 @@ class JimmerIdGenerationTest {
             override val columnName: String? = null
             override val declaringClass get() = null
             override val fieldTypeClass get() = null
+            override val isNestedObject: Boolean
+                get() = TODO("Not yet implemented")
+            override val children: List<LsiField>
+                get() = TODO("Not yet implemented")
+            override val isNullable: Boolean
+                get() = TODO("Not yet implemented")
         }
     }
 
