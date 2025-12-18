@@ -1,0 +1,298 @@
+package site.addzero.util.lsi.database
+
+import site.addzero.util.lsi.assist.TypeChecker
+import site.addzero.util.lsi.field.LsiField
+import site.addzero.util.lsi.field.getArg
+import site.addzero.util.lsi.field.hasAnnotationIgnoreCase
+import site.addzero.util.str.addSuffixIfNot
+import site.addzero.util.str.containsAnyIgnoreCase
+
+/**
+ * 判断是否为数据库字段
+ * 数据库字段需要满足：非静态 && 非集合类型 && 非 Transient
+ */
+val LsiField.isDbField: Boolean
+    get() = !isStatic && !isCollectionType && !isTransient
+
+/**
+ * 数据库无关列（标记 @Transient）
+ */
+val LsiField.isTransient: Boolean
+    get() = annotations.any { it.qualifiedName?.endsWith(".Transient") == true }
+
+/**
+ * 主键列
+ * 更完善的实现：检查 @Id 注解或字段名为 "id"
+ */
+val LsiField.isPrimaryKey: Boolean
+    get() {
+        val hasAnnotation = hasAnnotationIgnoreCase("Id")
+        val equals = name.equals("id", ignoreCase = true)
+        return hasAnnotation || equals
+    }
+
+/**
+ * 是否自增（数据库自动编号）
+ * 
+ * Jimmer支持的方式：
+ * 1. @GeneratedValue(strategy = GenerationType.IDENTITY)
+ * 2. @GeneratedValue 不指定strategy（默认为IDENTITY）
+ * 3. JPA的 @GeneratedValue(strategy = GenerationType.AUTO)
+ */
+val LsiField.isAutoIncrement: Boolean
+    get() {
+        if (!hasAnnotationIgnoreCase("GeneratedValue")) {
+            return false
+        }
+        
+        val strategy = getArg("GeneratedValue", "strategy")
+        
+        // 如果没有指定strategy，默认为IDENTITY（Jimmer默认）
+        if (strategy == null) {
+            return true
+        }
+        
+        // 检查是否为IDENTITY或AUTO
+        return strategy.containsAnyIgnoreCase("IDENTITY", "AUTO")
+    }
+
+/**
+ * 是否使用序列生成ID
+ * 
+ * Jimmer方式：@GeneratedValue(strategy = GenerationType.SEQUENCE, generatorName = "seq_name")
+ */
+val LsiField.isSequence: Boolean
+    get() {
+        if (!hasAnnotationIgnoreCase("GeneratedValue")) {
+            return false
+        }
+        
+        val strategy = getArg("GeneratedValue", "strategy")
+        return strategy?.contains("SEQUENCE", ignoreCase = true) ?: false
+    }
+
+/**
+ * 获取序列名称
+ * 
+ * 从 @GeneratedValue(generatorName = "xxx") 获取
+ */
+val LsiField.sequenceName: String?
+    get() {
+        if (!isSequence) {
+            return null
+        }
+        return getArg("GeneratedValue", "generatorName")
+    }
+
+/**
+ * 是否使用UUID生成器
+ * 
+ * Jimmer方式：@GeneratedValue(generatorType = UUIDIdGenerator.class)
+ */
+val LsiField.isUUID: Boolean
+    get() {
+        if (!hasAnnotationIgnoreCase("GeneratedValue")) {
+            return false
+        }
+        
+        val generatorType = getArg("GeneratedValue", "generatorType")
+        return generatorType?.contains("UUIDIdGenerator", ignoreCase = true) ?: false
+    }
+
+/**
+ * 是否使用用户自定义的IdGenerator
+ * 
+ * Jimmer方式：@GeneratedValue(generatorType = CustomIdGenerator.class)
+ */
+val LsiField.hasCustomIdGenerator: Boolean
+    get() {
+        if (!hasAnnotationIgnoreCase("GeneratedValue")) {
+            return false
+        }
+        
+        val generatorType = getArg("GeneratedValue", "generatorType")
+        // 如果有generatorType但不是UUIDIdGenerator，说明是自定义的
+        return generatorType != null && !generatorType.contains("UUIDIdGenerator", ignoreCase = true)
+    }
+
+/**
+ * 获取自定义ID生成器的类型
+ */
+val LsiField.customIdGeneratorType: String?
+    get() {
+        if (!hasCustomIdGenerator) {
+            return null
+        }
+        return getArg("GeneratedValue", "generatorType")
+    }
+
+/**
+ * 获取数据库列类型
+ * 根据字段的类型映射到对应的数据库列类型
+ * 如果是字符串类型，会根据isText和isTextType判断是否使用TEXT类型
+ */
+fun LsiField.getDatabaseColumnType(): DatabaseColumnType {
+    val typeName = this.type?.qualifiedName ?: this.typeName ?: "String"
+    val baseType = mapTypeToDatabaseColumnType(typeName)
+
+    // 如果是VARCHAR类型，检查是否应该使用TEXT
+    if (baseType == DatabaseColumnType.VARCHAR && (isText || isTextType())) {
+        return DatabaseColumnType.TEXT
+    }
+
+    return baseType
+}
+
+/**
+ * 获取外键信息
+ * 从 @ManyToOne, @OneToOne, @JoinColumn 等注解中提取外键信息
+ */
+fun LsiField.getForeignKeyInfo(): ForeignKeyInfo? {
+    val joinColumnAnno = annotations.firstOrNull {
+        it.qualifiedName in JOIN_COLUMN_ANNOTATIONS
+    } ?: return null
+
+    val columnName = this.columnName ?: this.name ?: return null
+    val referencedTable = joinColumnAnno.getAttribute("name")?.toString() ?: return null
+    val referencedColumn = joinColumnAnno.getAttribute("referencedColumnName")?.toString() ?: "id"
+
+    val fkName = "fk_${columnName}_${referencedTable}"
+
+    return ForeignKeyInfo(
+        name = fkName, columnName = columnName, referencedTable = referencedTable, referencedColumn = referencedColumn
+    )
+}
+
+/**
+ * 字段长度
+ * 从 @Length 或 @Column(length=xxx) 注解中获取
+ */
+val LsiField.length: Int
+    get() {
+        // 优先从 @Length 注解获取
+        getArg("Length", "value")?.toIntOrNull()?.let { return it }
+        getArg("Length", "max")?.toIntOrNull()?.let { return it }
+
+        // 从 @Column(length=xxx) 获取
+        getArg("Column", "length")?.toIntOrNull()?.let { return it }
+
+        return -1
+    }
+
+/**
+ * 是否为长文本字段
+ * 满足以下条件之一即为长文本：
+ * 1. 字段类型为 String 且 @Length 或 @Column(length) 的值 > 1000
+ * 2. 有 @Lob 注解
+ * 3. @Column(columnDefinition) 包含 TEXT/CLOB 关键字
+ */
+val LsiField.isText: Boolean
+    get() {
+        val typeName = this.typeName ?: return false
+
+        // 必须是字符串类型
+        if (!TypeChecker.isStringType(typeName)) {
+            return false
+        }
+
+        // 检查 @Lob 注解
+        if (hasAnnotationIgnoreCase("Lob")) {
+            return true
+        }
+
+        // 检查 @Column(columnDefinition) 是否包含 TEXT/CLOB
+        val columnDef = getArg("Column", "columnDefinition")
+        if (columnDef != null && columnDef.containsAnyIgnoreCase("TEXT", "CLOB", "LONGTEXT", "MEDIUMTEXT")) {
+            return true
+        }
+
+        // 检查长度是否超过阈值 (1000)
+        val fieldLength = length
+        if (fieldLength > 1000) {
+            return true
+        }
+
+        return false
+    }
+
+/**
+ * 猜测字段长度
+ */
+val LsiField.guessLength: Int
+    get() {
+        val explicitLength = length
+        if (explicitLength > 0) {
+            return explicitLength
+        }
+
+        val typeName = this.typeName ?: return 255
+        return when {
+            TypeChecker.isStringType(typeName) -> 255
+            TypeChecker.isIntType(typeName) -> 11
+            TypeChecker.isLongType(typeName) -> 20
+            TypeChecker.isFloatType(typeName) || TypeChecker.isDoubleType(typeName) -> 10
+            TypeChecker.isBooleanType(typeName) -> 0
+            TypeChecker.isDateTimeType(typeName) -> 0
+            else -> 255
+        }
+    }
+
+/**
+ * 字段长度字符串 例如 (255)
+ */
+val LsiField.lengthStr: String
+    get() {
+        val length = this.length
+        if (length <= 0) {
+            return ""
+        }
+        val toString = length.toString()
+        return toString.addSuffixIfNot("(").addSuffixIfNot(")")
+    }
+
+/**
+ * 整数位数
+ */
+val LsiField.precision: Int
+    get() {
+        val arg = getArg("Precision")
+        return arg?.toIntOrNull() ?: -1
+    }
+
+/**
+ * 小数位数
+ */
+val LsiField.scale: Int
+    get() {
+        val arg = getArg("Scale")
+        return arg?.toIntOrNull() ?: -1
+    }
+
+/**
+ * 类型映射逻辑
+ * 将 Java/Kotlin 类型映射到数据库列类型
+ *
+ * 注意：必须先检查Long再检查Int，因为TypeChecker.isIntType()会匹配所有INTEGER category的类型（包括Long）
+ */
+private fun mapTypeToDatabaseColumnType(typeName: String): DatabaseColumnType {
+    return when {
+        TypeChecker.isLongType(typeName) -> DatabaseColumnType.BIGINT
+        TypeChecker.isIntType(typeName) -> DatabaseColumnType.INT
+        TypeChecker.isBigDecimalType(typeName) -> DatabaseColumnType.DECIMAL
+        TypeChecker.isFloatType(typeName) -> DatabaseColumnType.FLOAT
+        TypeChecker.isDoubleType(typeName) -> DatabaseColumnType.DOUBLE
+        TypeChecker.isStringType(typeName) -> DatabaseColumnType.VARCHAR
+        TypeChecker.isDateType(typeName) -> DatabaseColumnType.DATE
+        TypeChecker.isDateTimeType(typeName) -> DatabaseColumnType.DATETIME
+        TypeChecker.isBooleanType(typeName) -> DatabaseColumnType.BOOLEAN
+        TypeChecker.isCharType(typeName) -> DatabaseColumnType.CHAR
+        else -> DatabaseColumnType.VARCHAR
+    }
+}
+
+/**
+ * 关联列注解常量
+ */
+private val JOIN_COLUMN_ANNOTATIONS = setOf(
+    "javax.persistence.JoinColumn", "jakarta.persistence.JoinColumn"
+)
