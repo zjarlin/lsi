@@ -1,7 +1,10 @@
 package site.addzero.util.lsi_impl.impl.database.field
 
 import site.addzero.util.lsi.assist.TypeChecker
-import site.addzero.util.lsi.clazz.LsiClass
+import site.addzero.util.lsi.database.assist.JOIN_COLUMN_ANNOTATIONS
+import site.addzero.util.lsi.database.assist.mapTypeToDatabaseColumnType
+import site.addzero.util.lsi.database.model.DatabaseColumnType
+import site.addzero.util.lsi.database.model.ForeignKeyInfo
 import site.addzero.util.lsi.field.LsiField
 import site.addzero.util.lsi.field.getArg
 import site.addzero.util.lsi.field.hasAnnotation
@@ -9,11 +12,6 @@ import site.addzero.util.lsi.field.hasAnnotationIgnoreCase
 import site.addzero.util.str.addSuffixIfNot
 import site.addzero.util.str.containsAnyIgnoreCase
 
-/*
- * 获取所有非主键列
- */
-val LsiClass.nonPrimaryColumns: List<LsiField>
-    get() = fields.filter { !it.isPrimaryKey }
 
 /**数据库无关列  */
 val LsiField.isTransient: Boolean
@@ -24,50 +22,7 @@ val LsiField.isTransient: Boolean
         }
     }
 
-/** 主键列 */
-val LsiField.isPrimaryKey: Boolean
-    get() {
-        val hasAnnotation = this.hasAnnotationIgnoreCase("Id")
-        val equals = this.name.equals("id", ignoreCase = true)
-        return hasAnnotation || equals
-    }
 
-/**
- * 判断是否为数据库字段
- * 数据库字段需要满足：非静态 && 非集合类型
- */
-val LsiField.isDbField: Boolean
-    get() = !isStatic && !isCollectionType
-
-/**
- * 长度
- */
-val LsiField.length: Int
-    get() {
-        val arg = this.getArg("Length")
-        val toInt = arg?.toInt()
-        return toInt ?: -1
-    }
-
-val LsiField.guessLength: Int
-    get() {
-        // 先尝试获取明确指定的长度
-        val explicitLength = this.length
-        if (explicitLength > 0) {
-            return explicitLength
-        }
-        // 根据字段类型猜测长度
-        val typeName = this.typeName ?: ""
-        return when {
-            TypeChecker.isStringType(typeName) -> 255  // 字符串默认长度
-            TypeChecker.isIntType(typeName) -> 11   // 整数默认长度
-            TypeChecker.isLongType(typeName) -> 20     // 长整型默认长度
-            TypeChecker.isFloatType(typeName) || TypeChecker.isDoubleType(typeName) -> 10  // 浮点数默认长度
-            TypeChecker.isBooleanType(typeName) -> 0    // 布尔值默认长度
-            TypeChecker.isDateTimeType(typeName) -> 19  // 日期时间默认长度
-            else -> 255          // 其他类型默认长度
-        }
-    }
 
 
 /** 整数位数 */
@@ -84,23 +39,11 @@ val LsiField.scale: Int
         return arg?.toInt() ?: -1
     }
 
-/**  是否自增*/
-val LsiField.isAutoIncrement: Boolean
-    get() {
-        val arg = this.getArg("GeneratedValue", "strategy")
-        val containsAnyIgnoreCase = arg?.containsAnyIgnoreCase("IDENTITY", "Auto")
-        if (containsAnyIgnoreCase != null) {
-            return containsAnyIgnoreCase
-        }
-        return false
-    }
-
 /**  是否序列*/
 val LsiField.iSsequence: Boolean
     get() {
         return isIdTypeByAnno("SEQUENCE")
     }
-
 
 /**  是否序列*/
 val LsiField.isUUID: Boolean
@@ -125,4 +68,238 @@ val LsiField.lengthStr: String
         val toString = length.toString()
         return toString.addSuffixIfNot("(").addSuffixIfNot(")")
     }
+
+
+
+
+/**
+ * 判断是否为数据库字段
+ * 数据库字段需要满足：非静态 && 非集合类型 && 非 Transient
+ */
+val LsiField.isDbField: Boolean
+    get() = !isStatic && !isCollectionType && !isTransient
+
+
+/**
+ * 主键列
+ * 更完善的实现：检查 @Id 注解或字段名为 "id"
+ */
+val LsiField.isPrimaryKey: Boolean
+    get() {
+        val hasAnnotation = hasAnnotationIgnoreCase("Id")
+        val equals = name.equals("id", ignoreCase = true)
+        return hasAnnotation || equals
+    }
+
+/**
+ * 是否自增（数据库自动编号）
+ *
+ * Jimmer支持的方式：
+ * 1. @GeneratedValue(strategy = GenerationType.IDENTITY)
+ * 2. @GeneratedValue 不指定strategy（默认为IDENTITY）
+ * 3. JPA的 @GeneratedValue(strategy = GenerationType.AUTO)
+ */
+val LsiField.isAutoIncrement: Boolean
+    get() {
+        if (!hasAnnotationIgnoreCase("GeneratedValue")) {
+            return false
+        }
+
+        val strategy = getArg("GeneratedValue", "strategy")
+
+        // 如果没有指定strategy，默认为IDENTITY（Jimmer默认）
+        if (strategy == null) {
+            return true
+        }
+
+        // 检查是否为IDENTITY或AUTO
+        return strategy.containsAnyIgnoreCase("IDENTITY", "AUTO")
+    }
+
+/**
+ * 是否使用序列生成ID
+ *
+ * Jimmer方式：@GeneratedValue(strategy = GenerationType.SEQUENCE, generatorName = "seq_name")
+ */
+val LsiField.isSequence: Boolean
+    get() {
+        if (!hasAnnotationIgnoreCase("GeneratedValue")) {
+            return false
+        }
+
+        val strategy = getArg("GeneratedValue", "strategy")
+        return strategy?.contains("SEQUENCE", ignoreCase = true) ?: false
+    }
+
+/**
+ * 获取序列名称
+ *
+ * 从 @GeneratedValue(generatorName = "xxx") 获取
+ */
+val LsiField.sequenceName: String?
+    get() {
+        if (!isSequence) {
+            return null
+        }
+        return getArg("GeneratedValue", "generatorName")
+    }
+
+/**
+ * 是否使用UUID生成器
+ *
+ * Jimmer方式：@GeneratedValue(generatorType = UUIDIdGenerator.class)
+ */
+
+/**
+ * 是否使用用户自定义的IdGenerator
+ *
+ * Jimmer方式：@GeneratedValue(generatorType = CustomIdGenerator.class)
+ */
+val LsiField.hasCustomIdGenerator: Boolean
+    get() {
+        if (!hasAnnotationIgnoreCase("GeneratedValue")) {
+            return false
+        }
+
+        val generatorType = getArg("GeneratedValue", "generatorType")
+        // 如果有generatorType但不是UUIDIdGenerator，说明是自定义的
+        return generatorType != null && !generatorType.contains("UUIDIdGenerator", ignoreCase = true)
+    }
+
+/**
+ * 获取自定义ID生成器的类型
+ */
+val LsiField.customIdGeneratorType: String?
+    get() {
+        if (!hasCustomIdGenerator) {
+            return null
+        }
+        return getArg("GeneratedValue", "generatorType")
+    }
+
+/**
+ * 获取数据库列类型
+ * 根据字段的类型映射到对应的数据库列类型
+ * 如果是字符串类型，会根据isText和isTextType判断是否使用TEXT类型
+ */
+fun LsiField.getDatabaseColumnType(): DatabaseColumnType {
+    val typeName = this.type?.qualifiedName ?: this.typeName ?: "String"
+    val baseType = mapTypeToDatabaseColumnType(typeName)
+
+    // 如果是VARCHAR类型，检查是否应该使用TEXT
+    if (baseType == DatabaseColumnType.VARCHAR && (isText || isTextType())) {
+        return DatabaseColumnType.TEXT
+    }
+
+    return baseType
+}
+
+/**
+ * 获取外键信息
+ * 从 @ManyToOne, @OneToOne, @JoinColumn 等注解中提取外键信息
+ */
+fun LsiField.getForeignKeyInfo(): ForeignKeyInfo? {
+    val joinColumnAnno = annotations.firstOrNull {
+        it.qualifiedName in JOIN_COLUMN_ANNOTATIONS
+    } ?: return null
+
+    val columnName = this.columnName ?: this.name ?: return null
+    val referencedTable = joinColumnAnno.getAttribute("name")?.toString() ?: return null
+    val referencedColumn = joinColumnAnno.getAttribute("referencedColumnName")?.toString() ?: "id"
+
+    val fkName = "fk_${columnName}_${referencedTable}"
+
+    return ForeignKeyInfo(
+        name = fkName, columnName = columnName, referencedTable = referencedTable, referencedColumn = referencedColumn
+    )
+}
+
+/**
+ * 字段长度
+ * 从 @Length 或 @Column(length=xxx) 注解中获取
+ */
+val LsiField.length: Int
+    get() {
+        // 优先从 @Length 注解获取
+        getArg("Length", "value")?.toIntOrNull()?.let { return it }
+        getArg("Length", "max")?.toIntOrNull()?.let { return it }
+
+        // 从 @Column(length=xxx) 获取
+        getArg("Column", "length")?.toIntOrNull()?.let { return it }
+
+        return -1
+    }
+
+/**
+ * 是否为长文本字段
+ * 满足以下条件之一即为长文本：
+ * 1. 字段类型为 String 且 @Length 或 @Column(length) 的值 > 1000
+ * 2. 有 @Lob 注解
+ * 3. @Column(columnDefinition) 包含 TEXT/CLOB 关键字
+ */
+val LsiField.isText: Boolean
+    get() {
+        val typeName = this.typeName ?: return false
+
+        // 必须是字符串类型
+        if (!TypeChecker.isStringType(typeName)) {
+            return false
+        }
+
+        // 检查 @Lob 注解
+        if (hasAnnotationIgnoreCase("Lob")) {
+            return true
+        }
+
+        // 检查 @Column(columnDefinition) 是否包含 TEXT/CLOB
+        val columnDef = getArg("Column", "columnDefinition")
+        if (columnDef != null && columnDef.containsAnyIgnoreCase("TEXT", "CLOB", "LONGTEXT", "MEDIUMTEXT")) {
+            return true
+        }
+
+        // 检查长度是否超过阈值 (1000)
+        val fieldLength = length
+        if (fieldLength > 1000) {
+            return true
+        }
+
+        return false
+    }
+
+/**
+ * 猜测字段长度
+ */
+val LsiField.guessLength: Int
+    get() {
+        val explicitLength = length
+        if (explicitLength > 0) {
+            return explicitLength
+        }
+
+        val typeName = this.typeName ?: return 255
+        return when {
+            TypeChecker.isStringType(typeName) -> 255
+            TypeChecker.isIntType(typeName) -> 11
+            TypeChecker.isLongType(typeName) -> 20
+            TypeChecker.isFloatType(typeName) || TypeChecker.isDoubleType(typeName) -> 10
+            TypeChecker.isBooleanType(typeName) -> 0
+            TypeChecker.isDateTimeType(typeName) -> 0
+            else -> 255
+        }
+    }
+
+
+val LsiField.isString: Boolean
+    get() {
+        val typeName = this.typeName ?: return false
+        return typeName == "java.lang.String" || typeName.substringAfterLast('.').equals("string", ignoreCase = true)
+    }
+
+/**
+ * 判断是否为长文本类型
+ */
+fun LsiField.isTextType(): Boolean {
+    val textKeywords = listOf("url", "base64", "text", "path", "introduction", "content", "description")
+    return textKeywords.any { name?.contains(it, ignoreCase = true) ?: false }
+}
 

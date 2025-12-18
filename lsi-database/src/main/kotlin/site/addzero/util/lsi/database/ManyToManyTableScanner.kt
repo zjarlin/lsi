@@ -1,34 +1,10 @@
 package site.addzero.util.lsi.database
 
+import site.addzero.util.lsi.anno.LsiAnnotation
 import site.addzero.util.lsi.clazz.LsiClass
 import site.addzero.util.lsi.clazz.guessTableName
+import site.addzero.util.lsi.database.model.ManyToManyTable
 import site.addzero.util.lsi.field.LsiField
-
-/**
- * 多对多中间表信息
- */
-data class ManyToManyTable(
-    val tableName: String,
-    val leftTableName: String,
-    val leftColumnName: String,
-    val rightTableName: String,
-    val rightColumnName: String,
-    val leftEntity: LsiClass,
-    val rightEntity: LsiClass,
-    val field: LsiField
-) {
-    /**
-     * 生成唯一的中间表名
-     * 格式：{left_table}_{right_table}_mapping
-     */
-    companion object {
-        fun generateTableName(leftTable: String, rightTable: String): String {
-            // 按字母顺序排序，确保 user_role 和 role_user 都生成 role_user_mapping
-            val tables = listOf(leftTable, rightTable).sorted()
-            return "${tables[0]}_${tables[1]}_mapping"
-        }
-    }
-}
 
 /**
  * 多对多关系扫描器
@@ -117,7 +93,7 @@ object ManyToManyTableScanner {
         leftEntity: LsiClass,
         field: LsiField,
         rightEntity: LsiClass,
-        annotation: site.addzero.util.lsi.anno.LsiAnnotation
+        annotation: LsiAnnotation
     ): ManyToManyTable {
         val leftTableName = leftEntity.guessTableName
         val rightTableName = rightEntity.guessTableName
@@ -147,9 +123,8 @@ object ManyToManyTableScanner {
     /**
      * 从@JoinTable注解获取中间表名
      */
-    private fun getJoinTableName(manyToManyAnno: site.addzero.util.lsi.anno.LsiAnnotation): String? {
-        // 查找关联的@JoinTable注解
-        // 注意：在实际代码中，@JoinTable可能在field的其他注解中
+    private fun getJoinTableName(manyToManyAnno: LsiAnnotation): String? {
+        // todo 查找关联的@JoinTable注解
         // 这里简化处理，直接从ManyToMany注解中查找
         return null  // 如果有@JoinTable注解，可以在这里解析
     }
@@ -158,10 +133,10 @@ object ManyToManyTableScanner {
      * 获取连接列名
      */
     private fun getJoinColumnName(
-        manyToManyAnno: site.addzero.util.lsi.anno.LsiAnnotation, 
+        manyToManyAnno: LsiAnnotation,
         attributeName: String
     ): String? {
-        // 从@JoinTable注解的joinColumns或inverseJoinColumns获取
+        // todo 从@JoinTable注解的joinColumns或inverseJoinColumns获取
         return null  // 简化处理，使用默认命名
     }
 }

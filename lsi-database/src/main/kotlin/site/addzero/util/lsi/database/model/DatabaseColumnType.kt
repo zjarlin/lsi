@@ -1,4 +1,4 @@
-package site.addzero.util.lsi.database
+package site.addzero.util.lsi.database.model
 
 /**
  * 数据库列类型枚举

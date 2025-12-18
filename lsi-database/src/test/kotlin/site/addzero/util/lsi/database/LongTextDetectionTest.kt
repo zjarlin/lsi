@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Assertions.*
 import site.addzero.util.lsi.anno.LsiAnnotation
 import site.addzero.util.lsi.field.LsiField
 import site.addzero.util.lsi.type.LsiType
+import site.addzero.util.lsi_impl.impl.database.field.isText
+import site.addzero.util.lsi_impl.impl.database.field.length
 
 /**
  * 长文本字段检测测试

@@ -1,4 +1,4 @@
-package site.addzero.util.lsi.database
+package site.addzero.util.lsi.database.model
 
 /**
  * 索引信息数据类

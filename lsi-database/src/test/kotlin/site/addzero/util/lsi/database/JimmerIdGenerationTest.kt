@@ -5,6 +5,12 @@ import org.junit.jupiter.api.Assertions.*
 import site.addzero.util.lsi.anno.LsiAnnotation
 import site.addzero.util.lsi.field.LsiField
 import site.addzero.util.lsi.type.LsiType
+import site.addzero.util.lsi_impl.impl.database.field.customIdGeneratorType
+import site.addzero.util.lsi_impl.impl.database.field.hasCustomIdGenerator
+import site.addzero.util.lsi_impl.impl.database.field.isAutoIncrement
+import site.addzero.util.lsi_impl.impl.database.field.isSequence
+import site.addzero.util.lsi_impl.impl.database.field.isUUID
+import site.addzero.util.lsi_impl.impl.database.field.sequenceName
 
 /**
  * Jimmer ID生成策略检测测试
