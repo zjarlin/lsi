@@ -226,7 +226,7 @@ checkouts/metaprogramming-lsi/lsi-reflection/src/test/kotlin/
 
 运行测试：
 ```bash
-./gradlew :checkouts:metaprogramming-lsi:lsi-reflection:test
+./gradlew :checkouts:lsi:lsi-reflection:test
 ```
 
 ## 参考资料

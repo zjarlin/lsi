@@ -1,11 +1,13 @@
 plugins {
-    id("site.addzero.gradle.plugin.intellij-core") version "+"
+    id("site.addzero.gradle.plugin.kotlin-convention") version "+"
+
+    id("site.addzero.gradle.plugin.intellij-core")  version "2025.12.23"
 }
 
 dependencies {
-    implementation(project(":checkouts:metaprogramming-lsi:lsi-core"))
-    implementation(project(":checkouts:metaprogramming-lsi:lsi-intellij"))
-    implementation(libs.tool.str)
+    implementation(project(":checkouts:lsi:lsi-core"))
+    implementation(project(":checkouts:lsi:lsi-intellij"))
+    implementation("site.addzero:tool-str:2025.12.09")
 
     // K2 Analysis API 通过 Kotlin 插件捆绑提供
 //    intellijPlatform {

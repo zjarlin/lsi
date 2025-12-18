@@ -3,15 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.tool.str)
-
-    // 测试依赖
-    testImplementation(libs.junit.jupiter)
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
-tasks.test {
-    useJUnitPlatform()
+    implementation("site.addzero:tool-str:2025.12.09")
 }
 
 description = "语言无关的不完备抽象层"
