@@ -65,6 +65,7 @@ val LsiClass.primaryKeyName: String?
 /**
  * 获取数据库字段（排除静态、集合等非数据库字段）
  */
+@Deprecated("Deprecated", replaceWith = ReplaceWith("getAllDbFields()"))
 val LsiClass.databaseFields: List<LsiField>
     get() = fields.filter { it.isDbField }
 
