@@ -83,7 +83,7 @@ val LsiClass.nonPrimaryColumns: List<LsiField>
  * 从字段的 @JoinColumn, @ManyToOne, @OneToOne 等注解中提取
  */
 fun LsiClass.getDatabaseForeignKeys(): List<ForeignKeyInfo> {
-    return databaseFields.mapNotNull { it.getForeignKeyInfo() }
+    return getAllDbFields().mapNotNull { it.getForeignKeyInfo() }
 }
 
 
@@ -117,7 +117,7 @@ val LsiField.isUnique: Boolean
  * 获取所有索引字段
  */
 val LsiClass.indexFields: List<LsiField>
-    get() = databaseFields.filter { it.isKey || it.isUnique }
+    get() = getAllDbFields().filter { it.isKey || it.isUnique }
 
 /**
  * 生成索引定义
@@ -133,7 +133,7 @@ fun LsiClass.getIndexDefinitions(): List<IndexDefinition> {
 
     // ===== 1. 处理联合索引（@Key(group="xxx")） =====
     // 按group分组
-    val keyFieldsByGroup = databaseFields
+    val keyFieldsByGroup = getAllDbFields()
         .filter { it.isKey && !it.isPrimaryKey && it.keyGroup != null }
         .groupBy { it.keyGroup!! }
 
@@ -153,7 +153,7 @@ fun LsiClass.getIndexDefinitions(): List<IndexDefinition> {
     }
 
     // ===== 2. 处理单字段索引（@Key不带group） =====
-    databaseFields.forEach { field ->
+    getAllDbFields().forEach { field ->
         if (field.isPrimaryKey) return@forEach
 
         val columnName = field.columnName ?: field.name ?: return@forEach
