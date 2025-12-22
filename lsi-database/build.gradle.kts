@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     implementation(project(":checkouts:lsi:lsi-core"))
-    implementation("site.addzero:tool-str:2025.12.09")
+    implementation("site.addzero:tool-str:2025.12.22")
 
 }
 

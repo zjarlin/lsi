@@ -9,6 +9,7 @@ import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
+import org.jetbrains.kotlin.idea.KotlinFileType
 import site.addzero.util.lsi.clazz.LsiClass
 import site.addzero.util.lsi.file.LsiFile
 import site.addzero.util.lsi.project.LsiProject
@@ -101,7 +102,8 @@ fun Project.toLsiJavaProject(): LsiProject {
                 val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, GlobalSearchScope.projectScope(project))
                 
                 for (virtualFile in javaFiles) {
-                    val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
+                    val instance = PsiManager.getInstance(project)
+                    val psiFile = instance.findFile(virtualFile)
                     if (psiFile is PsiJavaFile) {
                         val psiClasses = psiFile.classes
                         for (psiClass in psiClasses) {

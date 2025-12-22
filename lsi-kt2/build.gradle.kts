@@ -7,7 +7,7 @@ plugins {
 dependencies {
     implementation(project(":checkouts:lsi:lsi-core"))
     implementation(project(":checkouts:lsi:lsi-intellij"))
-    implementation("site.addzero:tool-str:2025.12.09")
+    implementation("site.addzero:tool-str:2025.12.22")
 
     // K2 Analysis API 通过 Kotlin 插件捆绑提供
 //    intellijPlatform {
