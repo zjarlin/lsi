@@ -29,8 +29,6 @@ class PsiLsiFile(private val psiJavaFile: PsiJavaFile) : LsiFile {
 
     override val comment: String?
         get() {
-            // Java files don't typically have file-level comments in the same way
-            // Return the first class's doc comment if available
             return psiJavaFile.classes.firstOrNull()?.docComment?.text
         }
 

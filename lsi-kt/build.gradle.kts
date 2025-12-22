@@ -9,7 +9,7 @@ plugins {
 dependencies {
     implementation(project(":checkouts:lsi:lsi-core"))
     implementation(project(":checkouts:lsi:lsi-intellij"))
-    implementation("site.addzero:tool-str:2025.12.09")
+    implementation("site.addzero:tool-str:2025.12.22")
 
 }
 

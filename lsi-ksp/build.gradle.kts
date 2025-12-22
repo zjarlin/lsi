@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     implementation(project(":checkouts:lsi:lsi-core"))
-    implementation("site.addzero:tool-str:2025.12.09")
+    implementation("site.addzero:tool-str:2025.12.22")
 
     // KSP API dependencies
     implementation("com.google.devtools.ksp:symbol-processing-api:1.9.20-1.0.14")
