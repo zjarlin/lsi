@@ -48,7 +48,7 @@ LSI 是一个抽象层，旨在统一不同平台（如 Java PSI、Kotlin PSI、
 - `KspLsiField` - KSP 字段适配器
 - `KspLsiType` - KSP 类型适配器
 - `KspLsiMethod` - KSP 方法适配器
-- 示例处理器：`/Users/zjarlin/IdeaProjects/addzero-lib-jvm/checkouts/metaprogramming-lsi/lsi-ksp/src/main/kotlin/site/addzero/util/lsi_impl/impl/ksp/example/ExampleKspProcessor.kt`
+- 示例处理器：`/Users/zjarlin/IdeaProjects/addzero-lib-jvm/checkouts/lsi/lsi-ksp/src/main/kotlin/site/addzero/util/lsi_impl/impl/ksp/example/ExampleKspProcessor.kt`
 
 ## 分析器模式
 为了避免过长的实现方法，LSI 适配层层使用大量扩展函数将复杂逻辑提取到独立的咳特灵文件中：
