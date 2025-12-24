@@ -8,4 +8,4 @@ dependencies {
 
 }
 
-description = "Lsi数据库解析"
+description = "Lsi jimmer元数据到数据库ddl解析"

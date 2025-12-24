@@ -11,6 +11,7 @@ import site.addzero.util.lsi.field.hasAnnotation
 import site.addzero.util.lsi.field.hasAnnotationIgnoreCase
 import site.addzero.util.str.addSuffixIfNot
 import site.addzero.util.str.containsAnyIgnoreCase
+import site.addzero.util.str.firstNotBlank
 
 
 /**数据库无关列  */
@@ -22,21 +23,24 @@ val LsiField.isTransient: Boolean
         }
     }
 
-
-
-
 /** 整数位数 */
 val LsiField.precision: Int
     get() {
+        val arg1 = this.getArg("Column", "precision")
         val arg = this.getArg("Precision")
-        return arg?.toInt() ?: -1
+        val firstNotBlank = firstNotBlank(arg1, arg)
+        val toInt = firstNotBlank?.toInt()
+        return toInt ?: -1
     }
 
 /** 小数位数 */
 val LsiField.scale: Int
     get() {
+        val arg1 = this.getArg("Column", "scale")
         val arg = this.getArg("Scale")
-        return arg?.toInt() ?: -1
+        val firstNotBlank = firstNotBlank(arg1, arg)
+        val toInt = firstNotBlank?.toInt()
+        return toInt ?: -1
     }
 
 /**  是否序列*/
@@ -68,9 +72,6 @@ val LsiField.lengthStr: String
         val toString = length.toString()
         return toString.addSuffixIfNot("(").addSuffixIfNot(")")
     }
-
-
-
 
 /**
  * 判断是否为数据库字段
