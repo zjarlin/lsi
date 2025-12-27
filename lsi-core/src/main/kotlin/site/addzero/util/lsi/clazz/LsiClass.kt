@@ -70,4 +70,9 @@ interface LsiClass {
 
     val methods: List<LsiMethod>
 
+    val fileName: String?
+
+    val isObject: Boolean
+
+    val isCompanionObject: Boolean
 }

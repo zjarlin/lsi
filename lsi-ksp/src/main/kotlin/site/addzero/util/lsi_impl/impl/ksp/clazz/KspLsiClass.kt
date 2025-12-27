@@ -12,8 +12,6 @@ import site.addzero.util.lsi.method.LsiMethod
 import site.addzero.util.lsi_impl.impl.ksp.anno.KspLsiAnnotation
 import site.addzero.util.lsi_impl.impl.ksp.field.KspLsiField
 import site.addzero.util.lsi_impl.impl.ksp.method.KspLsiMethod
-
-
 class KspLsiClass(
     private val resolver: Resolver,
     private val ksClassDeclaration: KSClassDeclaration
@@ -115,6 +113,18 @@ class KspLsiClass(
         ksClassDeclaration.getAllFunctions()
             .map { KspLsiMethod(resolver, it) }
             .toList()
+    }
+
+    override val fileName: String? by lazy {
+        ksClassDeclaration.containingFile?.fileName?.removeSuffix(".kt")
+    }
+
+    override val isObject: Boolean by lazy {
+        ksClassDeclaration.classKind == ClassKind.OBJECT
+    }
+
+    override val isCompanionObject: Boolean by lazy {
+        ksClassDeclaration.isCompanionObject
     }
 }
 

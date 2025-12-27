@@ -85,6 +85,11 @@ class KspLsiParameter(
             .map { KspLsiAnnotation(it) }
             .toList()
     }
+
+    override val hasDefault: Boolean by lazy {
+        ksValueParameter.hasDefault
+    }
 }
 
 fun KSFunctionDeclaration.toLsiMethod(resolver: Resolver): LsiMethod = KspLsiMethod(resolver, this)
+
