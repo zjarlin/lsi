@@ -91,5 +91,5 @@ class KspLsiParameter(
     }
 }
 
-fun KSFunctionDeclaration.toLsiMethod(resolver: Resolver): LsiMethod = KspLsiMethod(resolver, this)
+//fun KSFunctionDeclaration.toLsiMethod(resolver: Resolver): LsiMethod = KspLsiMethod(resolver, this)
 

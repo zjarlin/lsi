@@ -128,4 +128,3 @@ class KspLsiClass(
     }
 }
 
-fun KSClassDeclaration.toLsiClass(resolver: Resolver): LsiClass = KspLsiClass(resolver, this)
