@@ -8,5 +8,4 @@ plugins {
 
 dependencies {
     implementation(project(":checkouts:lsi:lsi-core"))
-
 }
