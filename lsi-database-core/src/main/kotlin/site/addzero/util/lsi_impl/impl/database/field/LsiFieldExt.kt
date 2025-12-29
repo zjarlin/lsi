@@ -3,7 +3,6 @@ package site.addzero.util.lsi_impl.impl.database.field
 import site.addzero.util.lsi.assist.TypeChecker
 import site.addzero.util.lsi.database.assist.JOIN_COLUMN_ANNOTATIONS
 import site.addzero.util.lsi.database.assist.mapTypeToDatabaseColumnType
-import site.addzero.util.lsi.database.model.DatabaseColumnType
 import site.addzero.util.lsi.database.model.ForeignKeyInfo
 import site.addzero.util.lsi.field.LsiField
 import site.addzero.util.lsi.field.getArg
@@ -49,10 +48,19 @@ val LsiField.iSsequence: Boolean
         return isIdTypeByAnno("SEQUENCE")
     }
 
-/**  是否序列*/
+/**
+ * 是否使用UUID生成器
+ *
+ * Jimmer方式：@GeneratedValue(generatorType = UUIDIdGenerator.class)
+ */
 val LsiField.isUUID: Boolean
     get() {
-        return isIdTypeByAnno("UUIDIdGenerator")
+        if (!hasAnnotationIgnoreCase("GeneratedValue")) {
+            return false
+        }
+
+        val generatorType = getArg("GeneratedValue", "generatorType")
+        return generatorType?.contains("UUIDIdGenerator", ignoreCase = true) ?: false
     }
 
 private fun LsiField.isIdTypeByAnno(strategy: String): Boolean {
@@ -103,6 +111,12 @@ val LsiField.isPrimaryKey: Boolean
 val LsiField.isAutoIncrement: Boolean
     get() {
         if (!hasAnnotationIgnoreCase("GeneratedValue")) {
+            return false
+        }
+
+        // 如果指定了generatorType，说明使用的是自定义生成器或UUID生成器，不是自增
+        val generatorType = getArg("GeneratedValue", "generatorType")
+        if (generatorType != null) {
             return false
         }
 
@@ -177,24 +191,6 @@ val LsiField.customIdGeneratorType: String?
         }
         return getArg("GeneratedValue", "generatorType")
     }
-
-/**
- * 获取数据库列类型
- * 根据字段的类型映射到对应的数据库列类型
- * 如果是字符串类型，会根据isText和isTextType判断是否使用TEXT类型
- */
-fun LsiField.getDatabaseColumnType(): DatabaseColumnType {
-    val typeName = this.type?.qualifiedName ?: this.typeName ?: "String"
-    val baseType = mapTypeToDatabaseColumnType(typeName)
-
-    // 如果是VARCHAR类型，检查是否应该使用TEXT
-    if (baseType == DatabaseColumnType.VARCHAR && (isText || isTextType())) {
-        return DatabaseColumnType.TEXT
-    }
-
-    return baseType
-}
-
 /**
  * 获取外键信息
  * 从 @ManyToOne, @OneToOne, @JoinColumn 等注解中提取外键信息
@@ -210,9 +206,13 @@ fun LsiField.getForeignKeyInfo(): ForeignKeyInfo? {
 
     val fkName = "fk_${columnName}_${referencedTable}"
 
-    return ForeignKeyInfo(
-        name = fkName, columnName = columnName, referencedTable = referencedTable, referencedColumn = referencedColumn
+    val foreignKeyInfo = ForeignKeyInfo(
+        name = fkName,
+        columnName = columnName,
+        referencedTableName = referencedTable,
+        referencedColumnName = referencedColumn
     )
+    return foreignKeyInfo
 }
 
 /**

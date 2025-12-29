@@ -5,6 +5,7 @@ package site.addzero.util.lsi.types
  *
  * 统一管理Java和Kotlin的基本类型及其默认值
  */
+
 enum class PrimitiveType(
     val kotlinName: String,
     val javaName: String,

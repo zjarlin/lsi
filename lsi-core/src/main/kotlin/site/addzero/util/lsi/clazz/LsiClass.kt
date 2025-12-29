@@ -70,9 +70,16 @@ interface LsiClass {
 
     val methods: List<LsiMethod>
 
+
+
+//    todo  目前ksp only,之后在其它解析中找"鸭子"
     val fileName: String?
+        get() =null
 
     val isObject: Boolean
+        get() =false
 
     val isCompanionObject: Boolean
+        get() =false
+//    todo  end  目前ksp only,之后在其它解析中找"鸭子"
 }

@@ -7,7 +7,7 @@ package site.addzero.util.lsi.types
  */
 enum class PojoAnnotationType(
     val fqName: String,
-    val shortName: String,
+    val simpleName: String,
     val category: PojoAnnotationCategory
 ) {
     // Entity注解
@@ -31,7 +31,7 @@ enum class PojoAnnotationType(
 
     companion object {
         private val byFqName = entries.associateBy { it.fqName }
-        private val byShortName = entries.groupBy { it.shortName }
+        private val byShortName = entries.groupBy { it.simpleName }
         private val byCategory = entries.groupBy { it.category }
 
         fun findByFqName(fqName: String): PojoAnnotationType? = byFqName[fqName]

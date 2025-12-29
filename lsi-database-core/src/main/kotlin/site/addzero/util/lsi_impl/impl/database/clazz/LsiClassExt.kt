@@ -5,11 +5,11 @@ import site.addzero.util.lsi.clazz.getArg
 import site.addzero.util.lsi.database.model.ForeignKeyInfo
 import site.addzero.util.lsi.database.model.IndexDefinition
 import site.addzero.util.lsi.database.model.IndexType
-import site.addzero.util.lsi_impl.impl.database.field.isDbField
 import site.addzero.util.lsi.field.LsiField
 import site.addzero.util.lsi.field.getArg
 import site.addzero.util.lsi.field.hasAnnotationIgnoreCase
 import site.addzero.util.lsi_impl.impl.database.field.getForeignKeyInfo
+import site.addzero.util.lsi_impl.impl.database.field.isDbField
 import site.addzero.util.lsi_impl.impl.database.field.isPrimaryKey
 
 
@@ -77,13 +77,17 @@ val LsiClass.nonPrimaryColumns: List<LsiField>
     get() = fields.filter { !it.isPrimaryKey }
 
 
-
 /**
  * 获取所有外键定义
  * 从字段的 @JoinColumn, @ManyToOne, @OneToOne 等注解中提取
  */
 fun LsiClass.getDatabaseForeignKeys(): List<ForeignKeyInfo> {
-    return getAllDbFields().mapNotNull { it.getForeignKeyInfo() }
+    val allDbFields = getAllDbFields()
+    val mapNotNull = allDbFields.mapNotNull {
+        val foreignKeyInfo = it.getForeignKeyInfo()
+        foreignKeyInfo
+    }
+    return mapNotNull
 }
 
 
@@ -145,8 +149,7 @@ fun LsiClass.getIndexDefinitions(): List<IndexDefinition> {
                 IndexDefinition(
                     name = "uk_${tableName}_${groupName}",
                     columns = columns,
-                    unique = true,  // Jimmer的@Key是唯一键
-                    type = IndexType.UNIQUE
+                    type = IndexType.UNIQUE  // Jimmer的@Key是唯一键
                 )
             )
         }
@@ -164,8 +167,7 @@ fun LsiClass.getIndexDefinitions(): List<IndexDefinition> {
                 IndexDefinition(
                     name = "uk_${tableName}_${columnName}",
                     columns = listOf(columnName),
-                    unique = true,  // Jimmer的@Key是唯一键
-                    type = IndexType.UNIQUE
+                    type = IndexType.UNIQUE  // Jimmer的@Key是唯一键
                 )
             )
         }
@@ -176,7 +178,6 @@ fun LsiClass.getIndexDefinitions(): List<IndexDefinition> {
                 IndexDefinition(
                     name = "uk_${tableName}_${columnName}",
                     columns = listOf(columnName),
-                    unique = true,
                     type = IndexType.UNIQUE
                 )
             )

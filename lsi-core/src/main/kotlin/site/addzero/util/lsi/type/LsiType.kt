@@ -20,7 +20,7 @@ interface LsiType {
     val qualifiedName: String?
 
     /**
-     * 获取类型的可读文本表示
+     * 获取类型的可读文本表示 此为泛型设计 例如拿到User<GenericType1,GenericType2> 这样的字符串,比较复杂,先简单实现
      */
     val presentableText: String?
 

@@ -4,6 +4,7 @@ import site.addzero.util.lsi.anno.LsiAnnotation
 import site.addzero.util.lsi.clazz.LsiClass
 import site.addzero.util.lsi.type.LsiType
 import site.addzero.util.lsi_impl.impl.reflection.anno.ClazzLsiAnnotation
+import site.addzero.util.lsi_impl.impl.reflection.clazz.ClazzLsiClass
 import site.addzero.util.lsi_impl.impl.reflection.clazz.isCollectionType
 import site.addzero.util.lsi_impl.impl.reflection.clazz.isNullable
 
@@ -50,5 +51,5 @@ class ClazzLsiType(private val clazz: Class<*>) : LsiType {
         get() = clazz.isArray
 
     override val lsiClass: LsiClass?
-        get() = site.addzero.util.lsi_impl.impl.reflection.clazz.ClazzLsiClass(clazz)
+        get() = ClazzLsiClass(clazz)
 }
