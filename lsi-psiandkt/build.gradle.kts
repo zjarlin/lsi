@@ -7,9 +7,9 @@ plugins {
 }
 
 dependencies {
-    implementation("site.addzero:lsi-core:2026.01.11")
-    implementation("site.addzero:lsi-intellij:2026.01.11")
-    api("site.addzero:lsi-kt2:2026.01.11")  // K2 Analysis API
-    api("site.addzero:lsi-psi:2026.01.11")
+    implementation(libs.lsi.core)
+    implementation(libs.lsi.intellij)
+    api(libs.lsi.kt2)  // K2 Analysis API
+    api(libs.lsi.psi)
 }
 

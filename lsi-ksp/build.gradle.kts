@@ -3,16 +3,16 @@ plugins {
 }
 
 dependencies {
-    api("site.addzero:lsi-core:2026.01.11")
-    implementation("site.addzero:tool-str:2025.12.30")
+    api(libs.lsi.core)
+    implementation(libs.tool.str)
     // KSP API dependencies
-    implementation("com.google.devtools.ksp:symbol-processing-api:2.3.4")
+    implementation(libs.symbol.processing.api)
 
 //    // 测试依赖
 //    testImplementation(libs.junit.jupiter)
-//    testImplementation("io.kotest:kotest-runner-junit5:5.7.2")
-//    testImplementation("io.kotest:kotest-assertions-core:5.7.2")
-//    testImplementation("io.kotest:kotest-property:5.7.2")
+//    testImplementation(libs.kotest.runner.junit5)
+//    testImplementation(libs.kotest.assertions.core)
+//    testImplementation(libs.kotest.property)
 //    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

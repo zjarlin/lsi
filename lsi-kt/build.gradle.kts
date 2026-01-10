@@ -7,9 +7,9 @@ plugins {
 }
 
 dependencies {
-    implementation("site.addzero:lsi-core:2026.01.11")
-    implementation("site.addzero:lsi-intellij:2026.01.11")
-    implementation("site.addzero:tool-str:2025.12.30")
+    implementation(libs.lsi.core)
+    implementation(libs.lsi.intellij)
+    implementation(libs.tool.str)
 
 }
 

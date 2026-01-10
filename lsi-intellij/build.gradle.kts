@@ -7,5 +7,5 @@ plugins {
 }
 
 dependencies {
-    implementation("site.addzero:lsi-core:2026.01.11")
+    implementation(libs.lsi.core)
 }
