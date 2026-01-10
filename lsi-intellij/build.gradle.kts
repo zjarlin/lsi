@@ -7,5 +7,5 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":checkouts:lsi:lsi-core"))
+    implementation("site.addzero:lsi-core:2026.01.11")
 }
