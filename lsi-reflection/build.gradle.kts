@@ -6,6 +6,6 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.lsi.core)
-    implementation(libs.tool.str)
+    implementation(project(":checkouts:lsi:lsi-core"))
+    implementation("site.addzero:tool-str:2026.01.20")
 }

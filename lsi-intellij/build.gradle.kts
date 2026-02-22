@@ -7,5 +7,5 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.lsi.core)
+    implementation(project(":checkouts:lsi:lsi-core"))
 }

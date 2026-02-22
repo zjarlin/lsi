@@ -7,9 +7,9 @@ plugins {
 }
 
 dependencies {
-    implementation(libs.lsi.core)
-    implementation(libs.lsi.intellij)
-    api(libs.lsi.kt2)  // K2 Analysis API
-    api(libs.lsi.psi)
+    implementation(project(":checkouts:lsi:lsi-core"))
+    implementation(project(":checkouts:lsi:lsi-intellij"))
+    api(project(":checkouts:lsi:lsi-kt2"))
+    api(project(":checkouts:lsi:lsi-psi"))
 }
 

@@ -3,10 +3,10 @@ plugins {
 }
 
 dependencies {
-    api(libs.lsi.core)
-    implementation(libs.tool.str)
+    api(project(":checkouts:lsi:lsi-core"))
+    implementation("site.addzero:tool-str:2026.01.20")
     // KSP API dependencies
-    implementation(libs.ksp.symbol.processing.api)
+    implementation(libs.ksp.symbolProcessing.api)
 
 //    // 测试依赖
 //    testImplementation(libs.junit.jupiter)
