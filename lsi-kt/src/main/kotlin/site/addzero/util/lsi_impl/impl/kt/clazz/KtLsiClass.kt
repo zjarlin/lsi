@@ -19,16 +19,16 @@ import org.jetbrains.kotlin.psi.KtFunction
  * 2. 传入 PsiElement 并使用反射（跨类加载器）
  */
 class KtLsiClass : LsiClass {
-    
+
     private val ktClass: KtClass?
     private val psiElement: PsiElement?
-    
+
     // 直接构造（同一类加载器）
     constructor(ktClass: KtClass) {
         this.ktClass = ktClass
         this.psiElement = null
     }
-    
+
     // 反射构造（跨类加载器）
     constructor(element: PsiElement, useReflection: Boolean) {
         if (useReflection) {
@@ -41,7 +41,7 @@ class KtLsiClass : LsiClass {
         }
     }
 
-    override val name: String?
+    override val simpleName: String?
         get() = ktClass?.name ?: invokeMethod("getName") as? String
 
     override val qualifiedName: String?
@@ -89,7 +89,7 @@ class KtLsiClass : LsiClass {
         get() = ktClass?.isPojo() ?: checkIsPojoByReflection()
 
     val guessTableName: String
-        get() = ktClass?.guessTableEnglishName() ?: (name?.toUnderLineCase() ?: "")
+        get() = ktClass?.guessTableEnglishName() ?: (simpleName?.toUnderLineCase() ?: "")
 
     override val superClasses: List<LsiClass>
         get() = emptyList() // 简化实现
@@ -101,11 +101,11 @@ class KtLsiClass : LsiClass {
         get() = ktClass?.declarations?.filterIsInstance<KtFunction>()?.map { KtLsiMethod(it) } ?: run {
             @Suppress("UNCHECKED_CAST")
             val declarations = invokeMethod("getDeclarations") as? List<PsiElement> ?: emptyList()
-            declarations.filter { 
+            declarations.filter {
                 it::class.java.name.endsWith(".KtFunction") || it::class.java.name.endsWith(".KtNamedFunction")
             }.map { KtLsiMethod(it, true) }
         }
-    
+
     private fun invokeMethod(methodName: String): Any? {
         return psiElement?.let { element ->
             try {
@@ -116,7 +116,7 @@ class KtLsiClass : LsiClass {
             }
         }
     }
-    
+
     private fun invokeMethodOn(obj: Any, methodName: String): Any? {
         return try {
             val method = obj::class.java.getMethod(methodName)
@@ -125,12 +125,12 @@ class KtLsiClass : LsiClass {
             null
         }
     }
-    
+
     private fun checkIsPojoByReflection(): Boolean {
         val isInterface = invokeMethod("isInterface") as? Boolean ?: false
         val isEnum = invokeMethod("isEnum") as? Boolean ?: false
         val isData = invokeMethod("isData") as? Boolean ?: false
-        
+
         @Suppress("UNCHECKED_CAST")
         val annotationEntries = invokeMethod("getAnnotationEntries") as? List<*> ?: emptyList<Any>()
         val annotationNames = annotationEntries.mapNotNull { entry ->
@@ -143,7 +143,7 @@ class KtLsiClass : LsiClass {
                 }
             }
         }
-        
+
         return site.addzero.util.lsi.assist.checkIsPojo(
             isInterface = isInterface,
             isEnum = isEnum,

@@ -49,6 +49,6 @@ internal fun VirtualFile.toPrimaryLsiClassUnified(): LsiClass? {
 
     // 尝试找到与文件名匹配的类
     val fileNameWithoutExt = nameWithoutExtension
-    return allClasses.firstOrNull { it.name == fileNameWithoutExt }
+    return allClasses.firstOrNull { it.simpleName == fileNameWithoutExt }
         ?: allClasses.first()
 }

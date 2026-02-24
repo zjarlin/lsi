@@ -20,7 +20,7 @@ import site.addzero.util.str.toUnderLineCase
 
 /**
  * 基于 K2 Analysis API 的 LsiClass 实现
- * 
+ *
  * 基础属性在构造时计算（eager），关联类属性使用 lazy 延迟加载避免循环依赖
  */
 class Kt2LsiClass(
@@ -30,18 +30,18 @@ class Kt2LsiClass(
 ) : LsiClass {
 
     // Eager - 基础属性在构造时计算
-    override val name: String? = symbol.name?.asString()
+    override val simpleName: String? = symbol.name?.asString()
     override val qualifiedName: String? = symbol.classId?.asFqNameString()
     override val comment: String? = cleanDocComment(ktClass.docComment?.text)
     override val isInterface: Boolean = symbol.classKind == KaClassKind.INTERFACE
     override val isEnum: Boolean = symbol.classKind == KaClassKind.ENUM_CLASS
-    
+
     private val _isAbstract: Boolean = symbol.modality == KaSymbolModality.ABSTRACT
     private val _annotationNames: List<String>
     private val _ownFields: List<LsiField>
-    
+
     override val annotations: List<LsiAnnotation>
-    
+
     init {
         with(session) {
             _ownFields = ktClass.getProperties().mapNotNull { property ->
@@ -50,7 +50,7 @@ class Kt2LsiClass(
                     Kt2LsiField(property, propSymbol, session)
                 } else null
             }
-            
+
             annotations = symbol.annotations.map { Kt2LsiAnnotation(it) }
             _annotationNames = annotations.mapNotNull { it.simpleName }
         }
@@ -69,7 +69,7 @@ class Kt2LsiClass(
             }
         }
     }
-    
+
     override val interfaces: List<LsiClass> by lazy {
         analyze(ktClass) {
             val sym = ktClass.symbol as? KaClassSymbol ?: return@analyze emptyList()
@@ -82,7 +82,7 @@ class Kt2LsiClass(
             }
         }
     }
-    
+
     override val methods: List<LsiMethod> by lazy {
         analyze(ktClass) {
             ktClass.declarations.filterIsInstance<KtFunction>().mapNotNull { function ->
@@ -93,7 +93,7 @@ class Kt2LsiClass(
             }
         }
     }
-    
+
     // 递归获取父类字段
     override val fields: List<LsiField> by lazy {
         val parentFields = superClasses.flatMap { it.fields }
@@ -114,5 +114,5 @@ class Kt2LsiClass(
         )
 
     val guessTableName: String
-        get() = name?.toUnderLineCase() ?: ""
+        get() = simpleName?.toUnderLineCase() ?: ""
 }

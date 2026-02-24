@@ -12,7 +12,7 @@ interface LsiClass {
     /**
      * 获取类的简单名称
      */
-    val name: String?
+    val simpleName: String?
 
     /**
      * 获取类的全限定名

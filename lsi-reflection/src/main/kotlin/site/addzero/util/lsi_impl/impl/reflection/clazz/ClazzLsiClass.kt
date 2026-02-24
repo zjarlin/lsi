@@ -12,7 +12,7 @@ import site.addzero.util.lsi_impl.impl.reflection.java.method.ClazzLsiMethod
  * 基于 Java Class 字节码的 LsiClass 实现
  */
 class ClazzLsiClass(private val clazz: Class<*>) : LsiClass {
-    override val name: String?
+    override val simpleName: String?
         get() = clazz.simpleName
 
     override val qualifiedName: String?

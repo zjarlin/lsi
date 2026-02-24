@@ -20,7 +20,7 @@ import site.addzero.util.lsi_impl.impl.psi.method.PsiLsiMethod
 class PsiLsiClass(private val psiClass: PsiClass) : LsiClass {
 
     // 基础属性：轻量级，直接计算（无需缓存）
-    override val name: String?
+    override val simpleName: String?
         get() = psiClass.name
 
     override val qualifiedName: String?

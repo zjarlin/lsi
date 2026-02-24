@@ -97,7 +97,7 @@ val LsiClass.guessTableName: String
         }.firstOrNull()
 
         // 2. 如果注解中有表名，使用注解值；否则使用类名转下划线
-        val tableName = tableNameFromAnno ?: this.name?.toUnderLineCase()?.lowercase() ?: ""
+        val tableName = tableNameFromAnno ?: this.simpleName?.toUnderLineCase()?.lowercase() ?: ""
         // 3. 移除引号并返回
         val removeAnyQuote = tableName.removeAnyQuote()
         return removeAnyQuote

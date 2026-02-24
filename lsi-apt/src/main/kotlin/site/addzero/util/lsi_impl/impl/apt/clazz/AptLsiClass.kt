@@ -24,7 +24,7 @@ class AptLsiClass(
     private val typeElement: TypeElement
 ) : LsiClass {
 
-    override val name: String? by lazy {
+    override val simpleName: String? by lazy {
         typeElement.simpleName.toString()
     }
 

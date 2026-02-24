@@ -17,7 +17,7 @@ class KspLsiClass(
     private val ksClassDeclaration: KSClassDeclaration
 ) : LsiClass {
 
-    override val name: String? by lazy {
+    override val simpleName: String? by lazy {
         try {
             ksClassDeclaration.simpleName.asString()
         } catch (e: Exception) {
