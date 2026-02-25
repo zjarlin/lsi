@@ -73,7 +73,7 @@ val LsiClass.jimmerAssociationFields: List<LsiField>
 
 /** 所有标量属性（非关联、非 formula、非 transient） */
 val LsiClass.jimmerScalarFields: List<LsiField>
-    get() = jimmerFields.filter { it.jimmerPropKindOrNull == null || it.jimmerPropKindOrNull == PropKind.SCALAR }
+    get() = jimmerFields.filter { !it.isJimmerAssociation && !it.isJimmerFormula && !it.isJimmerTransient }
 
 /** 所有业务主键属性（`@Key`） */
 val LsiClass.jimmerKeyFields: List<LsiField>

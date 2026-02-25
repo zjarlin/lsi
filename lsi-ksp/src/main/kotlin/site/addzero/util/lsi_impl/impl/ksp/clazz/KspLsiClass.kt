@@ -13,8 +13,8 @@ import site.addzero.util.lsi_impl.impl.ksp.anno.KspLsiAnnotation
 import site.addzero.util.lsi_impl.impl.ksp.field.KspLsiField
 import site.addzero.util.lsi_impl.impl.ksp.method.KspLsiMethod
 class KspLsiClass(
-    private val resolver: Resolver,
-    private val ksClassDeclaration: KSClassDeclaration
+    internal val resolver: Resolver,
+    internal val ksClassDeclaration: KSClassDeclaration
 ) : LsiClass {
 
     override val simpleName: String? by lazy {

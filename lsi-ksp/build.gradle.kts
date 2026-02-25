@@ -1,5 +1,5 @@
 plugins {
-    id("site.addzero.gradle.plugin.kotlin-convention") version "+"
+    alias(libs.plugins.site.addzero.gradle.plugin.kotlin.convention)
 }
 
 dependencies {
@@ -7,6 +7,9 @@ dependencies {
     implementation("site.addzero:tool-str:2026.01.20")
     // KSP API dependencies
     implementation(libs.ksp.symbolProcessing.api)
+    // kotlinpoet: LsiClass → ClassName bridge
+    compileOnly(libs.kotlinpoet)
+    compileOnly(libs.kotlinpoet.ksp)
 
 //    // 测试依赖
 //    testImplementation(libs.junit.jupiter)

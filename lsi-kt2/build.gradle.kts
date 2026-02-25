@@ -1,9 +1,21 @@
 import site.addzero.gradle.plugin.KotlinConventionPlugin
 
 plugins {
-    id("site.addzero.gradle.plugin.kotlin-convention") version "+"
+   alias(libs.plugins.site.addzero.gradle.plugin.kotlin.convention)
 
     id("site.addzero.gradle.plugin.intellij-core")  version "2025.12.23"
+}
+
+afterEvaluate {
+    tasks.withType<JavaCompile>().configureEach {
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
+    }
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
+    }
 }
 
 dependencies {
