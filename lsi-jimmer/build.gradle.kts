@@ -5,7 +5,7 @@ plugins {
 dependencies {
     api(project(":checkouts:lsi:lsi-core"))
     api(project(":checkouts:lsi:lsi-ksp"))
-    compileOnly(libs.kotlinpoet)
+    compileOnly("com.squareup:kotlinpoet:2.2.0")
 //    compileOnly(libs.kotlinpoet.ksp)
 }
 

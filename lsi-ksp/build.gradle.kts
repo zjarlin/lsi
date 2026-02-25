@@ -6,10 +6,11 @@ dependencies {
     api(project(":checkouts:lsi:lsi-core"))
     implementation("site.addzero:tool-str:2026.02.23")
     // KSP API dependencies
-    implementation(libs.ksp.symbolProcessing.api)
+    implementation(libs.com.google.devtools.ksp.symbol.processing.api)
+
     // kotlinpoet: LsiClass → ClassName bridge
-    compileOnly(libs.kotlinpoet)
-    compileOnly(libs.kotlinpoet.ksp)
+    compileOnly("com.squareup:kotlinpoet:2.2.0")
+    compileOnly("com.squareup:kotlinpoet-ksp:2.2.0")
 
 //    // 测试依赖
 //    testImplementation(libs.junit.jupiter)
