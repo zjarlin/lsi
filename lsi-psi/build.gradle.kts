@@ -1,7 +1,7 @@
 plugins {
     // Apply the shared build logic from a convention plugin.
     // The shared code is located in `buildSrc/src/main/kotlin/kotlin-jvm.gradle.kts`.
-   alias(libs.plugins.site.addzero.gradle.plugin.kotlin.convention)
+   id("site.addzero.gradle.plugin.kotlin-convention") version "+"
 
     id("site.addzero.gradle.plugin.intellij-core")  version "2025.12.23"
 
