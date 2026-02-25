@@ -29,7 +29,7 @@ val PsiAnnotation.simpleNameOrEmpty: String
 
 ```kotlin
 import com.intellij.psi.PsiAnnotation
-import site.addzero.util.lsi_impl.impl.psi.anno.simpleName
+import site.addzero.lsi.psi.anno.simpleName
 
 fun processAnnotation(annotation: PsiAnnotation) {
     // 旧方式（繁琐）
@@ -116,7 +116,7 @@ println("JPA 注解: ${grouped["Column"]?.size ?: 0} 个")
 ### 示例 7：在 DDL Generator 中使用
 
 ```kotlin
-import site.addzero.util.lsi_impl.impl.psi.anno.simpleName
+import site.addzero.lsi.psi.anno.simpleName
 
 fun extractColumnComment(annotations: Array<PsiAnnotation>): String? {
     for (annotation in annotations) {

@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     api(project(":checkouts:lsi:lsi-core"))
-    implementation("site.addzero:tool-str:2026.01.20")
+    implementation("site.addzero:tool-str:2026.02.23")
     // KSP API dependencies
     implementation(libs.ksp.symbolProcessing.api)
     // kotlinpoet: LsiClass → ClassName bridge

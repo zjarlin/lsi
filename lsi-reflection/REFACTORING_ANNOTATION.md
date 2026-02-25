@@ -39,9 +39,9 @@ lsi-reflection/src/main/kotlin/site/addzero/util/lsi_impl/impl/reflection/
 #### `ClazzLsiAnnotation.kt`
 
 ```kotlin
-package site.addzero.util.lsi_impl.impl.reflection.anno
+package site.addzero.lsi.reflection.anno
 
-import site.addzero.util.lsi.anno.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotation
 
 /**
  * 基于 Java Annotation 反射的 LsiAnnotation 实现
@@ -71,7 +71,7 @@ class ClazzLsiAnnotation(private val annotation: Annotation) : LsiAnnotation {
 合并了 `RefAnnoExt.kt` 和 `kt/anno/AnnoExt.kt` 的所有功能，并按功能分类组织：
 
 ```kotlin
-package site.addzero.util.lsi_impl.impl.reflection.anno
+package site.addzero.lsi.reflection.anno
 
 /**
  * Java Annotation 反射扩展函数
