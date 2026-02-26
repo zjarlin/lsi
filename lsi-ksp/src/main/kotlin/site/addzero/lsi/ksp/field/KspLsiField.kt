@@ -8,7 +8,6 @@ import com.google.devtools.ksp.symbol.Modifier
 import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.field.LsiField
-import site.addzero.lsi.str.toSnakeCaseLowerCase
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.ksp.anno.KspLsiAnnotation
 import site.addzero.lsi.ksp.clazz.KspLsiClass
