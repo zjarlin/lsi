@@ -18,7 +18,7 @@ class KspLsiAnnotation(
   override val attributes by lazy {
     ksAnnotation.arguments.associate { argument ->
       val argument1 = argument
-      (argument1.name?.asString() ?: "") to argument1.value
+      (argument1.name?.asString() ?: "") to argument1.value.toLsiAnnotationAttribute()
     }
   }
 
@@ -32,3 +32,12 @@ class KspLsiAnnotation(
 }
 
 fun KSAnnotation.toLsiAnnotation(): LsiAnnotation = KspLsiAnnotation(this)
+
+private fun Any?.toLsiAnnotationAttribute(): Any? {
+  return when (this) {
+    is KSAnnotation -> KspLsiAnnotation(this)
+    is Collection<*> -> map { value -> value.toLsiAnnotationAttribute() }
+    is Array<*> -> map { value -> value.toLsiAnnotationAttribute() }
+    else -> this
+  }
+}

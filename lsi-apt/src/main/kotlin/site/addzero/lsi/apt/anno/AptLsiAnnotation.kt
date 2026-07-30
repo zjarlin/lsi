@@ -28,6 +28,7 @@ class AptLsiAnnotation(private val annotationMirror: AnnotationMirror) : LsiAnno
     private fun extractValue(value: AnnotationValue): Any? {
         val v = value.value
         return when (v) {
+            is AnnotationMirror -> AptLsiAnnotation(v)
             is List<*> -> v.firstNotNullOfOrNull { (it as? AnnotationValue)?.value?.toString() } ?: v.firstOrNull()?.toString()
             else -> v?.toString()?.removeSurrounding("\"")
         }
