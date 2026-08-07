@@ -31,6 +31,7 @@ import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeParameter
 import site.addzero.lsi.model.LsiTypeParameterRef
 import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.model.LsiVariance
 import site.addzero.lsi.model.LsiWorkspace
 
 class DtoAnnotationStructuredValueContractTest {
@@ -423,7 +424,7 @@ class DtoAnnotationStructuredValueContractTest {
             typeName = typeId.requireTypeQualifiedName(),
             arguments = listOf(
                 DtoTypeArgument(
-                    variance = DtoVariance.INVARIANT,
+                    variance = LsiVariance.INVARIANT,
                     type = typeRef(argumentTypeName),
                 )
             ),

@@ -1,5 +1,7 @@
 package site.addzero.lsi.jimmer.dto
 
+import org.babyfish.jimmer.dto.compiler.DtoPolymorphicBranchKind
+
 /** 按 DTO 文件中的声明顺序返回根类型。 */
 fun DtoGraph.rootTypesInDeclarationOrder(): List<DtoType> {
     return rootTypeIds.map(typesById::getValue)

@@ -98,7 +98,7 @@ private fun TransactionalSchema.renderSnapshot(): String {
                 type.sqlClient.declarationId.value,
                 type.sqlClient.name,
                 type.sqlClient.type.stableSignature(),
-                type.sqlClient.platform.name,
+                type.sqlClient.language.name,
             )
             type.constructors.forEach { constructor ->
                 appendRecord(

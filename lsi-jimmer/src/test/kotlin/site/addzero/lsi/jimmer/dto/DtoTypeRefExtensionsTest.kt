@@ -22,11 +22,11 @@ class DtoTypeRefExtensionsTest {
     fun `resolves builtins and generic variance for each target language`() {
         val listType = type(
             name = "List",
-            arguments = listOf(argument(DtoVariance.INVARIANT, type("String"))),
+            arguments = listOf(argument(LsiVariance.INVARIANT, type("String"))),
         )
         val mutableListType = type(
             name = "MutableList",
-            arguments = listOf(argument(DtoVariance.INVARIANT, type("String"))),
+            arguments = listOf(argument(LsiVariance.INVARIANT, type("String"))),
         )
 
         val javaList = listType.toLsiType(LsiLanguage.JAVA) as LsiDeclaredType
@@ -42,20 +42,20 @@ class DtoTypeRefExtensionsTest {
 
         val qualifiedJavaList = type(
             name = "kotlin.collections.List",
-            arguments = listOf(argument(DtoVariance.INVARIANT, type("String"))),
+            arguments = listOf(argument(LsiVariance.INVARIANT, type("String"))),
         ).toLsiType(LsiLanguage.JAVA) as LsiDeclaredType
         assertEquals(LsiSymbolId.type("java.util.List"), qualifiedJavaList.declarationId)
         assertEquals(LsiVariance.OUT, qualifiedJavaList.arguments.single().variance)
 
         val javaQualifiedJavaList = type(
             name = "java.util.List",
-            arguments = listOf(argument(DtoVariance.INVARIANT, type("String"))),
+            arguments = listOf(argument(LsiVariance.INVARIANT, type("String"))),
         ).toLsiType(LsiLanguage.JAVA) as LsiDeclaredType
         assertEquals(LsiVariance.OUT, javaQualifiedJavaList.arguments.single().variance)
 
         val contravariant = type(
             name = "Comparator",
-            arguments = listOf(argument(DtoVariance.IN, type("Int"))),
+            arguments = listOf(argument(LsiVariance.IN, type("Int"))),
         ).toLsiType(LsiLanguage.JAVA) as LsiDeclaredType
         val argumentType = contravariant.arguments.single().type as LsiPrimitiveType
         assertEquals(LsiVariance.IN, contravariant.arguments.single().variance)
@@ -66,7 +66,7 @@ class DtoTypeRefExtensionsTest {
     fun `preserves array shape nullability and exact custom type identity`() {
         val primitiveArray = type(
             name = "Array",
-            arguments = listOf(argument(DtoVariance.INVARIANT, type("Int"))),
+            arguments = listOf(argument(LsiVariance.INVARIANT, type("Int"))),
         ).toLsiType(LsiLanguage.KOTLIN) as LsiArrayType
         val nullablePrimitive = type("Int", nullable = true)
             .toLsiType(LsiLanguage.JAVA) as LsiPrimitiveType
@@ -98,14 +98,14 @@ class DtoTypeRefExtensionsTest {
             type("Array").toLsiType(LsiLanguage.JAVA)
         }
         assertFailsWith<IllegalArgumentException> {
-            type("Int", arguments = listOf(argument(DtoVariance.INVARIANT, type("String"))))
+            type("Int", arguments = listOf(argument(LsiVariance.INVARIANT, type("String"))))
                 .toLsiType(LsiLanguage.JAVA)
         }
         assertFailsWith<IllegalArgumentException> {
             type("List").toLsiType(LsiLanguage.KOTLIN)
         }
         assertFailsWith<IllegalArgumentException> {
-            type("Map", arguments = listOf(argument(DtoVariance.INVARIANT, type("String"))))
+            type("Map", arguments = listOf(argument(LsiVariance.INVARIANT, type("String"))))
                 .toLsiType(LsiLanguage.JAVA)
         }
     }
@@ -162,14 +162,14 @@ class DtoTypeRefExtensionsTest {
 
     private fun arrayOf(componentType: DtoTypeRef): DtoTypeRef = type(
         name = "Array",
-        arguments = listOf(argument(DtoVariance.INVARIANT, componentType)),
+        arguments = listOf(argument(LsiVariance.INVARIANT, componentType)),
     )
 
     private fun collectionOf(name: String, elementType: DtoTypeRef?): DtoTypeRef = type(
         name = name,
         arguments = listOf(
             argument(
-                variance = if (elementType == null) DtoVariance.STAR else DtoVariance.INVARIANT,
+                variance = if (elementType == null) LsiVariance.STAR else LsiVariance.INVARIANT,
                 type = elementType,
             ),
         ),
@@ -182,14 +182,14 @@ class DtoTypeRefExtensionsTest {
     ): DtoTypeRef = type(
         name = name,
         arguments = listOf(
-            argument(DtoVariance.INVARIANT, keyType),
-            argument(DtoVariance.INVARIANT, valueType),
+            argument(LsiVariance.INVARIANT, keyType),
+            argument(LsiVariance.INVARIANT, valueType),
         ),
     )
 
     private fun starArray(): DtoTypeRef = type(
         name = "Array",
-        arguments = listOf(argument(DtoVariance.STAR, null)),
+        arguments = listOf(argument(LsiVariance.STAR, null)),
     )
 
     private fun type(
@@ -204,7 +204,7 @@ class DtoTypeRefExtensionsTest {
     )
 
     private fun argument(
-        variance: DtoVariance,
+        variance: LsiVariance,
         type: DtoTypeRef?,
     ): DtoTypeArgument = DtoTypeArgument(
         variance = variance,

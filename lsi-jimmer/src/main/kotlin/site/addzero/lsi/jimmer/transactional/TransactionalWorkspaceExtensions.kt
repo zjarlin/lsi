@@ -57,10 +57,10 @@ private class TransactionalSchemaBuilder {
         val constructors = members.filterIsInstance<LsiConstructor>()
             .filter { constructor -> constructor.visibility != LsiVisibility.PRIVATE }
             .map { constructor ->
-                constructor.toTransactionalConstructor(workspace, sqlClient.platform)
+                constructor.toTransactionalConstructor(workspace, sqlClient.language)
             }
         val methods = members.mapNotNull { member ->
-            compileMethod(member, classTx, typeSystem, workspace, sqlClient.platform)
+            compileMethod(member, classTx, typeSystem, workspace, sqlClient.language)
         }
         val packageName = type.qualifiedName
             .removeSuffix(".${type.name}")
@@ -138,26 +138,28 @@ private class TransactionalSchemaBuilder {
         members: List<LsiDeclaration>,
         typeSystem: LsiTypeSystem,
     ): TransactionalSqlClient {
-        val platform = when (type.origin.source?.language) {
-            LsiLanguage.JAVA -> TransactionalPlatform.JAVA
-            LsiLanguage.KOTLIN -> TransactionalPlatform.KOTLIN
+        val language = when (type.origin.source?.language) {
+            LsiLanguage.JAVA -> LsiLanguage.JAVA
+            LsiLanguage.KOTLIN -> LsiLanguage.KOTLIN
             else -> if (members.any { member -> member is LsiField }) {
-                TransactionalPlatform.JAVA
+                LsiLanguage.JAVA
             } else {
-                TransactionalPlatform.KOTLIN
+                LsiLanguage.KOTLIN
             }
         }
-        val targetTypeId = when (platform) {
-            TransactionalPlatform.JAVA -> J_SQL_CLIENT_TYPE
-            TransactionalPlatform.KOTLIN -> K_SQL_CLIENT_TYPE
+        val targetTypeId = when (language) {
+            LsiLanguage.JAVA -> J_SQL_CLIENT_TYPE
+            LsiLanguage.KOTLIN -> K_SQL_CLIENT_TYPE
+            LsiLanguage.UNKNOWN -> error("Transactional SQL client language must be Java or Kotlin")
         }
-        val candidates = when (platform) {
-            TransactionalPlatform.JAVA -> members.filterIsInstance<LsiField>().map { field ->
+        val candidates = when (language) {
+            LsiLanguage.JAVA -> members.filterIsInstance<LsiField>().map { field ->
                 StorageMember(field.id, field.name, field.type, field.static, field.visibility)
             }
-            TransactionalPlatform.KOTLIN -> members.filterIsInstance<LsiProperty>().map { property ->
+            LsiLanguage.KOTLIN -> members.filterIsInstance<LsiProperty>().map { property ->
                 StorageMember(property.id, property.name, property.type, property.static, property.visibility)
             }
+            LsiLanguage.UNKNOWN -> error("Transactional SQL client language must be Java or Kotlin")
         }.filter { member ->
             !member.static && member.type.isSubtypeOf(targetTypeId, typeSystem)
         }
@@ -187,7 +189,7 @@ private class TransactionalSchemaBuilder {
             declarationId = candidate.id,
             name = candidate.name,
             type = candidate.type,
-            platform = platform,
+            language = language,
         )
     }
 
@@ -196,7 +198,7 @@ private class TransactionalSchemaBuilder {
         classTx: LsiAnnotation?,
         typeSystem: LsiTypeSystem,
         workspace: LsiWorkspace,
-        platform: TransactionalPlatform,
+        language: LsiLanguage,
     ): TransactionalMethod? {
         val directTx = declaration.annotations.annotation(TX_ANNOTATION)
         val supportedCallable = declaration is LsiFunction ||
@@ -274,7 +276,7 @@ private class TransactionalSchemaBuilder {
             modality = callable.modality,
             returnType = callable.returnType,
             parameters = callable.parameters.map { parameter ->
-                parameter.toTransactionalParameter(workspace, platform)
+                parameter.toTransactionalParameter(workspace, language)
             },
             typeParameters = callable.typeParameters,
             thrownTypes = callable.thrownTypes,
@@ -299,14 +301,14 @@ private fun LsiTypeDeclaration.isTransactionalType(workspace: LsiWorkspace): Boo
 
 private fun LsiConstructor.toTransactionalConstructor(
     workspace: LsiWorkspace,
-    platform: TransactionalPlatform,
+    language: LsiLanguage,
 ): TransactionalConstructor {
     return TransactionalConstructor(
         id = id,
         primary = primary,
         visibility = visibility,
         parameters = parameters.map { parameter ->
-            parameter.toTransactionalParameter(workspace, platform)
+            parameter.toTransactionalParameter(workspace, language)
         },
         typeParameters = typeParameters,
         thrownTypes = thrownTypes,
@@ -317,9 +319,9 @@ private fun LsiConstructor.toTransactionalConstructor(
 
 private fun LsiParameter.toTransactionalParameter(
     workspace: LsiWorkspace,
-    platform: TransactionalPlatform,
+    language: LsiLanguage,
 ): TransactionalParameter {
-    val annotationProjection = annotations.transactionalParameterAnnotationProjection(workspace, platform)
+    val annotationProjection = annotations.transactionalParameterAnnotationProjection(workspace, language)
     return TransactionalParameter(
         id = id,
         name = name,
@@ -334,17 +336,17 @@ private fun LsiParameter.toTransactionalParameter(
 
 private fun List<LsiAnnotation>.transactionalParameterAnnotationProjection(
     workspace: LsiWorkspace,
-    platform: TransactionalPlatform,
+    language: LsiLanguage,
 ): TransactionalParameterAnnotationProjection {
-    return when (platform) {
-        TransactionalPlatform.JAVA -> TransactionalParameterAnnotationProjection(
+    return when (language) {
+        LsiLanguage.JAVA -> TransactionalParameterAnnotationProjection(
             annotations = filter { annotation ->
                 annotation.useSiteTarget == null ||
                     annotation.useSiteTarget == LsiAnnotationUseSiteTarget.PARAMETER
             },
             dependencyTypeIds = emptySet(),
         )
-        TransactionalPlatform.KOTLIN -> TransactionalParameterAnnotationProjection(
+        LsiLanguage.KOTLIN -> TransactionalParameterAnnotationProjection(
             annotations = filter { annotation ->
                 annotation.useSiteTarget == null ||
                     annotation.useSiteTarget == LsiAnnotationUseSiteTarget.PARAMETER ||
@@ -355,6 +357,7 @@ private fun List<LsiAnnotation>.transactionalParameterAnnotationProjection(
                 .filter { annotation -> annotation.useSiteTarget == LsiAnnotationUseSiteTarget.ALL }
                 .mapTo(sortedSetOf(), LsiAnnotation::type),
         )
+        LsiLanguage.UNKNOWN -> error("Transactional parameter language must be Java or Kotlin")
     }
 }
 

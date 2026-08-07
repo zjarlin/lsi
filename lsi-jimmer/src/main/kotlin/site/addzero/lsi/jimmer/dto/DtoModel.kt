@@ -1,8 +1,13 @@
 package site.addzero.lsi.jimmer.dto
 
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoPolymorphicBranchKind
+import org.babyfish.jimmer.dto.compiler.DtoTypeKind
+import org.babyfish.jimmer.dto.compiler.LikeOption
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.model.LsiVariance
 
 @JvmInline
 value class DtoTypeId(
@@ -243,7 +248,7 @@ data class DtoBaseProp(
     val enumType: DtoEnumType?,
     val config: DtoPropConfig?,
     val recursive: Boolean,
-    val likeOptions: Set<DtoLikeOption>,
+    val likeOptions: Set<LikeOption>,
     val dtoDocumentation: String? = null,
 ) : DtoProp {
     init {
@@ -267,7 +272,7 @@ data class DtoBaseProp(
 data class DtoReusableTypeReference(
     val qualifiedName: String,
     val targetBaseTypeId: LsiSymbolId,
-    val kind: DtoReusableTypeKind,
+    val kind: DtoTypeKind,
     val location: LsiLocation,
 ) {
     init {
@@ -278,12 +283,6 @@ data class DtoReusableTypeReference(
         LsiSymbolId.type(qualifiedName).requireTypeQualifiedName()
         targetBaseTypeId.requireTypeQualifiedName()
     }
-}
-
-enum class DtoReusableTypeKind {
-    VIEW,
-    INPUT,
-    SPECIFICATION,
 }
 
 data class DtoUserProp(
@@ -321,26 +320,6 @@ data class DtoBasePropBinding(
     }
 }
 
-enum class DtoModifier(
-    val isInputStrategy: Boolean,
-    val order: Int,
-) {
-    INPUT(false, 2),
-    SPECIFICATION(false, 2),
-    SEALED(false, -1),
-    UNSAFE(false, 0),
-    FIXED(true, 1),
-    STATIC(true, 1),
-    DYNAMIC(true, 1),
-    FUZZY(true, 1),
-}
-
-enum class DtoLikeOption {
-    INSENSITIVE,
-    MATCH_START,
-    MATCH_END,
-}
-
 data class DtoTypeRef(
     val typeName: String,
     val arguments: List<DtoTypeArgument>,
@@ -353,21 +332,14 @@ data class DtoTypeRef(
 }
 
 data class DtoTypeArgument(
-    val variance: DtoVariance,
+    val variance: LsiVariance,
     val type: DtoTypeRef?,
 ) {
     init {
-        require((variance == DtoVariance.STAR) == (type == null)) {
+        require((variance == LsiVariance.STAR) == (type == null)) {
             "Only star-projected DTO type argument can omit its type"
         }
     }
-}
-
-enum class DtoVariance {
-    INVARIANT,
-    IN,
-    OUT,
-    STAR,
 }
 
 data class DtoAnnotation(
@@ -609,9 +581,4 @@ data class DtoPolymorphicBranch(
         }
         targetBaseTypeId?.requireTypeQualifiedName()
     }
-}
-
-enum class DtoPolymorphicBranchKind {
-    DEFAULT,
-    TYPE,
 }

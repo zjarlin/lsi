@@ -6,11 +6,10 @@ import java.util.IdentityHashMap
 import org.babyfish.jimmer.dto.compiler.AbstractProp
 import org.babyfish.jimmer.dto.compiler.Anno
 import org.babyfish.jimmer.dto.compiler.DtoFile
-import org.babyfish.jimmer.dto.compiler.DtoModifier as AstDtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoModifier
 import org.babyfish.jimmer.dto.compiler.DtoPolymorphicBranch as AstDtoPolymorphicBranch
 import org.babyfish.jimmer.dto.compiler.DtoProp as AstDtoProp
 import org.babyfish.jimmer.dto.compiler.DtoType as AstDtoType
-import org.babyfish.jimmer.dto.compiler.DtoTypeKind as AstDtoTypeKind
 import org.babyfish.jimmer.dto.compiler.DtoTypeRef as AstDtoTypeReference
 import org.babyfish.jimmer.dto.compiler.EnumType
 import org.babyfish.jimmer.dto.compiler.FoldProp
@@ -24,6 +23,7 @@ import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.jimmer.ImmutableProp
 import site.addzero.lsi.jimmer.ImmutableType
+import site.addzero.lsi.model.LsiVariance
 import site.addzero.lsi.model.parseLsiDocumentation
 
 /**
@@ -102,8 +102,13 @@ private class DtoGraphFreezer(
             packageName = dtoType.packageName,
             name = dtoType.name,
             modifiers = dtoType.modifiers
-                .sortedWith(compareBy(AstDtoModifier::getOrder, AstDtoModifier::name))
-                .mapTo(linkedSetOf()) { modifier -> modifier.toDtoModifier() },
+                .sortedWith(
+                    compareBy<DtoModifier>(
+                        { modifier -> modifier.order },
+                        { modifier -> modifier.name },
+                    )
+                )
+                .toCollection(linkedSetOf()),
             annotations = dtoType.annotations.map { annotation ->
                 annotation.toDtoAnnotation(dtoType.dtoFile)
             },
@@ -195,7 +200,7 @@ private class DtoGraphFreezer(
             baseNullable = prop.isBaseNullable,
             inputModifier = requireNotNull(prop.inputModifier) {
                 "DTO base property must declare an input modifier: ${prop.name}"
-            }.toDtoModifier(),
+            },
             functionName = prop.funcName,
             targetTypeId = targetTypeId,
             targetTypeReference = targetTypeReference?.toDtoReusableTypeReference(prop.declaringFile),
@@ -203,8 +208,8 @@ private class DtoGraphFreezer(
             config = prop.config?.toDtoConfig(prop.declaringFile),
             recursive = prop.isRecursive,
             likeOptions = prop.likeOptions
-                .sortedBy(LikeOption::name)
-                .mapTo(linkedSetOf()) { option -> option.toDtoLikeOption() },
+                .sortedBy { option -> option.name }
+                .toCollection(linkedSetOf()),
             dtoDocumentation = dtoDocumentation,
         )
     }
@@ -289,7 +294,7 @@ private class DtoGraphFreezer(
         branch: AstDtoPolymorphicBranch<ImmutableType, ImmutableProp>,
         index: Int,
     ): DtoPolymorphicBranch {
-        val kind = branch.kind.toDtoBranchKind()
+        val kind = branch.kind
         val branchPath = "$rootPath/polymorphism:${kind.name.lowercase()}:${index.stableIndex()}:${branch.className}"
         val branchLocation = location(branch.dtoType.dtoFile, branch.line, branch.col)
         val bodyTypeId = freezeType(
@@ -319,10 +324,10 @@ private class DtoGraphFreezer(
             typeName = typeName,
             arguments = arguments.map { argument ->
                 val variance = when {
-                    argument.typeRef == null -> DtoVariance.STAR
-                    argument.isIn -> DtoVariance.IN
-                    argument.isOut -> DtoVariance.OUT
-                    else -> DtoVariance.INVARIANT
+                    argument.typeRef == null -> LsiVariance.STAR
+                    argument.isIn -> LsiVariance.IN
+                    argument.isOut -> LsiVariance.OUT
+                    else -> LsiVariance.INVARIANT
                 }
                 DtoTypeArgument(
                     variance = variance,
@@ -343,7 +348,7 @@ private class DtoGraphFreezer(
         return DtoReusableTypeReference(
             qualifiedName = qualifiedName,
             targetBaseTypeId = targetBaseType.id,
-            kind = typeInfo.kind.toDtoReusableTypeKind(),
+            kind = typeInfo.kind,
             location = location(declaringFile, line, column),
         )
     }
@@ -456,16 +461,6 @@ private class DtoGraphFreezer(
             else -> error("Unsupported DTO property config value: ${javaClass.name}")
         }
     }
-
-    private fun AstDtoModifier.toDtoModifier(): DtoModifier = DtoModifier.valueOf(name)
-
-    private fun AstDtoTypeKind.toDtoReusableTypeKind(): DtoReusableTypeKind =
-        DtoReusableTypeKind.valueOf(name)
-
-    private fun LikeOption.toDtoLikeOption(): DtoLikeOption = DtoLikeOption.valueOf(name)
-
-    private fun AstDtoPolymorphicBranch.Kind.toDtoBranchKind(): DtoPolymorphicBranchKind =
-        DtoPolymorphicBranchKind.valueOf(name)
 
     private fun location(
         declaringFile: DtoFile,

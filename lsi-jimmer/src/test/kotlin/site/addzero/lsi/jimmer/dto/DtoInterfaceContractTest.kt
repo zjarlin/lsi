@@ -26,6 +26,7 @@ import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeParameter
 import site.addzero.lsi.model.LsiTypeParameterRef
 import site.addzero.lsi.model.LsiUnresolvedType
+import site.addzero.lsi.model.LsiVariance
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.stableSignature
 import site.addzero.lsi.jimmer.dto.DtoGraph
@@ -33,7 +34,6 @@ import site.addzero.lsi.jimmer.dto.DtoType
 import site.addzero.lsi.jimmer.dto.DtoTypeArgument
 import site.addzero.lsi.jimmer.dto.DtoTypeId
 import site.addzero.lsi.jimmer.dto.DtoTypeRef
-import site.addzero.lsi.jimmer.dto.DtoVariance
 
 class DtoInterfaceContractTest {
 
@@ -611,7 +611,7 @@ class DtoInterfaceContractTest {
     }
 
     private fun typeArgument(type: DtoTypeRef): DtoTypeArgument {
-        return DtoTypeArgument(DtoVariance.INVARIANT, type)
+        return DtoTypeArgument(LsiVariance.INVARIANT, type)
     }
 
     private fun interfaceType(

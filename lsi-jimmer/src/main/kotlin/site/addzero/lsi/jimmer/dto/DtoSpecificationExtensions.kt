@@ -1,6 +1,8 @@
 package site.addzero.lsi.jimmer.dto
 
 import org.babyfish.jimmer.dto.compiler.Constants
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.LikeOption
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.jimmer.ImmutableProp
 import site.addzero.lsi.jimmer.ImmutableSchema
@@ -21,9 +23,9 @@ fun DtoBaseProp.specificationLikeOptionArguments(graph: DtoGraph): List<Boolean>
         return null
     }
     return listOf(
-        DtoLikeOption.INSENSITIVE in tailProp.likeOptions,
-        DtoLikeOption.MATCH_START in tailProp.likeOptions,
-        DtoLikeOption.MATCH_END in tailProp.likeOptions,
+        LikeOption.INSENSITIVE in tailProp.likeOptions,
+        LikeOption.MATCH_START in tailProp.likeOptions,
+        LikeOption.MATCH_END in tailProp.likeOptions,
     )
 }
 

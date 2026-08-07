@@ -1,6 +1,8 @@
 package site.addzero.lsi.jimmer.dto
 
 import java.security.MessageDigest
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.LikeOption
 import site.addzero.lsi.core.LsiLocation
 
 /** 返回仅包含 DTO 图语义的规范化快照。 */
@@ -45,8 +47,13 @@ private fun StringBuilder.appendType(type: DtoType) {
         type.packageName,
         type.name.orEmpty(),
         type.modifiers
-            .sortedWith(compareBy(DtoModifier::order, DtoModifier::name))
-            .joinToString(",", transform = DtoModifier::name),
+            .sortedWith(
+                compareBy<DtoModifier>(
+                    { modifier -> modifier.order },
+                    { modifier -> modifier.name },
+                )
+            )
+            .joinToString(",") { modifier -> modifier.name },
         type.annotations.annotationListCanonicalText(),
         type.superInterfaces.typeRefListCanonicalText(),
         type.documentation.orEmpty(),
@@ -101,7 +108,9 @@ private fun StringBuilder.appendProp(prop: DtoProp) {
             prop.enumType?.canonicalText().orEmpty(),
             prop.config?.canonicalText().orEmpty(),
             prop.recursive.toString(),
-            prop.likeOptions.sortedBy(DtoLikeOption::name).joinToString(",", transform = DtoLikeOption::name),
+            prop.likeOptions
+                .sortedBy { option -> option.name }
+                .joinToString(",") { option -> option.name },
             prop.dtoDocumentation.orEmpty(),
         )
         is DtoUserProp -> appendRecord(

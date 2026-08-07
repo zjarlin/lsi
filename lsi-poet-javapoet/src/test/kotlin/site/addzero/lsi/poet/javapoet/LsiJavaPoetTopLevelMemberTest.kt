@@ -11,7 +11,7 @@ import site.addzero.lsi.poet.LsiPoetCodeBlock
 import site.addzero.lsi.poet.LsiPoetFile
 import site.addzero.lsi.poet.LsiPoetFunction
 import site.addzero.lsi.poet.LsiPoetType
-import site.addzero.lsi.poet.LsiPoetTypeKind
+import site.addzero.lsi.model.LsiTypeDeclarationKind
 
 class LsiJavaPoetTopLevelMemberTest {
 
@@ -19,7 +19,7 @@ class LsiJavaPoetTopLevelMemberTest {
     fun `rejects Kotlin top-level member references`() {
         val type = LsiPoetType(
             name = "References",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
                 LsiPoetFunction(
                     name = "render",

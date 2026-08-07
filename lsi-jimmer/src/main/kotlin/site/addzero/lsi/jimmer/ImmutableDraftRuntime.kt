@@ -17,7 +17,7 @@ import site.addzero.lsi.model.LsiUnresolvedType
  */
 data class ImmutableDraftRuntimeProp(
     val kind: ImmutableDraftRuntimePropKind,
-    val valueCategory: ImmutableDraftRuntimeValueCategory,
+    val valueCategory: ImmutablePropValueCategory,
     val associationAnnotationTypeId: LsiSymbolId?,
     val metadataElementType: LsiTypeRef,
 ) {
@@ -46,8 +46,8 @@ enum class ImmutableDraftRuntimePropKind {
     VALUE,
 }
 
-/** Draft 运行时中的属性值形态。 */
-enum class ImmutableDraftRuntimeValueCategory {
+/** 不可变属性在语义与生成阶段共享的值形态。 */
+enum class ImmutablePropValueCategory {
     SCALAR,
     SCALAR_LIST,
     REFERENCE,
@@ -86,10 +86,10 @@ private fun ImmutableProp.freezeDraftRuntimeProp(
         else -> ImmutableDraftRuntimePropKind.VALUE
     }
     val valueCategory = when {
-        list && immutableReference -> ImmutableDraftRuntimeValueCategory.REFERENCE_LIST
-        list -> ImmutableDraftRuntimeValueCategory.SCALAR_LIST
-        immutableReference -> ImmutableDraftRuntimeValueCategory.REFERENCE
-        else -> ImmutableDraftRuntimeValueCategory.SCALAR
+        list && immutableReference -> ImmutablePropValueCategory.REFERENCE_LIST
+        list -> ImmutablePropValueCategory.SCALAR_LIST
+        immutableReference -> ImmutablePropValueCategory.REFERENCE
+        else -> ImmutablePropValueCategory.SCALAR
     }
     val associationAnnotationTypeId = when (kind) {
         ImmutableDraftRuntimePropKind.KEY_REFERENCE -> {

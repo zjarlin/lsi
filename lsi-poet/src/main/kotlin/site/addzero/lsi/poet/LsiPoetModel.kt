@@ -2,6 +2,7 @@ package site.addzero.lsi.poet
 
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeParameter
 import site.addzero.lsi.model.LsiTypeRef
 
@@ -36,15 +37,6 @@ enum class LsiPoetModifier {
     INNER,
     COMPANION,
     VARARG,
-}
-
-enum class LsiPoetTypeKind {
-    CLASS,
-    INTERFACE,
-    ENUM,
-    OBJECT,
-    ANNOTATION,
-    RECORD,
 }
 
 /**
@@ -128,7 +120,7 @@ data class LsiPoetFile(
 
 data class LsiPoetType(
     val name: String,
-    val kind: LsiPoetTypeKind,
+    val kind: LsiTypeDeclarationKind,
     val nameStyle: LsiPoetNameStyle = LsiPoetNameStyle.IDENTIFIER,
     override val annotations: List<LsiPoetAnnotation> = emptyList(),
     override val modifiers: Set<LsiPoetModifier> = emptySet(),
@@ -146,19 +138,22 @@ data class LsiPoetType(
         require(typeParameters.map(LsiTypeParameter::id).distinct().size == typeParameters.size) {
             "LSI Poet type parameters cannot have duplicate ids: $name"
         }
-        require(kind == LsiPoetTypeKind.ENUM || enumConstants.isEmpty()) {
+        require(kind != LsiTypeDeclarationKind.TYPE_ALIAS) {
+            "LSI Poet type alias declarations are not supported: $name"
+        }
+        require(kind == LsiTypeDeclarationKind.ENUM || enumConstants.isEmpty()) {
             "Only LSI Poet enum type can declare enum constants: $name"
         }
-        require(kind != LsiPoetTypeKind.INTERFACE || superClass == null) {
+        require(kind != LsiTypeDeclarationKind.INTERFACE || superClass == null) {
             "LSI Poet interface cannot declare a superclass: $name"
         }
         require(superClass != null || superClassConstructorArguments.isEmpty()) {
             "LSI Poet superclass constructor arguments require a superclass: $name"
         }
-        require(kind != LsiPoetTypeKind.INTERFACE || primaryConstructor == null) {
+        require(kind != LsiTypeDeclarationKind.INTERFACE || primaryConstructor == null) {
             "LSI Poet interface cannot declare a primary constructor: $name"
         }
-        require(LsiPoetModifier.COMPANION !in modifiers || kind == LsiPoetTypeKind.OBJECT) {
+        require(LsiPoetModifier.COMPANION !in modifiers || kind == LsiTypeDeclarationKind.OBJECT) {
             "Only LSI Poet object can be a companion: $name"
         }
     }
@@ -171,7 +166,7 @@ data class LsiPoetEnumConstant(
 ) {
     init {
         require(name.isJvmIdentifier()) { "LSI Poet enum constant name must be a JVM identifier: '$name'" }
-        require(anonymousType == null || anonymousType.kind == LsiPoetTypeKind.CLASS) {
+        require(anonymousType == null || anonymousType.kind == LsiTypeDeclarationKind.CLASS) {
             "LSI Poet enum constant anonymous type must be a class: $name"
         }
     }

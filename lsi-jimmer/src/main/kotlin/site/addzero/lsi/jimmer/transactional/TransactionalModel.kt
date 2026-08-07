@@ -1,5 +1,6 @@
 package site.addzero.lsi.jimmer.transactional
 
+import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiModality
@@ -34,8 +35,14 @@ data class TransactionalSqlClient(
     val declarationId: LsiSymbolId,
     val name: String,
     val type: LsiTypeRef,
-    val platform: TransactionalPlatform,
-)
+    val language: LsiLanguage,
+) {
+    init {
+        require(language == LsiLanguage.JAVA || language == LsiLanguage.KOTLIN) {
+            "Transactional SQL client language must be Java or Kotlin"
+        }
+    }
+}
 
 /** Transactional 生成类型需要暴露的构造器。 */
 data class TransactionalConstructor(
@@ -77,12 +84,6 @@ data class TransactionalParameter(
     val annotations: List<LsiAnnotation>,
     val annotationProjectionTypeIds: Set<LsiSymbolId> = emptySet(),
 )
-
-/** Transactional 源声明所属的生成平台。 */
-enum class TransactionalPlatform {
-    JAVA,
-    KOTLIN,
-}
 
 /** Transactional 方法在 LSI 中的声明形态。 */
 enum class TransactionalMethodSourceKind {

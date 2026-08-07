@@ -5,6 +5,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoPolymorphicBranchKind
+import org.babyfish.jimmer.dto.compiler.DtoTypeKind
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiPosition
 import site.addzero.lsi.core.LsiSource
@@ -51,7 +54,7 @@ class DtoGenerationExtensionsTest {
         assertNull(baseProps[3].generatedTargetType(graph))
         assertEquals(REUSABLE_SOURCE_TYPE_ID, baseProps[3].targetTypeId)
         assertEquals("demo.dto.ReusableView", baseProps[3].targetTypeReference?.qualifiedName)
-        assertEquals(DtoReusableTypeKind.VIEW, baseProps[3].targetTypeReference?.kind)
+        assertEquals(DtoTypeKind.VIEW, baseProps[3].targetTypeReference?.kind)
         assertNull(baseProps[4].generatedTargetType(graph))
         assertNull(baseProps[4].targetTypeId)
         assertEquals("contract.ExternalView", baseProps[4].targetTypeReference?.qualifiedName)
@@ -532,7 +535,7 @@ class DtoGenerationExtensionsTest {
         return DtoReusableTypeReference(
             qualifiedName = qualifiedName,
             targetBaseTypeId = BASE_TYPE_ID,
-            kind = DtoReusableTypeKind.VIEW,
+            kind = DtoTypeKind.VIEW,
             location = LsiLocation(
                 source = if (qualifiedName.startsWith("contract.")) REFERENCE_SOURCE else SOURCE,
                 start = LsiPosition(2, 1),

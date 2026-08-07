@@ -1,5 +1,6 @@
 package site.addzero.lsi.jimmer.dto
 
+import org.babyfish.jimmer.dto.compiler.DtoPolymorphicBranchKind
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.model.LsiAnnotation

@@ -4,6 +4,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.LikeOption
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiPosition
@@ -46,7 +48,7 @@ class DtoSpecificationExtensionsTest {
             prop(
                 name = "name",
                 functionName = "like",
-                likeOptions = setOf(DtoLikeOption.INSENSITIVE, DtoLikeOption.MATCH_START),
+                likeOptions = setOf(LikeOption.INSENSITIVE, LikeOption.MATCH_START),
             ),
             prop("excludedName", "notLike"),
         )
@@ -76,7 +78,7 @@ class DtoSpecificationExtensionsTest {
     private fun prop(
         name: String,
         functionName: String,
-        likeOptions: Set<DtoLikeOption> = emptySet(),
+        likeOptions: Set<LikeOption> = emptySet(),
     ): DtoBaseProp {
         val id = DtoPropId("${DTO_TYPE_ID.value}#$name")
         return DtoBaseProp(

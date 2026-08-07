@@ -2,7 +2,7 @@ package site.addzero.lsi.jimmer.dto
 
 import org.babyfish.jimmer.dto.compiler.DtoCompiler
 import org.babyfish.jimmer.dto.compiler.DtoFile
-import org.babyfish.jimmer.dto.compiler.DtoModifier as AstDtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoModifier
 import org.babyfish.jimmer.dto.compiler.PropConfig
 import org.babyfish.jimmer.dto.compiler.SimplePropType
 import site.addzero.lsi.core.LsiSymbolId
@@ -34,7 +34,7 @@ import site.addzero.lsi.model.LsiWorkspace
 fun DtoFile.toLsiDtoCompiler(
     immutableSchema: ImmutableSchema,
     workspace: LsiWorkspace,
-    defaultNullableInputModifier: AstDtoModifier,
+    defaultNullableInputModifier: DtoModifier,
 ): DtoCompiler<ImmutableType, ImmutableProp> {
     return LsiDtoCompiler(
         dtoFile = this,
@@ -56,11 +56,11 @@ private class LsiDtoCompiler(
     dtoFile: DtoFile,
     private val immutableSchema: ImmutableSchema,
     private val workspace: LsiWorkspace,
-    private val defaultNullableInputModifier: AstDtoModifier,
+    private val defaultNullableInputModifier: DtoModifier,
 ) : DtoCompiler<ImmutableType, ImmutableProp>(dtoFile) {
     private val typesByQualifiedName = immutableSchema.types.associateBy(ImmutableType::qualifiedName)
 
-    override fun getDefaultNullableInputModifier(): AstDtoModifier = defaultNullableInputModifier
+    override fun getDefaultNullableInputModifier(): DtoModifier = defaultNullableInputModifier
 
     override fun getSuperTypes(baseType: ImmutableType): Collection<ImmutableType> {
         return baseType.superTypeIds.mapNotNull(immutableSchema.typesById::get)

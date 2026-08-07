@@ -46,7 +46,7 @@ import site.addzero.lsi.poet.LsiPoetNameStyle
 import site.addzero.lsi.poet.LsiPoetParameter
 import site.addzero.lsi.poet.LsiPoetProperty
 import site.addzero.lsi.poet.LsiPoetType
-import site.addzero.lsi.poet.LsiPoetTypeKind
+import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.poet.LsiPoetTypeName
 import site.addzero.lsi.poet.LsiPoetTypeReferenceStyle
 
@@ -159,7 +159,7 @@ class LsiKotlinPoetRendererTest {
     fun `renders an embeddable Kotlin type structure exactly`() {
         val type = LsiPoetType(
             name = "Marker",
-            kind = LsiPoetTypeKind.INTERFACE,
+            kind = LsiTypeDeclarationKind.INTERFACE,
             modifiers = setOf(LsiPoetModifier.PUBLIC),
         )
 
@@ -178,7 +178,7 @@ class LsiKotlinPoetRendererTest {
     fun `renders a Kotlin class through a GeneratedArtifact boundary`() {
         val type = LsiPoetType(
             name = "Greeting",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             modifiers = setOf(LsiPoetModifier.PUBLIC),
             primaryConstructor = LsiPoetConstructor(
                 parameters = listOf(LsiPoetParameter("name", stringType)),
@@ -235,7 +235,7 @@ class LsiKotlinPoetRendererTest {
     fun `rejects Java fields and unresolved types`() {
         val fieldType = LsiPoetType(
             name = "FieldHolder",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
                 LsiPoetField("name", stringType),
             ),
@@ -246,7 +246,7 @@ class LsiKotlinPoetRendererTest {
 
         val unresolvedType = LsiPoetType(
             name = "Broken",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
                 LsiPoetFunction(
                     name = "value",
@@ -264,7 +264,7 @@ class LsiKotlinPoetRendererTest {
     fun `renders positional file suppression without a member name`() {
         val type = LsiPoetType(
             name = "Suppressed",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
         )
         val artifact = LsiPoetArtifact(
             file = LsiPoetFile(
@@ -308,7 +308,7 @@ class LsiKotlinPoetRendererTest {
         )
         val type = LsiPoetType(
             name = "NestedAnnotation",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(
                 LsiPoetAnnotation(
                     type = LsiSymbolId.type("demo.annotation.Container"),
@@ -335,7 +335,7 @@ class LsiKotlinPoetRendererTest {
         val exceptionType = LsiDeclaredType(LsiSymbolId.type("java.io.IOException"))
         val type = LsiPoetType(
             name = "Service",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             modifiers = setOf(LsiPoetModifier.PUBLIC),
             primaryConstructor = LsiPoetConstructor(
                 parameters = listOf(
@@ -373,7 +373,7 @@ class LsiKotlinPoetRendererTest {
     fun `renders structural return as a Kotlin expression body`() {
         val type = LsiPoetType(
             name = "Returns",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
                 LsiPoetFunction(
                     name = "message",
@@ -394,7 +394,7 @@ class LsiKotlinPoetRendererTest {
     fun `renders a returned braced expression as a Kotlin expression body`() {
         val type = LsiPoetType(
             name = "ReturnsBlock",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
                 LsiPoetFunction(
                     name = "message",
@@ -425,7 +425,7 @@ class LsiKotlinPoetRendererTest {
                 members = listOf(
                     LsiPoetType(
                         name = "Order-ItemFetcherDsl",
-                        kind = LsiPoetTypeKind.CLASS,
+                        kind = LsiTypeDeclarationKind.CLASS,
                         nameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
                         members = listOf(
                             LsiPoetProperty(
@@ -472,7 +472,7 @@ class LsiKotlinPoetRendererTest {
     fun `renders escaped parameters named setters and annotation array factory calls`() {
         val type = LsiPoetType(
             name = "EscapedParameters",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(
                 LsiPoetAnnotation(
                     type = LsiSymbolId.type("demo.annotation.Container"),
@@ -541,7 +541,7 @@ class LsiKotlinPoetRendererTest {
                 packageName = "demo.generated",
                 fileName = "order-item.partFetcher",
                 fileNameStyle = LsiPoetFileNameStyle.KOTLIN_SOURCE_STEM,
-                members = listOf(LsiPoetType("OrderFetcher", LsiPoetTypeKind.CLASS)),
+                members = listOf(LsiPoetType("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
             ),
             typeNames = typeNames,
             aggregationMode = ArtifactAggregationMode.ISOLATING,
@@ -627,7 +627,7 @@ class LsiKotlinPoetRendererTest {
     fun `renders explicit expression and single line layout`() {
         val type = LsiPoetType(
             name = "Layout",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(
                 LsiPoetAnnotation(
                     type = LsiSymbolId.type("demo.annotation.Ordered"),
@@ -695,7 +695,7 @@ class LsiKotlinPoetRendererTest {
     fun `renders typed values in multiline annotation arrays`() {
         val type = LsiPoetType(
             name = "MultilineAnnotation",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(
                 LsiPoetAnnotation(
                     type = LsiSymbolId.type("demo.annotation.Container"),
@@ -799,7 +799,7 @@ class LsiKotlinPoetRendererTest {
         )
         val type = LsiPoetType(
             name = "KeywordAnnotation",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(
                 LsiPoetAnnotation(
                     type = LsiSymbolId.type("demo.annotation.Container"),

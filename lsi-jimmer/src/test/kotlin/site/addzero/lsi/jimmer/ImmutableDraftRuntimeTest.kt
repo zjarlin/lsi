@@ -81,10 +81,10 @@ class ImmutableDraftRuntimeTest {
         val reference = schema.toDraftRuntimeProp(referenceProp)
         val referenceList = schema.toDraftRuntimeProp(referenceListProp)
 
-        assertEquals(ImmutableDraftRuntimeValueCategory.SCALAR, scalar.valueCategory)
-        assertEquals(ImmutableDraftRuntimeValueCategory.SCALAR_LIST, scalarList.valueCategory)
-        assertEquals(ImmutableDraftRuntimeValueCategory.REFERENCE, reference.valueCategory)
-        assertEquals(ImmutableDraftRuntimeValueCategory.REFERENCE_LIST, referenceList.valueCategory)
+        assertEquals(ImmutablePropValueCategory.SCALAR, scalar.valueCategory)
+        assertEquals(ImmutablePropValueCategory.SCALAR_LIST, scalarList.valueCategory)
+        assertEquals(ImmutablePropValueCategory.REFERENCE, reference.valueCategory)
+        assertEquals(ImmutablePropValueCategory.REFERENCE_LIST, referenceList.valueCategory)
 
         val genericType = LsiDeclaredType(
             declarationId = AUTHOR,
@@ -126,7 +126,7 @@ class ImmutableDraftRuntimeTest {
         assertFailsWith<IllegalArgumentException> {
             ImmutableDraftRuntimeProp(
                 kind = ImmutableDraftRuntimePropKind.VALUE,
-                valueCategory = ImmutableDraftRuntimeValueCategory.SCALAR,
+                valueCategory = ImmutablePropValueCategory.SCALAR,
                 associationAnnotationTypeId = MANY_TO_ONE,
                 metadataElementType = STRING_TYPE,
             )

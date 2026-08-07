@@ -90,7 +90,7 @@ data class DtoAnnotationContract(
 
 data class DtoAnnotationDeclaration(
     val typeId: LsiSymbolId,
-    val kind: DtoAnnotationDeclarationKind,
+    val language: LsiLanguage,
     val targetDeclared: Boolean,
     val allowedPlacements: List<DtoAnnotationPlacement>,
     val argumentTypes: Map<String, LsiTypeRef>,
@@ -101,6 +101,9 @@ data class DtoAnnotationDeclaration(
 
     init {
         typeId.requireTypeQualifiedName()
+        require(language == LsiLanguage.JAVA || language == LsiLanguage.KOTLIN) {
+            "DTO annotation declaration language must be Java or Kotlin: ${typeId.value}"
+        }
         require(allowedPlacements == allowedPlacements.distinct().sorted()) {
             "DTO annotation declaration placements must be distinct and sorted: ${typeId.value}"
         }
@@ -119,18 +122,13 @@ data class DtoAnnotationDeclaration(
         require(argumentTypes.values.all { type -> type == type.toDtoAnnotationMemberType() }) {
             "DTO annotation declaration argument types must use canonical annotation member semantics: ${typeId.value}"
         }
-        require(!kotlinValueVararg || kind == DtoAnnotationDeclarationKind.KOTLIN) {
+        require(!kotlinValueVararg || language == LsiLanguage.KOTLIN) {
             "Only Kotlin annotation declarations can expose a value vararg: ${typeId.value}"
         }
         require(!kotlinValueVararg || "value" in argumentTypes) {
             "Kotlin annotation value vararg requires a value argument: ${typeId.value}"
         }
     }
-}
-
-enum class DtoAnnotationDeclarationKind {
-    JAVA,
-    KOTLIN,
 }
 
 enum class DtoAnnotationPlacement {
@@ -571,13 +569,13 @@ private class DtoAnnotationContractResolver(
             )
             return null
         }
-        val kind = declaration.annotationDeclarationKind()
-        val kotlinValueVararg = kind == DtoAnnotationDeclarationKind.KOTLIN &&
+        val language = declaration.annotationDeclarationLanguage()
+        val kotlinValueVararg = language == LsiLanguage.KOTLIN &&
             declaration.annotationMembers.any { member -> member.name == "value" && member.vararg }
         val targetPolicy = declaration.dtoAnnotationTargetPolicy()
         return DtoAnnotationDeclaration(
             typeId = typeId,
-            kind = kind,
+            language = language,
             targetDeclared = targetPolicy.declared,
             allowedPlacements = targetPolicy.allowedPlacements,
             argumentTypes = declaration.annotationMembers.associate { member ->
@@ -964,7 +962,7 @@ fun DtoAnnotationContract.normalizedSnapshot(): String {
                 canonicalValue(
                     "declaration",
                     declaration.typeId.value,
-                    declaration.kind.name,
+                    declaration.language.name,
                     declaration.targetDeclared.toString(),
                     declaration.allowedPlacements.joinToString(",", transform = DtoAnnotationPlacement::name),
                     declaration.argumentTypes.entries.toList().canonicalList { (name, type) ->
@@ -1088,15 +1086,15 @@ private sealed interface CandidateAnnotation {
     }
 }
 
-private fun LsiTypeDeclaration.annotationDeclarationKind(): DtoAnnotationDeclarationKind {
+private fun LsiTypeDeclaration.annotationDeclarationLanguage(): LsiLanguage {
     if (
         annotations.any { annotation -> annotation.type == KOTLIN_METADATA } ||
             annotationMembers.any { member -> member.vararg } ||
             origin.language == LsiLanguage.KOTLIN
     ) {
-        return DtoAnnotationDeclarationKind.KOTLIN
+        return LsiLanguage.KOTLIN
     }
-    return DtoAnnotationDeclarationKind.JAVA
+    return LsiLanguage.JAVA
 }
 
 private fun LsiTypeDeclaration.dtoAnnotationTargetPolicy(): DtoAnnotationTargetPolicy {
@@ -1146,10 +1144,10 @@ private fun DtoTypeRef.toLsiTypeOrNull(): LsiTypeRef? {
 
 private fun DtoTypeArgument.toLsiTypeArgumentOrNull(): LsiTypeArgument? {
     return when (variance) {
-        DtoVariance.INVARIANT -> LsiTypeArgument.invariant(requireNotNull(type).toLsiTypeOrNull() ?: return null)
-        DtoVariance.IN -> LsiTypeArgument.input(requireNotNull(type).toLsiTypeOrNull() ?: return null)
-        DtoVariance.OUT -> LsiTypeArgument.output(requireNotNull(type).toLsiTypeOrNull() ?: return null)
-        DtoVariance.STAR -> LsiTypeArgument.STAR
+        LsiVariance.INVARIANT -> LsiTypeArgument.invariant(requireNotNull(type).toLsiTypeOrNull() ?: return null)
+        LsiVariance.IN -> LsiTypeArgument.input(requireNotNull(type).toLsiTypeOrNull() ?: return null)
+        LsiVariance.OUT -> LsiTypeArgument.output(requireNotNull(type).toLsiTypeOrNull() ?: return null)
+        LsiVariance.STAR -> LsiTypeArgument.STAR
     }
 }
 
@@ -1388,7 +1386,7 @@ private fun DtoAnnotationValue.stableDescription(): String {
 private fun DtoTypeRef.stableDescription(): String {
     val argumentText = arguments.joinToString(",", prefix = "<", postfix = ">") { argument ->
         when (argument.variance) {
-            DtoVariance.STAR -> "*"
+            LsiVariance.STAR -> "*"
             else -> "${argument.variance.name.lowercase()}:${requireNotNull(argument.type).stableDescription()}"
         }
     }.takeUnless { arguments.isEmpty() }.orEmpty()

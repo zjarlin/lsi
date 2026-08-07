@@ -24,7 +24,7 @@ fun DtoTypeRef.toLsiType(targetLanguage: LsiLanguage): LsiTypeRef {
     }
     if (typeName == "Array") {
         val argument = arguments.single()
-        if (argument.variance == DtoVariance.STAR && language == LsiLanguage.KOTLIN) {
+        if (argument.variance == LsiVariance.STAR && language == LsiLanguage.KOTLIN) {
             return LsiDeclaredType(
                 declarationId = KOTLIN_ARRAY_TYPE_ID,
                 arguments = listOf(LsiTypeArgument.STAR),
@@ -391,8 +391,8 @@ private fun DtoTypeArgument.toLsiTypeArgument(
     forceOutput: Boolean,
 ): LsiTypeArgument {
     return when (variance) {
-        DtoVariance.STAR -> LsiTypeArgument.STAR
-        DtoVariance.INVARIANT -> {
+        LsiVariance.STAR -> LsiTypeArgument.STAR
+        LsiVariance.INVARIANT -> {
             val argumentType = requireNotNull(type)
                 .toLsiType(targetLanguage)
                 .boxedForTypeArgument(targetLanguage)
@@ -402,10 +402,10 @@ private fun DtoTypeArgument.toLsiTypeArgument(
                 LsiTypeArgument.invariant(argumentType)
             }
         }
-        DtoVariance.IN -> LsiTypeArgument.input(
+        LsiVariance.IN -> LsiTypeArgument.input(
             requireNotNull(type).toLsiType(targetLanguage).boxedForTypeArgument(targetLanguage),
         )
-        DtoVariance.OUT -> LsiTypeArgument.output(
+        LsiVariance.OUT -> LsiTypeArgument.output(
             requireNotNull(type).toLsiType(targetLanguage).boxedForTypeArgument(targetLanguage),
         )
     }

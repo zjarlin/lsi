@@ -12,6 +12,7 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import site.addzero.lsi.codegen.GeneratedArtifact
 import site.addzero.lsi.core.LsiLanguage
+import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeRef
 import site.addzero.lsi.poet.LsiPoetAccessor
 import site.addzero.lsi.poet.LsiPoetArtifact
@@ -33,7 +34,6 @@ import site.addzero.lsi.poet.LsiPoetParameter
 import site.addzero.lsi.poet.LsiPoetProperty
 import site.addzero.lsi.poet.LsiPoetRenderer
 import site.addzero.lsi.poet.LsiPoetType
-import site.addzero.lsi.poet.LsiPoetTypeKind
 import site.addzero.lsi.poet.LsiPoetTypeName
 import site.addzero.lsi.poet.LsiPoetTypeReferenceStyle
 
@@ -142,16 +142,17 @@ private fun FileSpec.Builder.addKotlinTopLevelMember(
 
 private fun LsiPoetType.toKotlinTypeSpec(typeNames: List<LsiPoetTypeName>): TypeSpec {
     val builder = when (kind) {
-        LsiPoetTypeKind.CLASS -> TypeSpec.classBuilder(name)
-        LsiPoetTypeKind.INTERFACE -> TypeSpec.interfaceBuilder(name)
-        LsiPoetTypeKind.ENUM -> TypeSpec.enumBuilder(name)
-        LsiPoetTypeKind.OBJECT -> if (LsiPoetModifier.COMPANION in modifiers) {
+        LsiTypeDeclarationKind.CLASS -> TypeSpec.classBuilder(name)
+        LsiTypeDeclarationKind.INTERFACE -> TypeSpec.interfaceBuilder(name)
+        LsiTypeDeclarationKind.ENUM -> TypeSpec.enumBuilder(name)
+        LsiTypeDeclarationKind.OBJECT -> if (LsiPoetModifier.COMPANION in modifiers) {
             TypeSpec.companionObjectBuilder(name.takeUnless { candidate -> candidate == "Companion" })
         } else {
             TypeSpec.objectBuilder(name)
         }
-        LsiPoetTypeKind.ANNOTATION -> TypeSpec.annotationBuilder(name)
-        LsiPoetTypeKind.RECORD -> error("KotlinPoet renderer cannot emit a Java record type: $name")
+        LsiTypeDeclarationKind.ANNOTATION -> TypeSpec.annotationBuilder(name)
+        LsiTypeDeclarationKind.RECORD -> error("KotlinPoet renderer cannot emit a Java record type: $name")
+        LsiTypeDeclarationKind.TYPE_ALIAS -> error("KotlinPoet renderer cannot emit a type alias: $name")
     }
     builder.addModifiers(*modifiers.toKotlinModifiers(KotlinModifierContext.TYPE))
     annotations.forEach { annotation -> builder.addAnnotation(annotation.toKotlinSourceAnnotationSpec(typeNames)) }

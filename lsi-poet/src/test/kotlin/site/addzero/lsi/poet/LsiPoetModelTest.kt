@@ -17,9 +17,25 @@ import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.model.LsiDeclaredType
 import site.addzero.lsi.model.LsiPrimitiveKind
 import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeParameter
 
 class LsiPoetModelTest {
+
+    @Test
+    fun `rejects unsupported type alias declaration`() {
+        val exception = assertFailsWith<IllegalArgumentException> {
+            LsiPoetType(
+                name = "BookAlias",
+                kind = LsiTypeDeclarationKind.TYPE_ALIAS,
+            )
+        }
+
+        assertEquals(
+            "LSI Poet type alias declarations are not supported: BookAlias",
+            exception.message,
+        )
+    }
 
     @Test
     fun `builds language independent source artifact`() {
@@ -37,7 +53,7 @@ class LsiPoetModelTest {
             members = listOf(
                 LsiPoetType(
                     name = "BookView",
-                    kind = LsiPoetTypeKind.CLASS,
+                    kind = LsiTypeDeclarationKind.CLASS,
                     members = listOf(
                         LsiPoetProperty(
                             name = "id",
@@ -89,7 +105,7 @@ class LsiPoetModelTest {
             language = LsiLanguage.JAVA,
             packageName = "demo",
             fileName = "Book",
-            members = listOf(LsiPoetType("Book", LsiPoetTypeKind.CLASS)),
+            members = listOf(LsiPoetType("Book", LsiTypeDeclarationKind.CLASS)),
         )
         val exception = assertFailsWith<IllegalArgumentException> {
             LsiPoetArtifact(
@@ -168,7 +184,7 @@ class LsiPoetModelTest {
                 language = LsiLanguage.JAVA,
                 packageName = "demo",
                 fileName = "Book.java",
-                members = listOf(LsiPoetType("Book", LsiPoetTypeKind.CLASS)),
+                members = listOf(LsiPoetType("Book", LsiTypeDeclarationKind.CLASS)),
             )
         }
         assertFailsWith<IllegalArgumentException> {
@@ -193,7 +209,7 @@ class LsiPoetModelTest {
     fun `models escaped Kotlin declarations and explicit imports`() {
         val type = LsiPoetType(
             name = "Order-ItemFetcherDsl",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             nameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
         )
         val function = LsiPoetFunction(
@@ -227,7 +243,7 @@ class LsiPoetModelTest {
         assertFailsWith<IllegalArgumentException> {
             LsiPoetType(
                 name = "broken`name",
-                kind = LsiPoetTypeKind.CLASS,
+                kind = LsiTypeDeclarationKind.CLASS,
                 nameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
             )
         }
@@ -327,7 +343,7 @@ class LsiPoetModelTest {
             packageName = "demo",
             fileName = "order-itemFetcher",
             fileNameStyle = LsiPoetFileNameStyle.KOTLIN_SOURCE_STEM,
-            members = listOf(LsiPoetType("OrderFetcher", LsiPoetTypeKind.CLASS)),
+            members = listOf(LsiPoetType("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
         )
 
         assertEquals("order-itemFetcher", kotlinFile.fileName)
@@ -337,7 +353,7 @@ class LsiPoetModelTest {
                 packageName = "demo",
                 fileName = "order-itemFetcher",
                 fileNameStyle = LsiPoetFileNameStyle.KOTLIN_SOURCE_STEM,
-                members = listOf(LsiPoetType("OrderFetcher", LsiPoetTypeKind.CLASS)),
+                members = listOf(LsiPoetType("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
             )
         }
         assertFailsWith<IllegalArgumentException> {
@@ -346,7 +362,7 @@ class LsiPoetModelTest {
                 packageName = "demo",
                 fileName = " order-itemFetcher",
                 fileNameStyle = LsiPoetFileNameStyle.KOTLIN_SOURCE_STEM,
-                members = listOf(LsiPoetType("OrderFetcher", LsiPoetTypeKind.CLASS)),
+                members = listOf(LsiPoetType("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
             )
         }
     }

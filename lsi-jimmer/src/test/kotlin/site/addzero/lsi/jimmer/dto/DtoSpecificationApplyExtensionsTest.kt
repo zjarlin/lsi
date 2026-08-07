@@ -5,6 +5,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoTypeKind
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiPosition
@@ -283,7 +285,7 @@ class DtoSpecificationApplyExtensionsTest {
         return DtoReusableTypeReference(
             qualifiedName = qualifiedName,
             targetBaseTypeId = targetTypeId,
-            kind = DtoReusableTypeKind.SPECIFICATION,
+            kind = DtoTypeKind.SPECIFICATION,
             location = DTO_LOCATION,
         )
     }

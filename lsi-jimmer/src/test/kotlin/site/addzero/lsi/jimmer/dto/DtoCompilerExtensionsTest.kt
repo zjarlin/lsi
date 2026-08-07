@@ -8,7 +8,7 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import org.babyfish.jimmer.dto.compiler.DtoAstException
 import org.babyfish.jimmer.dto.compiler.DtoFile
-import org.babyfish.jimmer.dto.compiler.DtoModifier as AstDtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoModifier
 import org.babyfish.jimmer.dto.compiler.DtoTypeKind
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiOrigin
@@ -68,7 +68,7 @@ class DtoCompilerExtensionsTest {
         ).toLsiDtoCompiler(
             immutableSchema = schema,
             workspace = LsiWorkspace.EMPTY,
-            defaultNullableInputModifier = AstDtoModifier.STATIC,
+            defaultNullableInputModifier = DtoModifier.STATIC,
         ).compile(schema.typesById.getValue(BOOK_TYPE_ID))
 
         val compiledMacroType = compiledTypes.single { type -> type.name == "BookView" }
@@ -104,7 +104,7 @@ class DtoCompilerExtensionsTest {
         val compiler = dtoFile.toLsiDtoCompiler(
             immutableSchema = schema,
             workspace = LsiWorkspace.EMPTY,
-            defaultNullableInputModifier = AstDtoModifier.STATIC,
+            defaultNullableInputModifier = DtoModifier.STATIC,
         )
 
         val exception = assertFailsWith<DtoAstException> {
@@ -421,7 +421,7 @@ class DtoCompilerExtensionsTest {
         val compiler = dtoFile.toLsiDtoCompiler(
             immutableSchema = schema,
             workspace = LsiWorkspace.EMPTY,
-            defaultNullableInputModifier = AstDtoModifier.STATIC,
+            defaultNullableInputModifier = DtoModifier.STATIC,
         )
         val compiledTypes = compiler.compile(schema.typesById.getValue(BOOK_TYPE_ID))
 
@@ -529,7 +529,7 @@ class DtoCompilerExtensionsTest {
         val compiledTypes = dtoFile.toLsiDtoCompiler(
             immutableSchema = schema,
             workspace = LsiWorkspace.EMPTY,
-            defaultNullableInputModifier = AstDtoModifier.STATIC,
+            defaultNullableInputModifier = DtoModifier.STATIC,
         ).compile(schema.typesById.getValue(administratorTypeId))
 
         val graph = compiledTypes.toLsiDtoGraph(source)

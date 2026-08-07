@@ -2,10 +2,13 @@ package site.addzero.lsi.jimmer.dto
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoPolymorphicBranchKind
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiPosition
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.model.LsiVariance
 
 class DtoGraphProvenanceTest {
 
@@ -61,7 +64,7 @@ class DtoGraphProvenanceTest {
                     typeName = "demo.Contract",
                     arguments = listOf(
                         DtoTypeArgument(
-                            variance = DtoVariance.OUT,
+                            variance = LsiVariance.OUT,
                             type = typeRef("demo.Payload", sources.getValue("InterfaceArgument")),
                         )
                     ),

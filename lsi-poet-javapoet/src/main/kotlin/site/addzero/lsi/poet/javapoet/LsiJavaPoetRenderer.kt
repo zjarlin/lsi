@@ -13,6 +13,7 @@ import javax.lang.model.element.Modifier
 import site.addzero.lsi.codegen.GeneratedArtifact
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeRef
 import site.addzero.lsi.poet.LsiPoetArtifact
 import site.addzero.lsi.poet.LsiPoetAnnotation
@@ -34,7 +35,6 @@ import site.addzero.lsi.poet.LsiPoetParameter
 import site.addzero.lsi.poet.LsiPoetProperty
 import site.addzero.lsi.poet.LsiPoetRenderer
 import site.addzero.lsi.poet.LsiPoetType
-import site.addzero.lsi.poet.LsiPoetTypeKind
 import site.addzero.lsi.poet.LsiPoetTypeName
 import site.addzero.lsi.poet.LsiPoetTypeReferenceStyle
 
@@ -137,12 +137,13 @@ private fun LsiPoetType.toJavaTypeSpec(
         "JavaPoet renderer cannot emit an escaped Kotlin type name: $name"
     }
     val builder = when (kind) {
-        LsiPoetTypeKind.CLASS -> TypeSpec.classBuilder(name)
-        LsiPoetTypeKind.INTERFACE -> TypeSpec.interfaceBuilder(name)
-        LsiPoetTypeKind.ENUM -> TypeSpec.enumBuilder(name)
-        LsiPoetTypeKind.ANNOTATION -> TypeSpec.annotationBuilder(name)
-        LsiPoetTypeKind.OBJECT -> error("JavaPoet renderer cannot emit an object type: $name")
-        LsiPoetTypeKind.RECORD -> error("JavaPoet 1.x renderer cannot emit a record type: $name")
+        LsiTypeDeclarationKind.CLASS -> TypeSpec.classBuilder(name)
+        LsiTypeDeclarationKind.INTERFACE -> TypeSpec.interfaceBuilder(name)
+        LsiTypeDeclarationKind.ENUM -> TypeSpec.enumBuilder(name)
+        LsiTypeDeclarationKind.ANNOTATION -> TypeSpec.annotationBuilder(name)
+        LsiTypeDeclarationKind.OBJECT -> error("JavaPoet renderer cannot emit an object type: $name")
+        LsiTypeDeclarationKind.RECORD -> error("JavaPoet 1.x renderer cannot emit a record type: $name")
+        LsiTypeDeclarationKind.TYPE_ALIAS -> error("JavaPoet renderer cannot emit a type alias: $name")
     }
     builder.addModifiers(*modifiers.toJavaModifiers(JavaModifierContext.TYPE))
     annotations.forEach { annotation ->

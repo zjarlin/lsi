@@ -5,6 +5,10 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoPolymorphicBranchKind
+import org.babyfish.jimmer.dto.compiler.DtoTypeKind
+import org.babyfish.jimmer.dto.compiler.LikeOption
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiPosition
@@ -30,8 +34,8 @@ class DtoGraphSnapshotTest {
                 if (prop.id == BASE_PROP_ID) {
                     baseProp.copy(
                         likeOptions = linkedSetOf(
-                            DtoLikeOption.MATCH_START,
-                            DtoLikeOption.INSENSITIVE,
+                            LikeOption.MATCH_START,
+                            LikeOption.INSENSITIVE,
                         ),
                     )
                 } else {
@@ -66,7 +70,7 @@ class DtoGraphSnapshotTest {
                     targetTypeReference = DtoReusableTypeReference(
                         qualifiedName = "demo.dto.StoreView",
                         targetBaseTypeId = STORE_TYPE_ID,
-                        kind = DtoReusableTypeKind.VIEW,
+                        kind = DtoTypeKind.VIEW,
                         location = prop.aliasLocation,
                     ),
                 )
@@ -366,8 +370,8 @@ class DtoGraphSnapshotTest {
             ),
             recursive = false,
             likeOptions = linkedSetOf(
-                DtoLikeOption.INSENSITIVE,
-                DtoLikeOption.MATCH_START,
+                LikeOption.INSENSITIVE,
+                LikeOption.MATCH_START,
             ),
             dtoDocumentation = "store DTO documentation",
         )

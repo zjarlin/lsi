@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeParameter
 import site.addzero.lsi.model.LsiTypeParameterRef
 
@@ -57,7 +58,7 @@ class LsiPoetReferencesTest {
         )
         val generatedType = LsiPoetType(
             name = "Generated",
-            kind = LsiPoetTypeKind.CLASS,
+            kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(typeAnnotation),
             typeParameters = listOf(
                 LsiTypeParameter(

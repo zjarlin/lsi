@@ -5,6 +5,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoPolymorphicBranchKind
+import org.babyfish.jimmer.dto.compiler.DtoTypeKind
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiPosition
@@ -1711,7 +1714,7 @@ class DtoAccessorExtensionsTest {
             targetTypeReference = DtoReusableTypeReference(
                 qualifiedName = "demo.dto.TargetView",
                 targetBaseTypeId = TARGET_TYPE_ID,
-                kind = DtoReusableTypeKind.VIEW,
+                kind = DtoTypeKind.VIEW,
                 location = LOCATION,
             ),
         )

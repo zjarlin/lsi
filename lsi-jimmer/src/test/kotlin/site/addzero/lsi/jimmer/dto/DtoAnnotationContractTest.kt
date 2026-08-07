@@ -14,6 +14,8 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoPolymorphicBranchKind
 import site.addzero.lsi.jimmer.AssociationKind
 import site.addzero.lsi.jimmer.AssociationStorageKind
 import site.addzero.lsi.jimmer.FormulaKind
@@ -44,6 +46,7 @@ import site.addzero.lsi.model.LsiPrimitiveType
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.model.LsiVariance
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.jimmer.dto.DtoAnnotation
 import site.addzero.lsi.jimmer.dto.DtoAnnotationArgument
@@ -51,9 +54,7 @@ import site.addzero.lsi.jimmer.dto.DtoAnnotationValue
 import site.addzero.lsi.jimmer.dto.DtoBaseProp
 import site.addzero.lsi.jimmer.dto.DtoBasePropBinding
 import site.addzero.lsi.jimmer.dto.DtoGraph
-import site.addzero.lsi.jimmer.dto.DtoModifier
 import site.addzero.lsi.jimmer.dto.DtoPolymorphicBranch
-import site.addzero.lsi.jimmer.dto.DtoPolymorphicBranchKind
 import site.addzero.lsi.jimmer.dto.DtoPolymorphism
 import site.addzero.lsi.jimmer.dto.DtoProp
 import site.addzero.lsi.jimmer.dto.DtoPropId
@@ -61,9 +62,22 @@ import site.addzero.lsi.jimmer.dto.DtoType
 import site.addzero.lsi.jimmer.dto.DtoTypeArgument
 import site.addzero.lsi.jimmer.dto.DtoTypeId
 import site.addzero.lsi.jimmer.dto.DtoTypeRef
-import site.addzero.lsi.jimmer.dto.DtoVariance
 
 class DtoAnnotationContractTest {
+    @Test
+    fun `rejects unknown annotation declaration language`() {
+        assertFailsWith<IllegalArgumentException> {
+            DtoAnnotationDeclaration(
+                typeId = LsiSymbolId.type("demo.UnknownLanguage"),
+                language = LsiLanguage.UNKNOWN,
+                targetDeclared = false,
+                allowedPlacements = emptyList(),
+                argumentTypes = emptyMap(),
+                kotlinValueVararg = false,
+            )
+        }
+    }
+
     @Test
     fun `reads frozen type annotation plan applications and exact presence from dto type`() {
         val fixture = fixture()
@@ -233,7 +247,7 @@ class DtoAnnotationContractTest {
         val kotlinDeclaration = contract.declarationsByTypeId.getValue(KOTLIN_TAG)
         val javaDeclaration = contract.declarationsByTypeId.getValue(JAVA_TAG)
 
-        assertEquals(DtoAnnotationDeclarationKind.KOTLIN, kotlinDeclaration.kind)
+        assertEquals(LsiLanguage.KOTLIN, kotlinDeclaration.language)
         assertTrue(kotlinDeclaration.targetDeclared)
         assertEquals(
             listOf(
@@ -246,7 +260,7 @@ class DtoAnnotationContractTest {
         assertEquals(listOf("value"), kotlinDeclaration.argumentNames)
         assertTrue(kotlinDeclaration.kotlinValueVararg)
 
-        assertEquals(DtoAnnotationDeclarationKind.JAVA, javaDeclaration.kind)
+        assertEquals(LsiLanguage.JAVA, javaDeclaration.language)
         assertTrue(javaDeclaration.targetDeclared)
         assertEquals(
             listOf(
@@ -694,7 +708,7 @@ class DtoAnnotationContractTest {
                         dtoTypeRef(
                             "List",
                             DtoTypeArgument(
-                                DtoVariance.INVARIANT,
+                                LsiVariance.INVARIANT,
                                 dtoTypeRef("String"),
                             ),
                         )
@@ -706,7 +720,7 @@ class DtoAnnotationContractTest {
                         dtoTypeRef(
                             "Array",
                             DtoTypeArgument(
-                                DtoVariance.INVARIANT,
+                                LsiVariance.INVARIANT,
                                 dtoTypeRef("Int"),
                             ),
                         )

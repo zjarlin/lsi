@@ -3,6 +3,9 @@ package site.addzero.lsi.jimmer.dto
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoPolymorphicBranchKind
+import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiPosition
 import site.addzero.lsi.core.LsiSource
@@ -470,7 +473,7 @@ class DtoJacksonPolymorphismExtensionsTest {
             declarations = annotationTypeIds.map { typeId ->
                 DtoAnnotationDeclaration(
                     typeId = typeId,
-                    kind = DtoAnnotationDeclarationKind.JAVA,
+                    language = LsiLanguage.JAVA,
                     targetDeclared = true,
                     allowedPlacements = listOf(DtoAnnotationPlacement.TYPE),
                     argumentTypes = emptyMap(),

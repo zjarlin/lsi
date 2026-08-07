@@ -35,6 +35,20 @@ import site.addzero.lsi.model.LsiWorkspace
 class TransactionalWorkspaceExtensionsTest {
 
     @Test
+    fun `rejects unknown sql client language`() {
+        val typeId = LsiSymbolId.type("demo.UnknownLanguageService")
+        assertFailsWith<IllegalArgumentException> {
+            TransactionalSqlClient(
+                logicalId = LsiSymbolId.property(typeId, "sqlClient"),
+                declarationId = LsiSymbolId.property(typeId, "sqlClient"),
+                name = "sqlClient",
+                type = LsiDeclaredType(LsiSymbolId.type("demo.SqlClient")),
+                language = LsiLanguage.UNKNOWN,
+            )
+        }
+    }
+
+    @Test
     fun `resolves constructors sql client and effective methods`() {
         val schema = javaWorkspace().toTransactionalSchema()
 
@@ -42,7 +56,7 @@ class TransactionalWorkspaceExtensionsTest {
         assertEquals("demo", type.packageName)
         assertEquals("BookServiceTx", type.generatedSimpleName)
         assertEquals("sqlClient", type.sqlClient.name)
-        assertEquals(TransactionalPlatform.JAVA, type.sqlClient.platform)
+        assertEquals(LsiLanguage.JAVA, type.sqlClient.language)
         assertEquals(1, type.constructors.size)
         assertEquals(listOf("find", "save"), type.methods.map(TransactionalMethod::name))
         assertEquals("REQUIRED", type.methods.single { method -> method.name == "find" }.propagation)

@@ -1,5 +1,7 @@
 package site.addzero.lsi.jimmer.dto
 
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+
 /** DTO 属性写入 toString 结果的条件。 */
 enum class DtoToStringInclusion {
     ALWAYS,

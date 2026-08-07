@@ -615,7 +615,7 @@ private class DtoInterfaceContractResolver(
         }
         val arguments = mutableListOf<LsiTypeArgument>()
         for (argument in typeRef.arguments) {
-            if (argument.variance == DtoVariance.STAR) {
+            if (argument.variance == LsiVariance.STAR) {
                 arguments += LsiTypeArgument.STAR
                 continue
             }
@@ -627,7 +627,7 @@ private class DtoInterfaceContractResolver(
                 validateDeclaredArity = true,
             ) ?: return null
             arguments += LsiTypeArgument(
-                variance = argument.variance.toLsiVariance(),
+                variance = argument.variance,
                 type = argumentType,
             )
         }
@@ -812,15 +812,6 @@ private fun String.toDtoIdentifier(): String {
 
 private fun Boolean.toLsiNullability(): LsiNullability {
     return if (this) LsiNullability.NULLABLE else LsiNullability.NON_NULL
-}
-
-private fun DtoVariance.toLsiVariance(): LsiVariance {
-    return when (this) {
-        DtoVariance.INVARIANT -> LsiVariance.INVARIANT
-        DtoVariance.IN -> LsiVariance.IN
-        DtoVariance.OUT -> LsiVariance.OUT
-        DtoVariance.STAR -> LsiVariance.STAR
-    }
 }
 
 private val PROP_CANDIDATE_COMPARATOR = compareBy<PropCandidate>(

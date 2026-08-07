@@ -2,6 +2,7 @@ package site.addzero.lsi.jimmer.dto
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import org.babyfish.jimmer.dto.compiler.DtoModifier
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiPosition

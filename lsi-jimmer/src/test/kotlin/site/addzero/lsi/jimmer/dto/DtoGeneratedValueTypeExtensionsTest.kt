@@ -2,6 +2,8 @@ package site.addzero.lsi.jimmer.dto
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoTypeKind
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiPosition
@@ -359,7 +361,7 @@ class DtoGeneratedValueTypeExtensionsTest {
             targetTypeReference = DtoReusableTypeReference(
                 qualifiedName = "contract.StoreView",
                 targetBaseTypeId = STORE_TYPE_ID,
-                kind = DtoReusableTypeKind.VIEW,
+                kind = DtoTypeKind.VIEW,
                 location = LOCATION,
             ),
         )

@@ -6,6 +6,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import org.babyfish.jimmer.dto.compiler.DtoModifier
+import org.babyfish.jimmer.dto.compiler.DtoTypeKind
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiPosition
@@ -432,7 +434,7 @@ class DtoInputBuilderExtensionsTest {
                 typeName = "List",
                 arguments = listOf(
                     DtoTypeArgument(
-                        variance = DtoVariance.INVARIANT,
+                        variance = LsiVariance.INVARIANT,
                         type = DtoTypeRef("String", emptyList(), false, LOCATION),
                     ),
                 ),
@@ -447,7 +449,7 @@ class DtoInputBuilderExtensionsTest {
                 typeName = "MutableList",
                 arguments = listOf(
                     DtoTypeArgument(
-                        variance = DtoVariance.INVARIANT,
+                        variance = LsiVariance.INVARIANT,
                         type = DtoTypeRef("String", emptyList(), false, LOCATION),
                     ),
                 ),
@@ -460,7 +462,7 @@ class DtoInputBuilderExtensionsTest {
             name = "values",
             type = DtoTypeRef(
                 typeName = "Array",
-                arguments = listOf(DtoTypeArgument(DtoVariance.STAR, null)),
+                arguments = listOf(DtoTypeArgument(LsiVariance.STAR, null)),
                 nullable = false,
                 location = LOCATION,
             ),
@@ -550,7 +552,7 @@ class DtoInputBuilderExtensionsTest {
             targetTypeReference = DtoReusableTypeReference(
                 qualifiedName = SHARED_INPUT_TYPE_ID.requireTypeQualifiedName(),
                 targetBaseTypeId = SHARED_BASE_TYPE_ID,
-                kind = DtoReusableTypeKind.INPUT,
+                kind = DtoTypeKind.INPUT,
                 location = LOCATION,
             ),
         )
@@ -962,7 +964,7 @@ class DtoInputBuilderExtensionsTest {
     private fun annotationDeclaration(typeId: LsiSymbolId): DtoAnnotationDeclaration {
         return DtoAnnotationDeclaration(
             typeId = typeId,
-            kind = DtoAnnotationDeclarationKind.JAVA,
+            language = LsiLanguage.JAVA,
             targetDeclared = true,
             allowedPlacements = listOf(DtoAnnotationPlacement.TYPE),
             argumentTypes = emptyMap(),
