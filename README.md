@@ -16,4 +16,4 @@
 
 该仓库作为宿主 Gradle 多模块工程的 Git submodule 引入。宿主工程负责提供 Kotlin、依赖版本、发布约定和架构校验任务，并把上述目录映射为同名 Gradle project。
 
-Jimmer 的参考接入路径为 `lib/lsi`。通用模块禁止依赖 Jimmer、APT/KSP 交叉平台 API 或具体 Poet 实现；所有 Jimmer 领域语义集中在 `lsi-jimmer`，JavaPoet/KotlinPoet 只存在于对应边界模块。
+Jimmer 的参考接入路径为 `project/lib/lsi`。通用模块禁止依赖 Jimmer、APT/KSP 交叉平台 API 或具体 Poet 实现；所有 Jimmer 领域语义集中在 `lsi-jimmer`，JavaPoet/KotlinPoet 只存在于对应边界模块。
