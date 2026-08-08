@@ -6,8 +6,8 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import java.io.File
 import java.util.Collections
 import java.util.IdentityHashMap
-import site.addzero.lsi.compiler.CompilerFeatureProvider
-import site.addzero.lsi.compiler.CompilerFeatureProviders
+import site.addzero.lsi.compiler.CompilerFeature
+import site.addzero.lsi.compiler.CompilerFeatureLoader
 import site.addzero.lsi.compiler.CompilerInputDocumentSnapshot
 import site.addzero.lsi.compiler.CompilerPlatform
 import site.addzero.lsi.compiler.CompilerRound
@@ -26,7 +26,7 @@ import site.addzero.lsi.model.LsiWorkspace
  */
 class KspLsiCompilerDriver(
     environment: SymbolProcessorEnvironment,
-    providers: Iterable<CompilerFeatureProvider> = CompilerFeatureProviders.load(),
+    features: Iterable<CompilerFeature<*, *>> = CompilerFeatureLoader.load(),
     wiring: CompilerWiring = CompilerWiring.DEFAULT,
     sessionId: String = "ksp",
 ) {
@@ -37,18 +37,18 @@ class KspLsiCompilerDriver(
 
     private val frontendOptions = wiring.frontendOptions(options)
 
-    private val providerList = providers.toList()
+    private val featureList = features.toList()
 
-    private val inputResourcePaths = providerList
-        .flatMapTo(sortedSetOf()) { provider -> provider.descriptor.inputResourcePaths }
+    private val inputResourcePaths = featureList
+        .flatMapTo(sortedSetOf()) { feature -> feature.metadata.inputResourcePaths }
 
-    private val classpathTypeIds = providerList
-        .flatMapTo(sortedSetOf()) { provider -> provider.descriptor.classpathTypeIds }
+    private val classpathTypeIds = featureList
+        .flatMapTo(sortedSetOf()) { feature -> feature.metadata.classpathTypeIds }
 
-    private val inputDocumentKinds = providerList
-        .flatMapTo(sortedSetOf()) { provider -> provider.descriptor.inputDocumentKinds }
+    private val inputDocumentKinds = featureList
+        .flatMapTo(sortedSetOf()) { feature -> feature.metadata.inputDocumentKinds }
 
-    private val session = CompilerSession(sessionId, providerList)
+    private val session = CompilerSession(sessionId, featureList)
 
     private val logger = environment.logger
 

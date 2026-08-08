@@ -8,8 +8,8 @@ import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic
 import site.addzero.lsi.compiler.CompilerFailureTranslation
 import site.addzero.lsi.compiler.CompilerFailureTranslator
-import site.addzero.lsi.compiler.CompilerFeatureProvider
-import site.addzero.lsi.compiler.CompilerFeatureProviders
+import site.addzero.lsi.compiler.CompilerFeature
+import site.addzero.lsi.compiler.CompilerFeatureLoader
 import site.addzero.lsi.compiler.CompilerWiring
 
 /**
@@ -17,27 +17,27 @@ import site.addzero.lsi.compiler.CompilerWiring
  */
 open class AptLsiProcessor(
     private val wiring: CompilerWiring = CompilerWiring.DEFAULT,
-    providers: Iterable<CompilerFeatureProvider> = CompilerFeatureProviders.load(),
+    features: Iterable<CompilerFeature<*, *>> = CompilerFeatureLoader.load(),
 ) : AbstractProcessor() {
 
-    private val providerList = providers.toList()
+    private val featureList = features.toList()
 
     private lateinit var lsiDriver: AptLsiCompilerDriver
 
     override fun getSupportedSourceVersion(): SourceVersion = SourceVersion.latest()
 
-    override fun getSupportedAnnotationTypes(): MutableSet<String> = providerList
-        .flatMapTo(sortedSetOf()) { provider -> provider.descriptor.aptAnnotationTypes }
+    override fun getSupportedAnnotationTypes(): MutableSet<String> = featureList
+        .flatMapTo(sortedSetOf()) { feature -> feature.metadata.aptAnnotationTypes }
 
-    override fun getSupportedOptions(): MutableSet<String> = providerList
-        .flatMapTo(sortedSetOf()) { provider -> provider.descriptor.supportedOptions }
+    override fun getSupportedOptions(): MutableSet<String> = featureList
+        .flatMapTo(sortedSetOf()) { feature -> feature.metadata.supportedOptions }
 
     @Synchronized
     override fun init(processingEnv: ProcessingEnvironment) {
         super.init(processingEnv)
         lsiDriver = AptLsiCompilerDriver(
             processingEnvironment = processingEnv,
-            providers = providerList,
+            features = featureList,
             wiring = wiring,
         )
     }
@@ -56,7 +56,7 @@ open class AptLsiProcessor(
     }
 
     private fun translateFailure(failure: Throwable): CompilerFailureTranslation? {
-        return providerList
+        return featureList
             .asSequence()
             .filterIsInstance<CompilerFailureTranslator>()
             .mapNotNull { translator -> translator.translateFailure(failure) }

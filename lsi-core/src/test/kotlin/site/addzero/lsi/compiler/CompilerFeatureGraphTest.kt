@@ -7,39 +7,31 @@ import kotlin.test.assertFailsWith
 class CompilerFeatureGraphTest {
 
     @Test
-    fun `descriptor validates apt metadata names`() {
-        val descriptor = CompilerFeatureDescriptor(
-            id = "immutable",
+    fun `metadata validates apt names`() {
+        val metadata = CompilerFeatureMetadata(
             aptAnnotationTypes = setOf("org.babyfish.jimmer.Immutable"),
             supportedOptions = setOf("jimmer.source.includes"),
         )
 
-        assertEquals(setOf("org.babyfish.jimmer.Immutable"), descriptor.aptAnnotationTypes)
-        assertEquals(setOf("jimmer.source.includes"), descriptor.supportedOptions)
+        assertEquals(setOf("org.babyfish.jimmer.Immutable"), metadata.aptAnnotationTypes)
+        assertEquals(setOf("jimmer.source.includes"), metadata.supportedOptions)
         listOf("", " Immutable", "Immutable", "org..Immutable", "org.example.Invalid-Name")
             .forEach { annotationType ->
                 assertFailsWith<IllegalArgumentException> {
-                    CompilerFeatureDescriptor(
-                        id = "invalid",
-                        aptAnnotationTypes = setOf(annotationType),
-                    )
+                    CompilerFeatureMetadata(aptAnnotationTypes = setOf(annotationType))
                 }
             }
         listOf("", " jimmer.option", "jimmer..option", "jimmer.option=value")
             .forEach { optionName ->
                 assertFailsWith<IllegalArgumentException> {
-                    CompilerFeatureDescriptor(
-                        id = "invalid",
-                        supportedOptions = setOf(optionName),
-                    )
+                    CompilerFeatureMetadata(supportedOptions = setOf(optionName))
                 }
             }
     }
 
     @Test
-    fun `descriptor validates stable input resource paths`() {
-        val descriptor = CompilerFeatureDescriptor(
-            id = "module",
+    fun `metadata validates stable input resource paths`() {
+        val metadata = CompilerFeatureMetadata(
             inputResourcePaths = sortedSetOf(
                 "META-INF/jimmer/entities",
                 "META-INF/jimmer/immutables",
@@ -48,64 +40,147 @@ class CompilerFeatureGraphTest {
 
         assertEquals(
             sortedSetOf("META-INF/jimmer/entities", "META-INF/jimmer/immutables"),
-            descriptor.inputResourcePaths,
+            metadata.inputResourcePaths,
         )
         assertFailsWith<IllegalArgumentException> {
-            CompilerFeatureDescriptor("invalid", inputResourcePaths = setOf("/absolute"))
+            CompilerFeatureMetadata(inputResourcePaths = setOf("/absolute"))
         }
     }
 
     @Test
     fun `依赖图按确定顺序排列`() {
-        val client = feature("client", "dto", "error")
-        val error = feature("error")
-        val immutable = feature("immutable")
-        val dto = feature("dto", "immutable")
-
-        val sorted = CompilerFeatureGraph.sort(listOf(client, error, immutable, dto))
+        val sorted = CompilerFeatureGraph.sort(
+            listOf(ClientFeature(), ErrorFeature(), ImmutableFeature(), DtoFeature()),
+        )
 
         assertEquals(
-            listOf("error", "immutable", "dto", "client"),
-            sorted.map { provider -> provider.descriptor.id }
+            listOf(ErrorFeature.Key, ImmutableFeature.Key, DtoFeature.Key, ClientFeature.Key),
+            sorted.map(CompilerFeature<*, *>::key),
         )
     }
 
     @Test
-    fun `重复功能标识直接失败`() {
+    fun `重复功能类型直接失败`() {
         val exception = assertFailsWith<DuplicateCompilerFeatureException> {
-            CompilerFeatureGraph.sort(listOf(feature("immutable"), feature("immutable")))
+            CompilerFeatureGraph.sort(listOf(ImmutableFeature(), ImmutableFeature()))
         }
 
-        assertEquals("immutable", exception.featureId)
+        assertEquals(ImmutableFeature.Key, exception.featureKey)
     }
 
     @Test
-    fun `缺失依赖直接失败`() {
+    fun `缺失类型化依赖直接失败`() {
         val exception = assertFailsWith<MissingCompilerFeatureDependencyException> {
-            CompilerFeatureGraph.sort(listOf(feature("client", "dto")))
+            CompilerFeatureGraph.sort(listOf(ClientFeature()))
         }
 
-        assertEquals("client", exception.featureId)
-        assertEquals("dto", exception.dependencyId)
+        assertEquals(ClientFeature.Key, exception.featureKey)
+        assertEquals(DtoFeature.Key, exception.dependencyKey)
     }
 
     @Test
     fun `依赖环直接失败并给出闭环路径`() {
         val exception = assertFailsWith<CyclicCompilerFeatureDependencyException> {
             CompilerFeatureGraph.sort(
-                listOf(
-                    feature("client", "dto"),
-                    feature("dto", "immutable"),
-                    feature("immutable", "client")
-                )
+                listOf(CyclicClientFeature(), CyclicDtoFeature(), CyclicImmutableFeature()),
             )
         }
 
-        assertEquals(listOf("client", "dto", "immutable", "client"), exception.cycle)
+        assertEquals(
+            listOf(
+                CyclicClientFeature.Key,
+                CyclicDtoFeature.Key,
+                CyclicImmutableFeature.Key,
+                CyclicClientFeature.Key,
+            ),
+            exception.cycle,
+        )
     }
 
-    private fun feature(id: String, vararg dependencies: String): CompilerFeatureProvider =
-        object : CompilerFeatureProvider {
-            override val descriptor = CompilerFeatureDescriptor(id, dependencies.toSet())
+    private abstract class StatelessFeature :
+        CompilerFeature<EmptyCompilerFeatureState, EmptyCompilerFeatureState> {
+
+        override fun precompile(
+            context: CompilerPrecompileContext<EmptyCompilerFeatureState, EmptyCompilerFeatureState>,
+        ): CompilerFeaturePrecompileResult<EmptyCompilerFeatureState> {
+            return CompilerFeaturePrecompileResult(EmptyCompilerFeatureState)
         }
+    }
+
+    private class ClientFeature : StatelessFeature() {
+        override val key = Key
+        override val dependencies = setOf(DtoFeature.Key, ErrorFeature.Key)
+
+        companion object {
+            val Key = compilerFeatureKey<ClientFeature, EmptyCompilerFeatureState, EmptyCompilerFeatureState>(
+                EmptyCompilerFeatureState,
+            )
+        }
+    }
+
+    private class DtoFeature : StatelessFeature() {
+        override val key = Key
+        override val dependencies = setOf(ImmutableFeature.Key)
+
+        companion object {
+            val Key = compilerFeatureKey<DtoFeature, EmptyCompilerFeatureState, EmptyCompilerFeatureState>(
+                EmptyCompilerFeatureState,
+            )
+        }
+    }
+
+    private class ErrorFeature : StatelessFeature() {
+        override val key = Key
+
+        companion object {
+            val Key = compilerFeatureKey<ErrorFeature, EmptyCompilerFeatureState, EmptyCompilerFeatureState>(
+                EmptyCompilerFeatureState,
+            )
+        }
+    }
+
+    private class ImmutableFeature : StatelessFeature() {
+        override val key = Key
+
+        companion object {
+            val Key = compilerFeatureKey<ImmutableFeature, EmptyCompilerFeatureState, EmptyCompilerFeatureState>(
+                EmptyCompilerFeatureState,
+            )
+        }
+    }
+
+    private class CyclicClientFeature : StatelessFeature() {
+        override val key = Key
+        override val dependencies = setOf(CyclicDtoFeature.Key)
+
+        companion object {
+            val Key = compilerFeatureKey<CyclicClientFeature, EmptyCompilerFeatureState, EmptyCompilerFeatureState>(
+                EmptyCompilerFeatureState,
+            )
+        }
+    }
+
+    private class CyclicDtoFeature : StatelessFeature() {
+        override val key = Key
+        override val dependencies = setOf(CyclicImmutableFeature.Key)
+
+        companion object {
+            val Key = compilerFeatureKey<CyclicDtoFeature, EmptyCompilerFeatureState, EmptyCompilerFeatureState>(
+                EmptyCompilerFeatureState,
+            )
+        }
+    }
+
+    private class CyclicImmutableFeature : StatelessFeature() {
+        override val key = Key
+        override val dependencies = setOf(CyclicClientFeature.Key)
+
+        companion object {
+            val Key = compilerFeatureKey<
+                CyclicImmutableFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState
+            >(EmptyCompilerFeatureState)
+        }
+    }
 }

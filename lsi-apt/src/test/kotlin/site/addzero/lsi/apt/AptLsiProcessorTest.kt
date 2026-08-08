@@ -15,19 +15,20 @@ import kotlin.test.assertTrue
 import site.addzero.lsi.compiler.CompilerFailureTranslation
 import site.addzero.lsi.compiler.CompilerFailureTranslator
 import site.addzero.lsi.compiler.CompilerCollectContext
+import site.addzero.lsi.compiler.CompilerFeature
 import site.addzero.lsi.compiler.CompilerFeatureCollection
-import site.addzero.lsi.compiler.CompilerFeatureDescriptor
-import site.addzero.lsi.compiler.CompilerFeatureProvider
+import site.addzero.lsi.compiler.CompilerFeatureMetadata
+import site.addzero.lsi.compiler.CompilerFeaturePrecompileResult
+import site.addzero.lsi.compiler.CompilerPrecompileContext
+import site.addzero.lsi.compiler.EmptyCompilerFeatureState
+import site.addzero.lsi.compiler.compilerFeatureKey
 
 class AptLsiProcessorTest {
 
     @Test
-    fun `processor metadata is the union of feature descriptors`() {
+    fun `processor metadata is the union of feature metadata`() {
         val processor = AptLsiProcessor(
-            providers = listOf(
-                MetadataProvider("second", setOf("demo.Second"), setOf("demo.second.option")),
-                MetadataProvider("first", setOf("demo.First"), setOf("demo.first.option")),
-            )
+            features = listOf(SecondMetadataFeature(), FirstMetadataFeature()),
         )
 
         assertEquals(setOf("demo.First", "demo.Second"), processor.supportedAnnotationTypes)
@@ -37,7 +38,7 @@ class AptLsiProcessorTest {
 
     @Test
     fun `translated feature failure is reported on its annotation target`() {
-        val diagnostics = compile(FailingProvider(annotationTypeName = TRIGGER_ANNOTATION))
+        val diagnostics = compile(FailingFeature(annotationTypeName = TRIGGER_ANNOTATION))
 
         val matchingDiagnostics = diagnostics.diagnostics.filter { diagnostic ->
             diagnostic.kind == Diagnostic.Kind.ERROR && diagnostic.getMessage(null) == FAILURE_MESSAGE
@@ -51,14 +52,14 @@ class AptLsiProcessorTest {
     @Test
     fun `translated feature failure is rethrown when its target is absent`() {
         val failure = kotlin.runCatching {
-            compile(FailingProvider(annotationTypeName = "demo.Missing"))
+            compile(FailingFeature(annotationTypeName = "demo.Missing"))
         }.exceptionOrNull()
 
         assertTrue(failure != null)
         assertTrue(generateSequence(failure, Throwable::cause).any { cause -> cause === FEATURE_FAILURE })
     }
 
-    private fun compile(provider: CompilerFeatureProvider): DiagnosticCollector<JavaFileObject> {
+    private fun compile(feature: CompilerFeature<*, *>): DiagnosticCollector<JavaFileObject> {
         val projectDir = createTempDirectory(prefix = "apt-jimmer-processor").toFile()
         val sourceDir = projectDir.resolve("src").apply { mkdirs() }
         val classesDir = projectDir.resolve("classes").apply { mkdirs() }
@@ -78,38 +79,63 @@ class AptLsiProcessorTest {
                 null,
                 fileManager.getJavaFileObjects(sourceFile),
             )
-            task.setProcessors(listOf(AptLsiProcessor(providers = listOf(provider))))
+            task.setProcessors(listOf(AptLsiProcessor(features = listOf(feature))))
             task.call()
         }
         assertFalse(success)
         return diagnostics
     }
 
-    private class MetadataProvider(
-        id: String,
-        annotationTypes: Set<String>,
-        options: Set<String>,
-    ) : CompilerFeatureProvider {
-        override val descriptor = CompilerFeatureDescriptor(
-            id = id,
-            aptAnnotationTypes = annotationTypes,
-            supportedOptions = options,
+    private class FirstMetadataFeature : EmptyFeature() {
+        override val key = Key
+
+        override val metadata = CompilerFeatureMetadata(
+            aptAnnotationTypes = setOf("demo.First"),
+            supportedOptions = setOf("demo.first.option"),
         )
+
+        companion object {
+            val Key = compilerFeatureKey<
+                FirstMetadataFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
     }
 
-    private class FailingProvider(
+    private class SecondMetadataFeature : EmptyFeature() {
+        override val key = Key
+
+        override val metadata = CompilerFeatureMetadata(
+            aptAnnotationTypes = setOf("demo.Second"),
+            supportedOptions = setOf("demo.second.option"),
+        )
+
+        companion object {
+            val Key = compilerFeatureKey<
+                SecondMetadataFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class FailingFeature(
         private val annotationTypeName: String,
-    ) : CompilerFeatureProvider, CompilerFailureTranslator {
-        override val descriptor = CompilerFeatureDescriptor(
-            id = "failing",
+    ) : EmptyFeature(), CompilerFailureTranslator {
+        override val key = Key
+
+        override val metadata = CompilerFeatureMetadata(
             aptAnnotationTypes = setOf(TRIGGER_ANNOTATION),
         )
 
-        override fun collect(context: CompilerCollectContext): CompilerFeatureCollection {
+        override fun collect(
+            context: CompilerCollectContext,
+        ): CompilerFeatureCollection<EmptyCompilerFeatureState> {
             if (!context.round.isFinal) {
                 throw FEATURE_FAILURE
             }
-            return CompilerFeatureCollection()
+            return CompilerFeatureCollection(EmptyCompilerFeatureState)
         }
 
         override fun translateFailure(failure: Throwable): CompilerFailureTranslation? {
@@ -120,6 +146,25 @@ class AptLsiProcessorTest {
                 message = FAILURE_MESSAGE,
                 annotationTypeName = annotationTypeName,
             )
+        }
+
+        companion object {
+            val Key = compilerFeatureKey<
+                FailingFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private abstract class EmptyFeature : CompilerFeature<
+        EmptyCompilerFeatureState,
+        EmptyCompilerFeatureState,
+    > {
+        override fun precompile(
+            context: CompilerPrecompileContext<EmptyCompilerFeatureState, EmptyCompilerFeatureState>,
+        ): CompilerFeaturePrecompileResult<EmptyCompilerFeatureState> {
+            return CompilerFeaturePrecompileResult(EmptyCompilerFeatureState)
         }
     }
 

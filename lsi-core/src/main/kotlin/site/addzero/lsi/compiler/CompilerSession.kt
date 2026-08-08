@@ -61,23 +61,19 @@ enum class CompilerPlatform {
 
 interface CompilerFeatureState {
     val fingerprint: String
-
-    companion object {
-        val EMPTY: CompilerFeatureState = object : CompilerFeatureState {
-            override val fingerprint: String = "empty"
-
-            override fun toString(): String = "CompilerFeatureState.EMPTY"
-        }
-    }
 }
 
-data class CompilerFeatureCollection(
-    val state: CompilerFeatureState = CompilerFeatureState.EMPTY,
+data object EmptyCompilerFeatureState : CompilerFeatureState {
+    override val fingerprint: String = "empty"
+}
+
+data class CompilerFeatureCollection<C : CompilerFeatureState>(
+    val state: C,
     val diagnostics: List<LsiDiagnostic> = emptyList(),
 )
 
-data class CompilerFeaturePrecompileResult(
-    val state: CompilerFeatureState,
+data class CompilerFeaturePrecompileResult<S : CompilerFeatureState>(
+    val state: S,
     val diagnostics: List<LsiDiagnostic> = emptyList(),
     val processedSymbols: Set<LsiSymbolId> = emptySet(),
     val unresolvedSymbols: Set<LsiSymbolId> = emptySet(),
@@ -98,12 +94,15 @@ data class CompilerFeatureRenderResult(
     val diagnostics: List<LsiDiagnostic> = emptyList(),
 )
 
-data class CompilerFeatureResult(
-    val collection: CompilerFeatureCollection,
-    val precompiled: CompilerFeaturePrecompileResult,
+data class CompilerFeatureResult<
+    C : CompilerFeatureState,
+    S : CompilerFeatureState,
+>(
+    val collection: CompilerFeatureCollection<C>,
+    val precompiled: CompilerFeaturePrecompileResult<S>,
     val rendered: CompilerFeatureRenderResult,
 ) {
-    val state: CompilerFeatureState
+    val state: S
         get() = precompiled.state
 
     val artifacts: List<GeneratedArtifact>
@@ -119,10 +118,81 @@ data class CompilerFeatureResult(
         get() = precompiled.unresolvedSymbols
 }
 
+class CompilerFeatureResults internal constructor(
+    results: Map<CompilerFeatureKey<*, *>, CompilerFeatureResult<*, *>>,
+) {
+    private val results = results.toMap()
+
+    val keys: Set<CompilerFeatureKey<*, *>>
+        get() = results.keys
+
+    val values: Collection<CompilerFeatureResult<*, *>>
+        get() = results.values
+
+    val size: Int
+        get() = results.size
+
+    operator fun <C : CompilerFeatureState, S : CompilerFeatureState> get(
+        key: CompilerFeatureKey<C, S>,
+    ): CompilerFeatureResult<C, S>? {
+        val result = results[key] ?: return null
+        return key.typedResult(result)
+    }
+
+    fun <C : CompilerFeatureState, S : CompilerFeatureState> getValue(
+        key: CompilerFeatureKey<C, S>,
+    ): CompilerFeatureResult<C, S> {
+        return requireNotNull(get(key)) { "Missing compiler feature result: '${key.id}'" }
+    }
+
+    internal fun erased(): Map<CompilerFeatureKey<*, *>, CompilerFeatureResult<*, *>> = results
+
+    override fun equals(other: Any?): Boolean {
+        return this === other || other is CompilerFeatureResults && results == other.results
+    }
+
+    override fun hashCode(): Int = results.hashCode()
+
+    override fun toString(): String = results.toString()
+}
+
+class CompilerFeatureStates(
+    states: Map<CompilerFeatureKey<*, *>, CompilerFeatureState> = emptyMap(),
+) {
+    private val states = states.toMap().also { frozenStates ->
+        frozenStates.forEach { (key, state) -> key.castState(state) }
+    }
+
+    val keys: Set<CompilerFeatureKey<*, *>>
+        get() = states.keys
+
+    val size: Int
+        get() = states.size
+
+    fun isEmpty(): Boolean = states.isEmpty()
+
+    operator fun <C : CompilerFeatureState, S : CompilerFeatureState> get(
+        key: CompilerFeatureKey<C, S>,
+    ): S? {
+        val state = states[key] ?: return null
+        return key.castState(state)
+    }
+
+    fun <C : CompilerFeatureState, S : CompilerFeatureState> getValue(
+        key: CompilerFeatureKey<C, S>,
+    ): S {
+        return requireNotNull(get(key)) { "Missing compiler feature state: '${key.id}'" }
+    }
+
+    companion object {
+        val EMPTY = CompilerFeatureStates()
+    }
+}
+
 data class CompilerRoundResult(
     val round: CompilerRound,
     val fixedPointIterations: Int,
-    val featureResults: Map<String, CompilerFeatureResult>,
+    val featureResults: CompilerFeatureResults,
     val newArtifacts: List<GeneratedArtifact>,
     val diagnostics: List<LsiDiagnostic>,
 ) {
@@ -145,20 +215,26 @@ data class CompilerTypeSeedContext(
     val round: CompilerRound,
 )
 
-data class CompilerPrecompileContext(
+data class CompilerPrecompileContext<
+    C : CompilerFeatureState,
+    S : CompilerFeatureState,
+>(
     val session: CompilerSessionSnapshot,
     val round: CompilerRound,
-    val collection: CompilerFeatureCollection,
-    val previousState: CompilerFeatureState?,
-    val dependencyStates: Map<String, CompilerFeatureState>,
+    val collection: CompilerFeatureCollection<C>,
+    val previousState: S?,
+    val dependencyStates: CompilerFeatureStates,
 )
 
-data class CompilerRenderContext(
+data class CompilerRenderContext<
+    C : CompilerFeatureState,
+    S : CompilerFeatureState,
+>(
     val session: CompilerSessionSnapshot,
     val round: CompilerRound,
-    val collection: CompilerFeatureCollection,
-    val state: CompilerFeatureState,
-    val dependencyStates: Map<String, CompilerFeatureState>,
+    val collection: CompilerFeatureCollection<C>,
+    val state: S,
+    val dependencyStates: CompilerFeatureStates,
 )
 
 class CompilerSessionStateException(message: String) : IllegalStateException(message)
@@ -172,18 +248,18 @@ class CompilerFixedPointException(
 )
 
 class FinalRoundSourceGenerationException(
-    val featureId: String,
+    val featureKey: CompilerFeatureKey<*, *>,
     val artifacts: List<GeneratedArtifact>,
 ) : IllegalStateException(
-    "Compiler feature '$featureId' generated source artifacts during final round: " +
+    "Compiler feature '${featureKey.id}' generated source artifacts during final round: " +
         artifacts.joinToString { artifact -> artifact.path },
 )
 
 class FinalRoundIsolatingArtifactException(
-    val featureId: String,
+    val featureKey: CompilerFeatureKey<*, *>,
     val artifacts: List<GeneratedArtifact>,
 ) : IllegalStateException(
-    "Compiler feature '$featureId' generated isolating artifacts during final round: " +
+    "Compiler feature '${featureKey.id}' generated isolating artifacts during final round: " +
         artifacts.joinToString { artifact -> artifact.path },
 )
 
@@ -199,17 +275,17 @@ class PendingStableSourceArtifactsException(
  */
 class CompilerSession(
     val id: String,
-    providers: Iterable<CompilerFeatureProvider>,
+    features: Iterable<CompilerFeature<*, *>>,
     private val maximumFixedPointIterations: Int = 64,
 ) {
-    private val orderedProviders = CompilerFeatureGraph.sort(providers)
+    private val orderedFeatures = CompilerFeatureGraph.sort(features)
 
-    private val classpathTypeIds = orderedProviders
-        .flatMapTo(sortedSetOf()) { provider -> provider.descriptor.classpathTypeIds }
+    private val classpathTypeIds = orderedFeatures
+        .flatMapTo(sortedSetOf()) { feature -> feature.metadata.classpathTypeIds }
 
-    private val sourceQuiescentFeatureIds = orderedProviders
-        .filter { provider -> provider.descriptor.requiresSourceQuiescence }
-        .mapTo(sortedSetOf()) { provider -> provider.descriptor.id }
+    private val sourceQuiescentFeatureKeys = orderedFeatures
+        .filter { feature -> feature.metadata.requiresSourceQuiescence }
+        .mapTo(sortedSetOf()) { feature -> feature.key }
 
     private val artifactSet = GeneratedArtifactSet()
 
@@ -239,15 +315,15 @@ class CompilerSession(
         val diagnostics = mutableListOf<LsiDiagnostic>()
         val quiescentSourceKeys = mutableSetOf<GeneratedArtifactKey>()
         val firstPhaseSourceKeys = mutableSetOf<GeneratedArtifactKey>()
-        for ((featureId, result) in featureResults) {
-            validateFinalRoundOutput(round, featureId, result)
+        for ((featureKey, result) in featureResults) {
+            validateFinalRoundOutput(round, featureKey, result)
             roundArtifactSet.registerAll(result.artifacts)
             diagnostics += result.diagnostics
             val sourceKeys = result.artifacts
                 .asSequence()
                 .filter { artifact -> artifact.kind.isSource }
                 .mapTo(mutableSetOf()) { artifact -> artifact.key }
-            if (featureId in sourceQuiescentFeatureIds) {
+            if (featureKey in sourceQuiescentFeatureKeys) {
                 quiescentSourceKeys += sourceKeys
             } else {
                 firstPhaseSourceKeys += sourceKeys
@@ -294,7 +370,7 @@ class CompilerSession(
         val roundResult = CompilerRoundResult(
             round = round,
             fixedPointIterations = fixedPoint.iterations,
-            featureResults = featureResults.toMap(),
+            featureResults = CompilerFeatureResults(featureResults),
             newArtifacts = newArtifacts.sortedBy(GeneratedArtifact::key),
             diagnostics = diagnostics.toList(),
         )
@@ -313,8 +389,8 @@ class CompilerSession(
         validateRound(round)
         require(!round.isFinal) { "Final compiler round cannot request additional type declarations" }
         val context = CompilerTypeSeedContext(snapshot(), round)
-        return orderedProviders
-            .flatMap { provider -> provider.requestTypeSeeds(context) }
+        return orderedFeatures
+            .flatMap { feature -> feature.requestTypeSeeds(context) }
             .mergeLsiTypeSeeds()
     }
 
@@ -392,13 +468,15 @@ class CompilerSession(
         round: CompilerRound,
     ): FixedPointResult {
         var previousPrecompiledResults = roundResults.lastOrNull()?.featureResults
+            ?.erased()
             ?.mapValues { (_, result) -> result.precompiled }
             .orEmpty()
-        var previousFingerprint = if (orderedProviders.isEmpty()) {
+        var previousFingerprint = if (orderedFeatures.isEmpty()) {
             emptyMap()
         } else {
             roundResults.lastOrNull()
                 ?.featureResults
+                ?.erased()
                 ?.let(::phaseFingerprint)
         }
         repeat(maximumFixedPointIterations) { iteration ->
@@ -423,32 +501,52 @@ class CompilerSession(
     private fun precompile(
         session: CompilerSessionSnapshot,
         round: CompilerRound,
-        collections: Map<String, CompilerFeatureCollection>,
-        previousResults: Map<String, CompilerFeaturePrecompileResult>,
-    ): Map<String, CompilerFeaturePrecompileResult> {
-        val currentResults = linkedMapOf<String, CompilerFeaturePrecompileResult>()
-        for (provider in orderedProviders) {
-            val descriptor = provider.descriptor
-            val dependencyStates = descriptor.dependsOn
-                .sorted()
-                .associateWith { dependencyId -> requireNotNull(currentResults[dependencyId]).state }
-            val previousState = previousResults[descriptor.id]?.state
-            currentResults[descriptor.id] = provider.precompile(
-                CompilerPrecompileContext(
-                    session = session,
-                    round = round,
-                    collection = requireNotNull(collections[descriptor.id]),
-                    previousState = previousState,
-                    dependencyStates = dependencyStates,
-                ),
+        collections: Map<CompilerFeatureKey<*, *>, CompilerFeatureCollection<*>>,
+        previousResults: Map<CompilerFeatureKey<*, *>, CompilerFeaturePrecompileResult<*>>,
+    ): Map<CompilerFeatureKey<*, *>, CompilerFeaturePrecompileResult<*>> {
+        val currentResults = linkedMapOf<CompilerFeatureKey<*, *>, CompilerFeaturePrecompileResult<*>>()
+        for (feature in orderedFeatures) {
+            currentResults[feature.key] = feature.precompileCaptured(
+                session = session,
+                round = round,
+                collections = collections,
+                previousResults = previousResults,
+                currentResults = currentResults,
             )
         }
         return currentResults
     }
 
+    private fun <C : CompilerFeatureState, S : CompilerFeatureState> CompilerFeature<C, S>.precompileCaptured(
+        session: CompilerSessionSnapshot,
+        round: CompilerRound,
+        collections: Map<CompilerFeatureKey<*, *>, CompilerFeatureCollection<*>>,
+        previousResults: Map<CompilerFeatureKey<*, *>, CompilerFeaturePrecompileResult<*>>,
+        currentResults: Map<CompilerFeatureKey<*, *>, CompilerFeaturePrecompileResult<*>>,
+    ): CompilerFeaturePrecompileResult<S> {
+        val dependencyStates = CompilerFeatureStates(
+            dependencies
+                .sorted()
+                .associateWith { dependencyKey -> requireNotNull(currentResults[dependencyKey]).state },
+        )
+        val previousState = previousResults[key]?.state?.let(key::castState)
+        val collection = key.typedCollection(requireNotNull(collections[key]))
+        val result = precompile(
+            CompilerPrecompileContext(
+                session = session,
+                round = round,
+                collection = collection,
+                previousState = previousState,
+                dependencyStates = dependencyStates,
+            ),
+        )
+        key.castState(result.state)
+        return result
+    }
+
     private fun phaseFingerprint(
-        featureResults: Map<String, CompilerFeatureResult>,
-    ): Map<String, FeaturePhaseFingerprint> {
+        featureResults: Map<CompilerFeatureKey<*, *>, CompilerFeatureResult<*, *>>,
+    ): Map<CompilerFeatureKey<*, *>, FeaturePhaseFingerprint> {
         return featureResults
             .toSortedMap()
             .mapValues { (_, result) ->
@@ -479,38 +577,53 @@ class CompilerSession(
     private fun collect(
         session: CompilerSessionSnapshot,
         round: CompilerRound,
-    ): Map<String, CompilerFeatureCollection> {
-        return orderedProviders.associate { provider ->
-            provider.descriptor.id to provider.collect(CompilerCollectContext(session, round))
+    ): Map<CompilerFeatureKey<*, *>, CompilerFeatureCollection<*>> {
+        return orderedFeatures.associate { feature ->
+            feature.key to feature.collect(CompilerCollectContext(session, round))
         }
     }
 
     private fun render(
         session: CompilerSessionSnapshot,
         round: CompilerRound,
-        collections: Map<String, CompilerFeatureCollection>,
-        precompiledResults: Map<String, CompilerFeaturePrecompileResult>,
-    ): Map<String, CompilerFeatureResult> {
-        val results = linkedMapOf<String, CompilerFeatureResult>()
-        for (provider in orderedProviders) {
-            val descriptor = provider.descriptor
-            val dependencyStates = descriptor.dependsOn
-                .sorted()
-                .associateWith { dependencyId -> requireNotNull(precompiledResults[dependencyId]).state }
-            val collection = requireNotNull(collections[descriptor.id])
-            val precompiled = requireNotNull(precompiledResults[descriptor.id])
-            val rendered = provider.render(
-                CompilerRenderContext(
-                    session = session,
-                    round = round,
-                    collection = collection,
-                    state = precompiled.state,
-                    dependencyStates = dependencyStates,
-                ),
+        collections: Map<CompilerFeatureKey<*, *>, CompilerFeatureCollection<*>>,
+        precompiledResults: Map<CompilerFeatureKey<*, *>, CompilerFeaturePrecompileResult<*>>,
+    ): Map<CompilerFeatureKey<*, *>, CompilerFeatureResult<*, *>> {
+        val results = linkedMapOf<CompilerFeatureKey<*, *>, CompilerFeatureResult<*, *>>()
+        for (feature in orderedFeatures) {
+            results[feature.key] = feature.renderCaptured(
+                session = session,
+                round = round,
+                collections = collections,
+                precompiledResults = precompiledResults,
             )
-            results[descriptor.id] = CompilerFeatureResult(collection, precompiled, rendered)
         }
         return results
+    }
+
+    private fun <C : CompilerFeatureState, S : CompilerFeatureState> CompilerFeature<C, S>.renderCaptured(
+        session: CompilerSessionSnapshot,
+        round: CompilerRound,
+        collections: Map<CompilerFeatureKey<*, *>, CompilerFeatureCollection<*>>,
+        precompiledResults: Map<CompilerFeatureKey<*, *>, CompilerFeaturePrecompileResult<*>>,
+    ): CompilerFeatureResult<C, S> {
+        val dependencyStates = CompilerFeatureStates(
+            dependencies
+                .sorted()
+                .associateWith { dependencyKey -> requireNotNull(precompiledResults[dependencyKey]).state },
+        )
+        val collection = key.typedCollection(requireNotNull(collections[key]))
+        val precompiled = key.typedPrecompileResult(requireNotNull(precompiledResults[key]))
+        val rendered = render(
+            CompilerRenderContext(
+                session = session,
+                round = round,
+                collection = collection,
+                state = precompiled.state,
+                dependencyStates = dependencyStates,
+            ),
+        )
+        return CompilerFeatureResult(collection, precompiled, rendered)
     }
 
     private fun validateRound(round: CompilerRound) {
@@ -529,27 +642,27 @@ class CompilerSession(
 
     private fun validateFinalRoundOutput(
         round: CompilerRound,
-        featureId: String,
-        result: CompilerFeatureResult,
+        featureKey: CompilerFeatureKey<*, *>,
+        result: CompilerFeatureResult<*, *>,
     ) {
         if (!round.isFinal) {
             return
         }
         val sourceArtifacts = result.artifacts.filter { artifact -> artifact.kind.isSource }
         if (sourceArtifacts.isNotEmpty()) {
-            throw FinalRoundSourceGenerationException(featureId, sourceArtifacts)
+            throw FinalRoundSourceGenerationException(featureKey, sourceArtifacts)
         }
         val isolatingArtifacts = result.artifacts.filter { artifact ->
             artifact.aggregationMode == ArtifactAggregationMode.ISOLATING
         }
         if (isolatingArtifacts.isNotEmpty()) {
-            throw FinalRoundIsolatingArtifactException(featureId, isolatingArtifacts)
+            throw FinalRoundIsolatingArtifactException(featureKey, isolatingArtifacts)
         }
     }
 
     private data class FixedPointResult(
         val iterations: Int,
-        val results: Map<String, CompilerFeatureResult>,
+        val results: Map<CompilerFeatureKey<*, *>, CompilerFeatureResult<*, *>>,
     )
 
     private data class StableArtifactCandidate(
@@ -579,4 +692,34 @@ class CompilerSession(
             dependencySymbols = dependencySymbols,
         )
     }
+}
+
+private fun <C : CompilerFeatureState, S : CompilerFeatureState> CompilerFeatureKey<C, S>.typedCollection(
+    collection: CompilerFeatureCollection<*>,
+): CompilerFeatureCollection<C> {
+    return CompilerFeatureCollection(
+        state = castCollectionState(collection.state),
+        diagnostics = collection.diagnostics,
+    )
+}
+
+private fun <C : CompilerFeatureState, S : CompilerFeatureState> CompilerFeatureKey<C, S>.typedPrecompileResult(
+    result: CompilerFeaturePrecompileResult<*>,
+): CompilerFeaturePrecompileResult<S> {
+    return CompilerFeaturePrecompileResult(
+        state = castState(result.state),
+        diagnostics = result.diagnostics,
+        processedSymbols = result.processedSymbols,
+        unresolvedSymbols = result.unresolvedSymbols,
+    )
+}
+
+private fun <C : CompilerFeatureState, S : CompilerFeatureState> CompilerFeatureKey<C, S>.typedResult(
+    result: CompilerFeatureResult<*, *>,
+): CompilerFeatureResult<C, S> {
+    return CompilerFeatureResult(
+        collection = typedCollection(result.collection),
+        precompiled = typedPrecompileResult(result.precompiled),
+        rendered = result.rendered,
+    )
 }

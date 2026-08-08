@@ -5,8 +5,8 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
-import site.addzero.lsi.compiler.CompilerFeatureProvider
-import site.addzero.lsi.compiler.CompilerFeatureProviders
+import site.addzero.lsi.compiler.CompilerFeature
+import site.addzero.lsi.compiler.CompilerFeatureLoader
 import site.addzero.lsi.compiler.CompilerWiring
 
 /**
@@ -14,14 +14,14 @@ import site.addzero.lsi.compiler.CompilerWiring
  */
 open class KspLsiProcessorProvider(
     private val wiring: CompilerWiring = CompilerWiring.DEFAULT,
-    private val providers: Iterable<CompilerFeatureProvider> = CompilerFeatureProviders.load(),
+    private val features: Iterable<CompilerFeature<*, *>> = CompilerFeatureLoader.load(),
     private val sessionId: String = "ksp",
 ) : SymbolProcessorProvider {
 
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         val driver = KspLsiCompilerDriver(
             environment = environment,
-            providers = providers,
+            features = features,
             wiring = wiring,
             sessionId = sessionId,
         )

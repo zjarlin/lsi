@@ -1,12 +1,11 @@
 package site.addzero.lsi.compiler
 
 import java.util.ServiceLoader
+import kotlin.reflect.KClass
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiTypeSeed
 
-data class CompilerFeatureDescriptor(
-    val id: String,
-    val dependsOn: Set<String> = emptySet(),
+data class CompilerFeatureMetadata(
     val aptAnnotationTypes: Set<String> = emptySet(),
     val supportedOptions: Set<String> = emptySet(),
     val classpathTypeIds: Set<LsiSymbolId> = emptySet(),
@@ -17,133 +16,232 @@ data class CompilerFeatureDescriptor(
 ) {
 
     init {
-        requireFeatureId(id)
-        dependsOn.forEach(::requireFeatureId)
-        require(id !in dependsOn) { "Compiler feature '$id' cannot depend on itself" }
         aptAnnotationTypes.forEach(::requireAnnotationQualifiedName)
         supportedOptions.forEach(::requireCompilerOptionName)
         classpathTypeIds.forEach(LsiSymbolId::requireTypeQualifiedName)
         inputResourcePaths.forEach(::requireCompilerResourcePath)
     }
+
+    companion object {
+        val EMPTY = CompilerFeatureMetadata()
+    }
 }
 
 /**
- * 由 ServiceLoader 发现的无平台编译功能。
+ * 以功能实现类型为稳定身份，并绑定收集态与预编译态的运行时类型。
  */
-interface CompilerFeatureProvider {
-    val descriptor: CompilerFeatureDescriptor
+class CompilerFeatureKey<
+    C : CompilerFeatureState,
+    S : CompilerFeatureState,
+> @PublishedApi internal constructor(
+    val featureType: KClass<out CompilerFeature<C, S>>,
+    @PublishedApi internal val collectionStateType: KClass<C>,
+    @PublishedApi internal val stateType: KClass<S>,
+    @PublishedApi internal val emptyCollectionState: C,
+) : Comparable<CompilerFeatureKey<*, *>> {
+
+    val id: String = requireNotNull(featureType.qualifiedName) {
+        "Compiler feature type must have a qualified name: $featureType"
+    }
+
+    init {
+        require(collectionStateType.java.isInstance(emptyCollectionState)) {
+            "Compiler feature '$id' empty collection state must be ${collectionStateType.qualifiedName}"
+        }
+    }
+
+    internal fun castCollectionState(state: CompilerFeatureState): C {
+        return try {
+            collectionStateType.java.cast(state)
+        } catch (ex: ClassCastException) {
+            throw CompilerFeatureStateTypeException(
+                featureKey = this,
+                expectedType = collectionStateType,
+                actualType = state::class,
+                phase = "collection",
+                cause = ex,
+            )
+        }
+    }
+
+    internal fun castState(state: CompilerFeatureState): S {
+        return try {
+            stateType.java.cast(state)
+        } catch (ex: ClassCastException) {
+            throw CompilerFeatureStateTypeException(
+                featureKey = this,
+                expectedType = stateType,
+                actualType = state::class,
+                phase = "precompile",
+                cause = ex,
+            )
+        }
+    }
+
+    override fun compareTo(other: CompilerFeatureKey<*, *>): Int = id.compareTo(other.id)
+
+    override fun equals(other: Any?): Boolean {
+        return this === other || other is CompilerFeatureKey<*, *> && featureType == other.featureType
+    }
+
+    override fun hashCode(): Int = featureType.hashCode()
+
+    override fun toString(): String = id
+}
+
+inline fun <
+    reified F : CompilerFeature<C, S>,
+    reified C : CompilerFeatureState,
+    reified S : CompilerFeatureState,
+> compilerFeatureKey(
+    emptyCollectionState: C,
+): CompilerFeatureKey<C, S> {
+    return CompilerFeatureKey(
+        featureType = F::class,
+        collectionStateType = C::class,
+        stateType = S::class,
+        emptyCollectionState = emptyCollectionState,
+    )
+}
+
+/**
+ * 由 ServiceLoader 发现并在每个真实编译轮执行的无平台功能。
+ */
+interface CompilerFeature<
+    C : CompilerFeatureState,
+    S : CompilerFeatureState,
+> {
+    val key: CompilerFeatureKey<C, S>
+
+    val dependencies: Set<CompilerFeatureKey<*, *>>
+        get() = emptySet()
+
+    val metadata: CompilerFeatureMetadata
+        get() = CompilerFeatureMetadata.EMPTY
 
     fun requestTypeSeeds(context: CompilerTypeSeedContext): Collection<LsiTypeSeed> = emptyList()
 
-    fun collect(context: CompilerCollectContext): CompilerFeatureCollection =
-        CompilerFeatureCollection()
+    fun collect(context: CompilerCollectContext): CompilerFeatureCollection<C> =
+        CompilerFeatureCollection(key.emptyCollectionState)
 
-    fun precompile(context: CompilerPrecompileContext): CompilerFeaturePrecompileResult =
-        CompilerFeaturePrecompileResult(CompilerFeatureState.EMPTY)
+    fun precompile(context: CompilerPrecompileContext<C, S>): CompilerFeaturePrecompileResult<S>
 
-    fun render(context: CompilerRenderContext): CompilerFeatureRenderResult =
+    fun render(context: CompilerRenderContext<C, S>): CompilerFeatureRenderResult =
         CompilerFeatureRenderResult()
 }
 
-/**
- * 从指定类加载器发现 compiler feature，并立即执行严格图校验。
- */
-object CompilerFeatureProviders {
+/** 从指定类加载器发现功能，并立即执行严格图校验。 */
+object CompilerFeatureLoader {
 
     fun load(
-        classLoader: ClassLoader = CompilerFeatureProvider::class.java.classLoader
-    ): List<CompilerFeatureProvider> {
-        val providers = ServiceLoader
-            .load(CompilerFeatureProvider::class.java, classLoader)
+        classLoader: ClassLoader = CompilerFeature::class.java.classLoader,
+    ): List<CompilerFeature<*, *>> {
+        val features = ServiceLoader
+            .load(CompilerFeature::class.java, classLoader)
             .toList()
-        return CompilerFeatureGraph.sort(providers)
+        return CompilerFeatureGraph.sort(features)
     }
 }
 
 sealed class CompilerFeatureGraphException(message: String) : IllegalArgumentException(message)
 
 class DuplicateCompilerFeatureException(
-    val featureId: String
-) : CompilerFeatureGraphException("Duplicate compiler feature id: '$featureId'")
+    val featureKey: CompilerFeatureKey<*, *>,
+) : CompilerFeatureGraphException("Duplicate compiler feature: '${featureKey.id}'")
 
 class MissingCompilerFeatureDependencyException(
-    val featureId: String,
-    val dependencyId: String
+    val featureKey: CompilerFeatureKey<*, *>,
+    val dependencyKey: CompilerFeatureKey<*, *>,
 ) : CompilerFeatureGraphException(
-    "Compiler feature '$featureId' depends on missing feature '$dependencyId'"
+    "Compiler feature '${featureKey.id}' depends on missing feature '${dependencyKey.id}'",
 )
 
 class CyclicCompilerFeatureDependencyException(
-    val cycle: List<String>
+    val cycle: List<CompilerFeatureKey<*, *>>,
 ) : CompilerFeatureGraphException(
-    "Compiler feature dependency cycle: ${cycle.joinToString(" -> ")}"
+    "Compiler feature dependency cycle: ${cycle.joinToString(" -> ") { key -> key.id }}",
 )
 
-/**
- * 以 feature id 为稳定排序键计算严格依赖顺序。
- */
+class CompilerFeatureStateTypeException(
+    val featureKey: CompilerFeatureKey<*, *>,
+    val expectedType: KClass<out CompilerFeatureState>,
+    val actualType: KClass<out CompilerFeatureState>,
+    val phase: String,
+    cause: ClassCastException,
+) : IllegalArgumentException(
+    "Compiler feature '${featureKey.id}' $phase state must be ${expectedType.qualifiedName}, " +
+        "but got ${actualType.qualifiedName}",
+    cause,
+)
+
+/** 以功能类型全限定名为稳定排序键计算严格依赖顺序。 */
 object CompilerFeatureGraph {
 
-    fun sort(providers: Iterable<CompilerFeatureProvider>): List<CompilerFeatureProvider> {
-        val providersById = linkedMapOf<String, CompilerFeatureProvider>()
-        for (provider in providers) {
-            val id = provider.descriptor.id
-            if (providersById.putIfAbsent(id, provider) != null) {
-                throw DuplicateCompilerFeatureException(id)
+    fun sort(features: Iterable<CompilerFeature<*, *>>): List<CompilerFeature<*, *>> {
+        val featuresByKey = linkedMapOf<CompilerFeatureKey<*, *>, CompilerFeature<*, *>>()
+        for (feature in features) {
+            val key = feature.key
+            require(key.featureType.java.isInstance(feature)) {
+                "Compiler feature '${feature::class.qualifiedName}' does not match key '${key.id}'"
+            }
+            if (featuresByKey.putIfAbsent(key, feature) != null) {
+                throw DuplicateCompilerFeatureException(key)
             }
         }
-        validateDependencies(providersById)
+        validateDependencies(featuresByKey)
 
-        val remainingDependencies = providersById.mapValues { (_, provider) ->
-            provider.descriptor.dependsOn.size
+        val remainingDependencies = featuresByKey.mapValues { (_, feature) ->
+            feature.dependencies.size
         }.toMutableMap()
-        val dependents = mutableMapOf<String, MutableList<String>>()
-        for ((id, provider) in providersById) {
-            for (dependencyId in provider.descriptor.dependsOn) {
-                dependents.getOrPut(dependencyId, ::mutableListOf) += id
+        val dependents = mutableMapOf<CompilerFeatureKey<*, *>, MutableList<CompilerFeatureKey<*, *>>>()
+        for ((key, feature) in featuresByKey) {
+            for (dependencyKey in feature.dependencies) {
+                dependents.getOrPut(dependencyKey, ::mutableListOf) += key
             }
         }
-        val ready = sortedSetOf<String>()
+        val ready = sortedSetOf<CompilerFeatureKey<*, *>>()
         remainingDependencies
             .filterValues { dependencyCount -> dependencyCount == 0 }
             .keys
             .let(ready::addAll)
-        val sorted = mutableListOf<CompilerFeatureProvider>()
+        val sorted = mutableListOf<CompilerFeature<*, *>>()
         while (ready.isNotEmpty()) {
-            val id = ready.first()
-            ready.remove(id)
-            sorted += requireNotNull(providersById[id])
-            for (dependentId in dependents[id].orEmpty().sorted()) {
-                val dependencyCount = requireNotNull(remainingDependencies[dependentId]) - 1
-                remainingDependencies[dependentId] = dependencyCount
+            val key = ready.first()
+            ready.remove(key)
+            sorted += requireNotNull(featuresByKey[key])
+            for (dependentKey in dependents[key].orEmpty().sorted()) {
+                val dependencyCount = requireNotNull(remainingDependencies[dependentKey]) - 1
+                remainingDependencies[dependentKey] = dependencyCount
                 if (dependencyCount == 0) {
-                    ready += dependentId
+                    ready += dependentKey
                 }
             }
         }
-        if (sorted.size != providersById.size) {
-            throw CyclicCompilerFeatureDependencyException(findCycle(providersById))
+        if (sorted.size != featuresByKey.size) {
+            throw CyclicCompilerFeatureDependencyException(findCycle(featuresByKey))
         }
         return sorted
     }
 
-    private fun validateDependencies(providersById: Map<String, CompilerFeatureProvider>) {
-        for ((id, provider) in providersById.toSortedMap()) {
-            for (dependencyId in provider.descriptor.dependsOn.sorted()) {
-                if (dependencyId !in providersById) {
-                    throw MissingCompilerFeatureDependencyException(id, dependencyId)
+    private fun validateDependencies(
+        featuresByKey: Map<CompilerFeatureKey<*, *>, CompilerFeature<*, *>>,
+    ) {
+        for ((key, feature) in featuresByKey.toSortedMap()) {
+            for (dependencyKey in feature.dependencies.sorted()) {
+                if (dependencyKey !in featuresByKey) {
+                    throw MissingCompilerFeatureDependencyException(key, dependencyKey)
                 }
             }
         }
     }
 
     private fun findCycle(
-        providersById: Map<String, CompilerFeatureProvider>
-    ): List<String> {
-        val states = mutableMapOf<String, VisitState>()
-        val stack = mutableListOf<String>()
-        for (id in providersById.keys.sorted()) {
-            val cycle = findCycleFrom(id, providersById, states, stack)
+        featuresByKey: Map<CompilerFeatureKey<*, *>, CompilerFeature<*, *>>,
+    ): List<CompilerFeatureKey<*, *>> {
+        val states = mutableMapOf<CompilerFeatureKey<*, *>, VisitState>()
+        val stack = mutableListOf<CompilerFeatureKey<*, *>>()
+        for (key in featuresByKey.keys.sorted()) {
+            val cycle = findCycleFrom(key, featuresByKey, states, stack)
             if (cycle != null) {
                 return cycle
             }
@@ -152,46 +250,43 @@ object CompilerFeatureGraph {
     }
 
     private fun findCycleFrom(
-        id: String,
-        providersById: Map<String, CompilerFeatureProvider>,
-        states: MutableMap<String, VisitState>,
-        stack: MutableList<String>
-    ): List<String>? {
-        when (states[id]) {
+        key: CompilerFeatureKey<*, *>,
+        featuresByKey: Map<CompilerFeatureKey<*, *>, CompilerFeature<*, *>>,
+        states: MutableMap<CompilerFeatureKey<*, *>, VisitState>,
+        stack: MutableList<CompilerFeatureKey<*, *>>,
+    ): List<CompilerFeatureKey<*, *>>? {
+        when (states[key]) {
             VisitState.VISITED -> return null
-            VisitState.VISITING -> return cycleFrom(stack, id)
+            VisitState.VISITING -> return cycleFrom(stack, key)
             null -> Unit
         }
 
-        states[id] = VisitState.VISITING
-        stack += id
-        val provider = requireNotNull(providersById[id])
-        for (dependencyId in provider.descriptor.dependsOn.sorted()) {
-            val cycle = findCycleFrom(dependencyId, providersById, states, stack)
+        states[key] = VisitState.VISITING
+        stack += key
+        val feature = requireNotNull(featuresByKey[key])
+        for (dependencyKey in feature.dependencies.sorted()) {
+            val cycle = findCycleFrom(dependencyKey, featuresByKey, states, stack)
             if (cycle != null) {
                 return cycle
             }
         }
         stack.removeLast()
-        states[id] = VisitState.VISITED
+        states[key] = VisitState.VISITED
         return null
     }
 
-    private fun cycleFrom(stack: List<String>, repeatedId: String): List<String> {
-        val cycleStart = stack.indexOf(repeatedId)
-        return stack.subList(cycleStart, stack.size) + repeatedId
+    private fun cycleFrom(
+        stack: List<CompilerFeatureKey<*, *>>,
+        repeatedKey: CompilerFeatureKey<*, *>,
+    ): List<CompilerFeatureKey<*, *>> {
+        val cycleStart = stack.indexOf(repeatedKey)
+        return stack.subList(cycleStart, stack.size) + repeatedKey
     }
 
     private enum class VisitState {
         VISITING,
-        VISITED
+        VISITED,
     }
-}
-
-private fun requireFeatureId(id: String) {
-    require(id.isNotBlank()) { "Compiler feature id cannot be blank" }
-    require(id == id.trim()) { "Compiler feature id cannot have surrounding whitespace: '$id'" }
-    require(id.none(Char::isWhitespace)) { "Compiler feature id cannot contain whitespace: '$id'" }
 }
 
 private fun requireAnnotationQualifiedName(qualifiedName: String) {

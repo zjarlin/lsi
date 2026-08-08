@@ -16,27 +16,31 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import site.addzero.lsi.compiler.CompilerCollectContext
+import site.addzero.lsi.compiler.CompilerFeature
 import site.addzero.lsi.compiler.CompilerFeatureCollection
-import site.addzero.lsi.compiler.CompilerFeatureDescriptor
-import site.addzero.lsi.compiler.CompilerFeatureProvider
+import site.addzero.lsi.compiler.CompilerFeatureMetadata
+import site.addzero.lsi.compiler.CompilerFeaturePrecompileResult
 import site.addzero.lsi.compiler.CompilerInputDocumentKind
 import site.addzero.lsi.compiler.CompilerInputDocumentProvider
 import site.addzero.lsi.compiler.CompilerInputDocumentSnapshot
+import site.addzero.lsi.compiler.CompilerPrecompileContext
 import site.addzero.lsi.compiler.CompilerSourceSet
 import site.addzero.lsi.compiler.CompilerWiring
+import site.addzero.lsi.compiler.EmptyCompilerFeatureState
+import site.addzero.lsi.compiler.compilerFeatureKey
 import site.addzero.lsi.model.LsiFrontendOptions
 
 class KspLsiProcessorProviderTest {
 
     @Test
-    fun `delegates process and finish with injected providers and wiring`() {
-        val featureProvider = CapturingFeatureProvider()
+    fun `delegates process and finish with injected features and wiring`() {
+        val feature = CapturingFeature()
         val inputDocumentProvider = CapturingInputDocumentProvider()
         val wiring = CapturingWiring(inputDocumentProvider)
         val options = mapOf("test.option" to "present")
         val processor = KspLsiProcessorProvider(
             wiring = wiring,
-            providers = listOf(featureProvider),
+            features = listOf(feature),
             sessionId = "ksp-provider-test",
         ).create(
             SymbolProcessorEnvironment(
@@ -57,21 +61,41 @@ class KspLsiProcessorProviderTest {
         assertEquals(listOf(CompilerSourceSet.MAIN), inputDocumentProvider.discoveryChecks)
         assertEquals(
             listOf(0 to false, 1 to true),
-            featureProvider.observedRounds.distinct(),
+            feature.observedRounds.distinct(),
         )
     }
 
-    private class CapturingFeatureProvider : CompilerFeatureProvider {
-        override val descriptor = CompilerFeatureDescriptor(
-            id = "ksp-provider-test",
+    private class CapturingFeature : CompilerFeature<
+        EmptyCompilerFeatureState,
+        EmptyCompilerFeatureState,
+    > {
+        override val key = Key
+
+        override val metadata = CompilerFeatureMetadata(
             inputDocumentKinds = setOf(INPUT_DOCUMENT_KIND),
         )
 
         val observedRounds = mutableListOf<Pair<Int, Boolean>>()
 
-        override fun collect(context: CompilerCollectContext): CompilerFeatureCollection {
+        override fun collect(
+            context: CompilerCollectContext,
+        ): CompilerFeatureCollection<EmptyCompilerFeatureState> {
             observedRounds += context.round.number to context.round.isFinal
-            return CompilerFeatureCollection()
+            return CompilerFeatureCollection(EmptyCompilerFeatureState)
+        }
+
+        override fun precompile(
+            context: CompilerPrecompileContext<EmptyCompilerFeatureState, EmptyCompilerFeatureState>,
+        ): CompilerFeaturePrecompileResult<EmptyCompilerFeatureState> {
+            return CompilerFeaturePrecompileResult(EmptyCompilerFeatureState)
+        }
+
+        companion object {
+            val Key = compilerFeatureKey<
+                CapturingFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
         }
     }
 

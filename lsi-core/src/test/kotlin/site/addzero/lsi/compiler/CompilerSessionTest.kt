@@ -24,28 +24,9 @@ class CompilerSessionTest {
     fun `类型声明请求按符号合并并由完整声明优先`() {
         val alphaId = LsiSymbolId.type("example.Alpha")
         val betaId = LsiSymbolId.type("example.Beta")
-        val first = object : CompilerFeatureProvider {
-            override val descriptor = CompilerFeatureDescriptor("first")
-
-            override fun requestTypeSeeds(
-                context: CompilerTypeSeedContext,
-            ): Collection<LsiTypeSeed> {
-                return listOf(
-                    LsiTypeSeed(betaId, LsiTypeSeedMode.HEADER),
-                    LsiTypeSeed(alphaId, LsiTypeSeedMode.HEADER),
-                )
-            }
-        }
-        val second = object : CompilerFeatureProvider {
-            override val descriptor = CompilerFeatureDescriptor("second")
-
-            override fun requestTypeSeeds(
-                context: CompilerTypeSeedContext,
-            ): Collection<LsiTypeSeed> {
-                return listOf(LsiTypeSeed(betaId, LsiTypeSeedMode.FULL_DECLARATION))
-            }
-        }
-        val session = CompilerSession("type-seeds", listOf(second, first))
+        val headerFeature = HeaderSeedFeature(alphaId, betaId)
+        val fullFeature = FullSeedFeature(betaId)
+        val session = CompilerSession("type-seeds", listOf(fullFeature, headerFeature))
 
         assertEquals(
             listOf(
@@ -58,47 +39,14 @@ class CompilerSessionTest {
 
     @Test
     fun `类型声明请求不会执行功能或推进会话轮次`() {
-        var collects = 0
-        var precompiles = 0
-        var renders = 0
-        val provider = object : CompilerFeatureProvider {
-            override val descriptor = CompilerFeatureDescriptor("seed-only")
-
-            override fun requestTypeSeeds(
-                context: CompilerTypeSeedContext,
-            ): Collection<LsiTypeSeed> {
-                assertEquals(0, context.round.number)
-                assertTrue(context.session.rounds.isEmpty())
-                return listOf(
-                    LsiTypeSeed(LsiSymbolId.type("example.Payload"), LsiTypeSeedMode.FULL_DECLARATION)
-                )
-            }
-
-            override fun collect(context: CompilerCollectContext): CompilerFeatureCollection {
-                collects++
-                return CompilerFeatureCollection()
-            }
-
-            override fun precompile(
-                context: CompilerPrecompileContext,
-            ): CompilerFeaturePrecompileResult {
-                precompiles++
-                return CompilerFeaturePrecompileResult(TextState("seed-only"))
-            }
-
-            override fun render(context: CompilerRenderContext): CompilerFeatureRenderResult {
-                renders++
-                return CompilerFeatureRenderResult()
-            }
-        }
-        val session = CompilerSession("seed-query", listOf(provider))
+        val invocations = FeatureInvocations()
+        val feature = SeedOnlyFeature(invocations)
+        val session = CompilerSession("seed-query", listOf(feature))
 
         session.requestedTypeSeeds(emptyRound(0))
         session.requestedTypeSeeds(emptyRound(0))
 
-        assertEquals(0, collects)
-        assertEquals(0, precompiles)
-        assertEquals(0, renders)
+        assertEquals(FeatureInvocations(), invocations)
         assertTrue(session.snapshot().rounds.isEmpty())
     }
 
@@ -117,31 +65,18 @@ class CompilerSessionTest {
     fun `空功能图在一次固定点迭代内完成`() {
         val result = CompilerSession(
             id = "empty-feature-graph",
-            providers = emptyList(),
+            features = emptyList(),
             maximumFixedPointIterations = 1,
         ).execute(emptyRound(0))
 
         assertEquals(1, result.fixedPointIterations)
-        assertTrue(result.featureResults.isEmpty())
+        assertEquals(0, result.featureResults.size)
     }
 
     @Test
     fun `round exposes frozen input resources to features`() {
-        val provider = object : CompilerFeatureProvider {
-            override val descriptor = CompilerFeatureDescriptor(
-                id = "resource-reader",
-                inputResourcePaths = setOf("META-INF/jimmer/entities"),
-            )
-
-            override fun precompile(
-                context: CompilerPrecompileContext,
-            ): CompilerFeaturePrecompileResult {
-                return CompilerFeaturePrecompileResult(
-                    state = TextState(context.round.inputResources.getValue("META-INF/jimmer/entities")),
-                )
-            }
-        }
-        val result = CompilerSession("input-resource-test", listOf(provider)).execute(
+        val feature = ResourceReaderFeature()
+        val result = CompilerSession("input-resource-test", listOf(feature)).execute(
             CompilerRound(
                 number = 0,
                 workspace = LsiWorkspace.EMPTY,
@@ -153,7 +88,7 @@ class CompilerSessionTest {
 
         assertEquals(
             "demo.Book\n",
-            result.featureResults.getValue("resource-reader").state.fingerprint,
+            result.featureResults.getValue(ResourceReaderFeature.KEY).state.fingerprint,
         )
     }
 
@@ -192,9 +127,9 @@ class CompilerSessionTest {
 
     @Test
     fun `多轮会话按阶段传递依赖和上一轮快照`() {
-        val executions = mutableListOf<String>()
-        val immutable = recordingFeature("immutable", executions)
-        val client = recordingFeature("client", executions, "immutable")
+        val executions = mutableListOf<FeatureExecution>()
+        val immutable = ImmutableRecordingFeature(executions)
+        val client = ClientRecordingFeature(executions)
         val session = CompilerSession("test", listOf(client, immutable))
 
         val first = session.execute(emptyRound(0))
@@ -202,14 +137,14 @@ class CompilerSessionTest {
 
         assertEquals(
             listOf(
-                "immutable:0:0:",
-                "client:0:0:immutable",
-                "immutable:0:0:",
-                "client:0:0:immutable",
-                "immutable:1:1:",
-                "client:1:1:immutable",
-                "immutable:1:1:",
-                "client:1:1:immutable",
+                FeatureExecution(ImmutableRecordingFeature.KEY, 0, 0, emptySet()),
+                FeatureExecution(ClientRecordingFeature.KEY, 0, 0, setOf(ImmutableRecordingFeature.KEY)),
+                FeatureExecution(ImmutableRecordingFeature.KEY, 0, 0, emptySet()),
+                FeatureExecution(ClientRecordingFeature.KEY, 0, 0, setOf(ImmutableRecordingFeature.KEY)),
+                FeatureExecution(ImmutableRecordingFeature.KEY, 1, 1, emptySet()),
+                FeatureExecution(ClientRecordingFeature.KEY, 1, 1, setOf(ImmutableRecordingFeature.KEY)),
+                FeatureExecution(ImmutableRecordingFeature.KEY, 1, 1, emptySet()),
+                FeatureExecution(ClientRecordingFeature.KEY, 1, 1, setOf(ImmutableRecordingFeature.KEY)),
             ),
             executions,
         )
@@ -222,72 +157,30 @@ class CompilerSessionTest {
 
     @Test
     fun `预编译会执行到稳定固定点`() {
-        var invocations = 0
-        val provider = object : CompilerFeatureProvider {
-            override val descriptor = CompilerFeatureDescriptor("immutable")
+        val invocations = FeatureInvocations()
+        val feature = ConvergingFeature(invocations)
 
-            override fun precompile(
-                context: CompilerPrecompileContext,
-            ): CompilerFeaturePrecompileResult {
-                invocations++
-                val previous = (context.previousState as? NumericState)?.value ?: -1
-                return CompilerFeaturePrecompileResult(NumericState(min(previous + 1, 2)))
-            }
-        }
-
-        val result = CompilerSession("fixed-point", listOf(provider))
+        val result = CompilerSession("fixed-point", listOf(feature))
             .execute(emptyRound(0))
 
         assertEquals(4, result.fixedPointIterations)
-        assertEquals(4, invocations)
-        assertEquals("2", result.featureResults.getValue("immutable").state.fingerprint)
+        assertEquals(4, invocations.precompiles)
+        assertEquals(2, result.featureResults.getValue(ConvergingFeature.KEY).state.value)
     }
 
     @Test
     fun `收集和渲染也必须达到稳定固定点`() {
-        var collectInvocations = 0
-        var renderInvocations = 0
-        val provider = object : CompilerFeatureProvider {
-            override val descriptor = CompilerFeatureDescriptor("all-phases")
+        val invocations = FeatureInvocations()
+        val feature = AllPhasesFeature(invocations)
 
-            override fun collect(
-                context: CompilerCollectContext,
-            ): CompilerFeatureCollection {
-                val value = min(collectInvocations++, 2).toString()
-                return CompilerFeatureCollection(TextState(value))
-            }
-
-            override fun precompile(
-                context: CompilerPrecompileContext,
-            ): CompilerFeaturePrecompileResult {
-                return CompilerFeaturePrecompileResult(context.collection.state)
-            }
-
-            override fun render(
-                context: CompilerRenderContext,
-            ): CompilerFeatureRenderResult {
-                renderInvocations++
-                return CompilerFeatureRenderResult(
-                    artifacts = listOf(
-                        GeneratedArtifact.create(
-                            kind = ArtifactKind.RESOURCE,
-                            path = "META-INF/jimmer/all-phases",
-                            content = context.state.fingerprint,
-                            aggregationMode = ArtifactAggregationMode.AGGREGATING,
-                        ),
-                    ),
-                )
-            }
-        }
-
-        val result = CompilerSession("all-phases", listOf(provider)).execute(emptyRound(0))
+        val result = CompilerSession("all-phases", listOf(feature)).execute(emptyRound(0))
 
         assertEquals(4, result.fixedPointIterations)
-        assertEquals(4, collectInvocations)
-        assertEquals(4, renderInvocations)
+        assertEquals(4, invocations.collects)
+        assertEquals(4, invocations.renders)
         assertEquals(
             "2",
-            result.featureResults.getValue("all-phases").artifacts.single().content,
+            result.featureResults.getValue(AllPhasesFeature.KEY).artifacts.single().content,
         )
     }
 
@@ -301,7 +194,7 @@ class CompilerSessionTest {
         )
         val session = CompilerSession(
             "resource",
-            listOf(resultFeature("client", listOf(resource))),
+            listOf(ClientArtifactFeature(listOf(resource))),
         )
 
         val first = session.execute(emptyRound(0))
@@ -318,7 +211,7 @@ class CompilerSessionTest {
         val source = generatedSource("stable", ArtifactEmissionMode.STABLE)
         val session = CompilerSession(
             "stable-source",
-            listOf(resultFeature("immutable", listOf(source))),
+            listOf(ImmutableArtifactFeature(listOf(source))),
         )
 
         val first = session.execute(emptyRound(0))
@@ -343,7 +236,7 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "stable-source-projection",
             listOf(
-                roundResultFeature("immutable") { round ->
+                ImmutableArtifactFeature { round ->
                     listOf(if (round == 0) first else second)
                 }
             ),
@@ -362,7 +255,7 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "stable-source-symbol-dependency",
             listOf(
-                roundResultFeature("immutable") { round ->
+                ImmutableArtifactFeature { round ->
                     listOf(if (round == 0) first else second)
                 }
             ),
@@ -384,7 +277,7 @@ class CompilerSessionTest {
         )
         val session = CompilerSession(
             "stable-source-origins",
-            listOf(resultFeature("immutable", listOf(source))),
+            listOf(ImmutableArtifactFeature(listOf(source))),
         )
 
         session.execute(emptyRound(0))
@@ -406,7 +299,7 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "changing-stable-source",
             listOf(
-                roundResultFeature("immutable") { round ->
+                ImmutableArtifactFeature { round ->
                     listOf(if (round == 0) firstSource else secondSource)
                 }
             ),
@@ -429,7 +322,7 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "emitted-stable-source-conflict",
             listOf(
-                roundResultFeature("immutable") { round ->
+                ImmutableArtifactFeature { round ->
                     listOf(if (round < 2) source else changed)
                 }
             ),
@@ -464,7 +357,7 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "emitted-stable-source-projection",
             listOf(
-                roundResultFeature("immutable") { round ->
+                ImmutableArtifactFeature { round ->
                     listOf(
                         when (round) {
                             0 -> first
@@ -491,7 +384,7 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "emitted-stable-source-symbol-conflict",
             listOf(
-                roundResultFeature("immutable") { round ->
+                ImmutableArtifactFeature { round ->
                     listOf(if (round < 2) source else changed)
                 }
             ),
@@ -515,7 +408,7 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "pending-stable-source",
             listOf(
-                roundResultFeature("immutable") { round ->
+                ImmutableArtifactFeature { round ->
                     if (round == 0) listOf(source) else emptyList()
                 }
             ),
@@ -536,7 +429,7 @@ class CompilerSessionTest {
         val source = generatedSource("immediate", ArtifactEmissionMode.IMMEDIATE)
         val session = CompilerSession(
             "immediate-source",
-            listOf(resultFeature("immutable", listOf(source))),
+            listOf(ImmutableArtifactFeature(listOf(source))),
         )
 
         val first = session.execute(emptyRound(0))
@@ -568,12 +461,8 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "source-quiescence",
             listOf(
-                resultFeature("immutable", listOf(immutableSource)),
-                resultFeature(
-                    id = "dto",
-                    artifacts = listOf(dtoSource, dtoResource),
-                    requiresSourceQuiescence = true,
-                ),
+                ImmutableArtifactFeature(listOf(immutableSource)),
+                DtoArtifactFeature(listOf(dtoSource, dtoResource)),
             ),
         )
 
@@ -608,10 +497,10 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "stable-source-quiescence",
             listOf(
-                roundResultFeature("immutable") { round ->
+                ImmutableArtifactFeature { round ->
                     if (round == 0) listOf(firstSource, stableSource) else listOf(stableSource)
                 },
-                resultFeature("dto", listOf(dtoSource), requiresSourceQuiescence = true),
+                DtoArtifactFeature(listOf(dtoSource)),
             ),
         )
 
@@ -635,8 +524,8 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "stable-candidate-source-quiescence",
             listOf(
-                resultFeature("immutable", listOf(stableSource)),
-                resultFeature("dto", listOf(dtoSource), requiresSourceQuiescence = true),
+                ImmutableArtifactFeature(listOf(stableSource)),
+                DtoArtifactFeature(listOf(dtoSource)),
             ),
         )
 
@@ -659,8 +548,8 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "shared-source-quiescence",
             listOf(
-                resultFeature("dto", listOf(dtoSource), requiresSourceQuiescence = true),
-                resultFeature("module", listOf(moduleSource), requiresSourceQuiescence = true),
+                DtoArtifactFeature(listOf(dtoSource)),
+                QuiescentModuleArtifactFeature(listOf(moduleSource)),
             ),
         )
 
@@ -690,14 +579,10 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "mature-stable-quiescent-source",
             listOf(
-                roundResultFeature("immutable") { round ->
+                ImmutableArtifactFeature { round ->
                     if (round == 1) listOf(immutableSource) else emptyList()
                 },
-                resultFeature(
-                    "dto",
-                    listOf(triggerSource, stableDtoSource),
-                    requiresSourceQuiescence = true,
-                ),
+                DtoArtifactFeature(listOf(triggerSource, stableDtoSource)),
             ),
         )
 
@@ -718,7 +603,7 @@ class CompilerSessionTest {
         )
         val session = CompilerSession(
             "final-source",
-            listOf(resultFeature("dto", listOf(source), requiresSourceQuiescence = true)),
+            listOf(DtoArtifactFeature(listOf(source))),
         )
 
         val exception = assertFailsWith<FinalRoundSourceGenerationException> {
@@ -727,7 +612,7 @@ class CompilerSessionTest {
             )
         }
 
-        assertEquals("dto", exception.featureId)
+        assertEquals(DtoArtifactFeature.KEY, exception.featureKey)
         assertEquals(listOf(source), exception.artifacts)
     }
 
@@ -743,7 +628,7 @@ class CompilerSessionTest {
         )
         val session = CompilerSession(
             "final-isolating",
-            listOf(resultFeature("module", listOf(resource))),
+            listOf(ModuleArtifactFeature(listOf(resource))),
         )
 
         val exception = assertFailsWith<FinalRoundIsolatingArtifactException> {
@@ -752,7 +637,7 @@ class CompilerSessionTest {
             )
         }
 
-        assertEquals("module", exception.featureId)
+        assertEquals(ModuleArtifactFeature.KEY, exception.featureKey)
         assertEquals(listOf(resource), exception.artifacts)
     }
 
@@ -768,8 +653,8 @@ class CompilerSessionTest {
         val session = CompilerSession(
             "atomic-round",
             listOf(
-                resultFeature("first", listOf(first)),
-                resultFeature("second", listOf(conflict)),
+                FirstArtifactFeature(listOf(first)),
+                SecondArtifactFeature(listOf(conflict)),
             ),
         )
 
@@ -783,19 +668,10 @@ class CompilerSessionTest {
 
     @Test
     fun `固定点不收敛时直接失败`() {
-        val provider = object : CompilerFeatureProvider {
-            override val descriptor = CompilerFeatureDescriptor("unstable")
-
-            override fun precompile(
-                context: CompilerPrecompileContext,
-            ): CompilerFeaturePrecompileResult {
-                val previous = (context.previousState as? NumericState)?.value ?: 0
-                return CompilerFeaturePrecompileResult(NumericState(previous + 1))
-            }
-        }
+        val feature = UnstableFeature()
         val session = CompilerSession(
             id = "unstable",
-            providers = listOf(provider),
+            features = listOf(feature),
             maximumFixedPointIterations = 3,
         )
 
@@ -805,33 +681,6 @@ class CompilerSessionTest {
 
         assertEquals(3, exception.maximumIterations)
         assertTrue(session.snapshot().rounds.isEmpty())
-    }
-
-    private fun recordingFeature(
-        id: String,
-        executions: MutableList<String>,
-        vararg dependencies: String,
-    ): CompilerFeatureProvider = object : CompilerFeatureProvider {
-        override val descriptor = CompilerFeatureDescriptor(id, dependencies.toSet())
-
-        override fun precompile(
-            context: CompilerPrecompileContext,
-        ): CompilerFeaturePrecompileResult {
-            return CompilerFeaturePrecompileResult(TextState("$id:${context.round.number}"))
-        }
-
-        override fun render(context: CompilerRenderContext): CompilerFeatureRenderResult {
-            executions += buildString {
-                append(id)
-                append(':')
-                append(context.round.number)
-                append(':')
-                append(context.session.rounds.size)
-                append(':')
-                append(context.dependencyStates.keys.joinToString())
-            }
-            return CompilerFeatureRenderResult()
-        }
     }
 
     private fun emptyRound(
@@ -845,44 +694,6 @@ class CompilerSessionTest {
             isFinal = isFinal,
             inputDocumentSnapshots = emptyList(),
         )
-    }
-
-    private fun resultFeature(
-        id: String,
-        artifacts: List<GeneratedArtifact>,
-        requiresSourceQuiescence: Boolean = false,
-    ): CompilerFeatureProvider = object : CompilerFeatureProvider {
-        override val descriptor = CompilerFeatureDescriptor(
-            id = id,
-            requiresSourceQuiescence = requiresSourceQuiescence,
-        )
-
-        override fun precompile(
-            context: CompilerPrecompileContext,
-        ): CompilerFeaturePrecompileResult {
-            return CompilerFeaturePrecompileResult(TextState(id))
-        }
-
-        override fun render(context: CompilerRenderContext): CompilerFeatureRenderResult {
-            return CompilerFeatureRenderResult(artifacts = artifacts)
-        }
-    }
-
-    private fun roundResultFeature(
-        id: String,
-        artifacts: (Int) -> List<GeneratedArtifact>,
-    ): CompilerFeatureProvider = object : CompilerFeatureProvider {
-        override val descriptor = CompilerFeatureDescriptor(id)
-
-        override fun precompile(
-            context: CompilerPrecompileContext,
-        ): CompilerFeaturePrecompileResult {
-            return CompilerFeaturePrecompileResult(TextState(id))
-        }
-
-        override fun render(context: CompilerRenderContext): CompilerFeatureRenderResult {
-            return CompilerFeatureRenderResult(artifacts = artifacts(context.round.number))
-        }
     }
 
     private fun generatedSource(
@@ -910,6 +721,394 @@ class CompilerSessionTest {
             dependencySources = setOf(source),
         )
     }
+
+    private abstract class EmptyStateFeature :
+        CompilerFeature<EmptyCompilerFeatureState, EmptyCompilerFeatureState> {
+
+        override fun precompile(
+            context: CompilerPrecompileContext<EmptyCompilerFeatureState, EmptyCompilerFeatureState>,
+        ): CompilerFeaturePrecompileResult<EmptyCompilerFeatureState> {
+            return CompilerFeaturePrecompileResult(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class HeaderSeedFeature(
+        private val alphaId: LsiSymbolId,
+        private val betaId: LsiSymbolId,
+    ) : EmptyStateFeature() {
+
+        override val key = KEY
+
+        override fun requestTypeSeeds(context: CompilerTypeSeedContext): Collection<LsiTypeSeed> {
+            return listOf(
+                LsiTypeSeed(betaId, LsiTypeSeedMode.HEADER),
+                LsiTypeSeed(alphaId, LsiTypeSeedMode.HEADER),
+            )
+        }
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                HeaderSeedFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class FullSeedFeature(
+        private val typeId: LsiSymbolId,
+    ) : EmptyStateFeature() {
+
+        override val key = KEY
+
+        override fun requestTypeSeeds(context: CompilerTypeSeedContext): Collection<LsiTypeSeed> {
+            return listOf(LsiTypeSeed(typeId, LsiTypeSeedMode.FULL_DECLARATION))
+        }
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                FullSeedFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class SeedOnlyFeature(
+        private val invocations: FeatureInvocations,
+    ) : EmptyStateFeature() {
+
+        override val key = KEY
+
+        override fun requestTypeSeeds(context: CompilerTypeSeedContext): Collection<LsiTypeSeed> {
+            assertEquals(0, context.round.number)
+            assertTrue(context.session.rounds.isEmpty())
+            return listOf(
+                LsiTypeSeed(LsiSymbolId.type("example.Payload"), LsiTypeSeedMode.FULL_DECLARATION),
+            )
+        }
+
+        override fun collect(
+            context: CompilerCollectContext,
+        ): CompilerFeatureCollection<EmptyCompilerFeatureState> {
+            invocations.collects++
+            return CompilerFeatureCollection(EmptyCompilerFeatureState)
+        }
+
+        override fun precompile(
+            context: CompilerPrecompileContext<EmptyCompilerFeatureState, EmptyCompilerFeatureState>,
+        ): CompilerFeaturePrecompileResult<EmptyCompilerFeatureState> {
+            invocations.precompiles++
+            return CompilerFeaturePrecompileResult(EmptyCompilerFeatureState)
+        }
+
+        override fun render(
+            context: CompilerRenderContext<EmptyCompilerFeatureState, EmptyCompilerFeatureState>,
+        ): CompilerFeatureRenderResult {
+            invocations.renders++
+            return CompilerFeatureRenderResult()
+        }
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                SeedOnlyFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class ResourceReaderFeature :
+        CompilerFeature<EmptyCompilerFeatureState, TextState> {
+
+        override val key = KEY
+
+        override val metadata = CompilerFeatureMetadata(
+            inputResourcePaths = setOf("META-INF/jimmer/entities"),
+        )
+
+        override fun precompile(
+            context: CompilerPrecompileContext<EmptyCompilerFeatureState, TextState>,
+        ): CompilerFeaturePrecompileResult<TextState> {
+            return CompilerFeaturePrecompileResult(
+                TextState(context.round.inputResources.getValue("META-INF/jimmer/entities")),
+            )
+        }
+
+        companion object {
+            val KEY = compilerFeatureKey<ResourceReaderFeature, EmptyCompilerFeatureState, TextState>(
+                EmptyCompilerFeatureState,
+            )
+        }
+    }
+
+    private abstract class RecordingFeature(
+        private val executions: MutableList<FeatureExecution>,
+    ) : CompilerFeature<EmptyCompilerFeatureState, TextState> {
+
+        override fun precompile(
+            context: CompilerPrecompileContext<EmptyCompilerFeatureState, TextState>,
+        ): CompilerFeaturePrecompileResult<TextState> {
+            return CompilerFeaturePrecompileResult(TextState(context.round.number.toString()))
+        }
+
+        override fun render(
+            context: CompilerRenderContext<EmptyCompilerFeatureState, TextState>,
+        ): CompilerFeatureRenderResult {
+            executions += FeatureExecution(
+                key = key,
+                roundNumber = context.round.number,
+                completedRounds = context.session.rounds.size,
+                dependencyKeys = context.dependencyStates.keys,
+            )
+            return CompilerFeatureRenderResult()
+        }
+    }
+
+    private class ImmutableRecordingFeature(
+        executions: MutableList<FeatureExecution>,
+    ) : RecordingFeature(executions) {
+
+        override val key = KEY
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                ImmutableRecordingFeature,
+                EmptyCompilerFeatureState,
+                TextState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class ClientRecordingFeature(
+        executions: MutableList<FeatureExecution>,
+    ) : RecordingFeature(executions) {
+
+        override val key = KEY
+
+        override val dependencies = setOf(ImmutableRecordingFeature.KEY)
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                ClientRecordingFeature,
+                EmptyCompilerFeatureState,
+                TextState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class ConvergingFeature(
+        private val invocations: FeatureInvocations,
+    ) : CompilerFeature<EmptyCompilerFeatureState, NumericState> {
+
+        override val key = KEY
+
+        override fun precompile(
+            context: CompilerPrecompileContext<EmptyCompilerFeatureState, NumericState>,
+        ): CompilerFeaturePrecompileResult<NumericState> {
+            invocations.precompiles++
+            val previous = context.previousState?.value ?: -1
+            return CompilerFeaturePrecompileResult(NumericState(min(previous + 1, 2)))
+        }
+
+        companion object {
+            val KEY = compilerFeatureKey<ConvergingFeature, EmptyCompilerFeatureState, NumericState>(
+                EmptyCompilerFeatureState,
+            )
+        }
+    }
+
+    private class AllPhasesFeature(
+        private val invocations: FeatureInvocations,
+    ) : CompilerFeature<TextState, TextState> {
+
+        override val key = KEY
+
+        override fun collect(context: CompilerCollectContext): CompilerFeatureCollection<TextState> {
+            val value = min(invocations.collects++, 2).toString()
+            return CompilerFeatureCollection(TextState(value))
+        }
+
+        override fun precompile(
+            context: CompilerPrecompileContext<TextState, TextState>,
+        ): CompilerFeaturePrecompileResult<TextState> {
+            return CompilerFeaturePrecompileResult(context.collection.state)
+        }
+
+        override fun render(
+            context: CompilerRenderContext<TextState, TextState>,
+        ): CompilerFeatureRenderResult {
+            invocations.renders++
+            return CompilerFeatureRenderResult(
+                artifacts = listOf(
+                    GeneratedArtifact.create(
+                        kind = ArtifactKind.RESOURCE,
+                        path = "META-INF/jimmer/all-phases",
+                        content = context.state.fingerprint,
+                        aggregationMode = ArtifactAggregationMode.AGGREGATING,
+                    ),
+                ),
+            )
+        }
+
+        companion object {
+            val KEY = compilerFeatureKey<AllPhasesFeature, TextState, TextState>(TextState("empty"))
+        }
+    }
+
+    private abstract class ArtifactFeature(
+        private val artifactsByRound: (Int) -> List<GeneratedArtifact>,
+        requiresSourceQuiescence: Boolean = false,
+    ) : EmptyStateFeature() {
+
+        override val metadata = CompilerFeatureMetadata(
+            requiresSourceQuiescence = requiresSourceQuiescence,
+        )
+
+        override fun render(
+            context: CompilerRenderContext<EmptyCompilerFeatureState, EmptyCompilerFeatureState>,
+        ): CompilerFeatureRenderResult {
+            return CompilerFeatureRenderResult(artifacts = artifactsByRound(context.round.number))
+        }
+    }
+
+    private class ClientArtifactFeature(
+        artifacts: List<GeneratedArtifact>,
+    ) : ArtifactFeature({ artifacts }) {
+
+        override val key = KEY
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                ClientArtifactFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class ImmutableArtifactFeature(
+        artifactsByRound: (Int) -> List<GeneratedArtifact>,
+    ) : ArtifactFeature(artifactsByRound) {
+
+        constructor(artifacts: List<GeneratedArtifact>) : this({ artifacts })
+
+        override val key = KEY
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                ImmutableArtifactFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class DtoArtifactFeature(
+        artifacts: List<GeneratedArtifact>,
+    ) : ArtifactFeature({ artifacts }, requiresSourceQuiescence = true) {
+
+        override val key = KEY
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                DtoArtifactFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class ModuleArtifactFeature(
+        artifacts: List<GeneratedArtifact>,
+    ) : ArtifactFeature({ artifacts }) {
+
+        override val key = KEY
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                ModuleArtifactFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class QuiescentModuleArtifactFeature(
+        artifacts: List<GeneratedArtifact>,
+    ) : ArtifactFeature({ artifacts }, requiresSourceQuiescence = true) {
+
+        override val key = KEY
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                QuiescentModuleArtifactFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class FirstArtifactFeature(
+        artifacts: List<GeneratedArtifact>,
+    ) : ArtifactFeature({ artifacts }) {
+
+        override val key = KEY
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                FirstArtifactFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class SecondArtifactFeature(
+        artifacts: List<GeneratedArtifact>,
+    ) : ArtifactFeature({ artifacts }) {
+
+        override val key = KEY
+
+        companion object {
+            val KEY = compilerFeatureKey<
+                SecondArtifactFeature,
+                EmptyCompilerFeatureState,
+                EmptyCompilerFeatureState,
+            >(EmptyCompilerFeatureState)
+        }
+    }
+
+    private class UnstableFeature : CompilerFeature<EmptyCompilerFeatureState, NumericState> {
+
+        override val key = KEY
+
+        override fun precompile(
+            context: CompilerPrecompileContext<EmptyCompilerFeatureState, NumericState>,
+        ): CompilerFeaturePrecompileResult<NumericState> {
+            val previous = context.previousState?.value ?: 0
+            return CompilerFeaturePrecompileResult(NumericState(previous + 1))
+        }
+
+        companion object {
+            val KEY = compilerFeatureKey<UnstableFeature, EmptyCompilerFeatureState, NumericState>(
+                EmptyCompilerFeatureState,
+            )
+        }
+    }
+
+    private data class FeatureExecution(
+        val key: CompilerFeatureKey<*, *>,
+        val roundNumber: Int,
+        val completedRounds: Int,
+        val dependencyKeys: Set<CompilerFeatureKey<*, *>>,
+    )
+
+    private data class FeatureInvocations(
+        var collects: Int = 0,
+        var precompiles: Int = 0,
+        var renders: Int = 0,
+    )
 
     private data class TextState(
         override val fingerprint: String,
