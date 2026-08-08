@@ -25,6 +25,7 @@ val verifyLsiJimmerArchitecture by tasks.registering(VerifyCompilerArchitecture:
             "kotlin.",
             "org.babyfish.jimmer.dto.compiler.",
             "site.addzero.lsi.codegen.",
+            "site.addzero.lsi.compiler.",
             "site.addzero.lsi.core.",
             "site.addzero.lsi.diagnostic.",
             "site.addzero.lsi.jimmer.",
