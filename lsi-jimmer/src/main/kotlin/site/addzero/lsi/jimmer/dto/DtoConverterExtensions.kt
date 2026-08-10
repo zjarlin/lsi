@@ -15,6 +15,7 @@ import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.copy
 
 /** 返回不可变属性暴露给 DTO 的冻结客户端类型。 */
 fun ImmutableProp.dtoClientType(immutableSchema: ImmutableSchema): LsiType {

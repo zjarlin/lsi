@@ -9,6 +9,7 @@ import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.copy
 
 /**
  * 不可变属性注册到 Draft 运行时所需的语言无关语义。

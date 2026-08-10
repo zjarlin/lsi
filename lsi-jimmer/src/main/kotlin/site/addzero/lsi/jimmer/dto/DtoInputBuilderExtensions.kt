@@ -17,6 +17,7 @@ import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.copy
 
 /** InputBuilder 将属性写入 DTO 时采用的稳定策略。 */
 enum class DtoInputBuilderBuildStrategy {

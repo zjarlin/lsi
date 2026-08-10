@@ -24,6 +24,7 @@ import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSystem
 import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.type.LsiVariance
+import site.addzero.lsi.type.copy
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
 

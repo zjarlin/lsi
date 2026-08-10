@@ -53,6 +53,8 @@ val verifyLsiPublicModel by tasks.registering(VerifyLsiPublicModel::class) {
     requiredInterfaces.set(
         setOf(
             "site.addzero.lsi.anno.LsiAnnotation",
+            "site.addzero.lsi.anno.LsiAnnotationValue",
+            "site.addzero.lsi.anno.LsiSourceAnnotationArgument",
             "site.addzero.lsi.clazz.LsiClass",
             "site.addzero.lsi.clazz.LsiEnumEntry",
             "site.addzero.lsi.field.LsiField",
@@ -61,7 +63,24 @@ val verifyLsiPublicModel by tasks.registering(VerifyLsiPublicModel::class) {
             "site.addzero.lsi.method.LsiConstructor",
             "site.addzero.lsi.method.LsiMethod",
             "site.addzero.lsi.method.LsiParameter",
+            "site.addzero.lsi.model.LsiAccessor",
+            "site.addzero.lsi.model.LsiAnnotationMember",
+            "site.addzero.lsi.model.LsiAnnotationScope",
+            "site.addzero.lsi.model.LsiDeclaration",
+            "site.addzero.lsi.model.LsiFileAnnotationScope",
+            "site.addzero.lsi.model.LsiInitializerBlock",
+            "site.addzero.lsi.model.LsiMember",
+            "site.addzero.lsi.model.LsiOverride",
+            "site.addzero.lsi.model.LsiPackageAnnotationScope",
+            "site.addzero.lsi.type.LsiArrayType",
+            "site.addzero.lsi.type.LsiDeclaredType",
+            "site.addzero.lsi.type.LsiFunctionType",
+            "site.addzero.lsi.type.LsiPrimitiveType",
             "site.addzero.lsi.type.LsiType",
+            "site.addzero.lsi.type.LsiTypeArgument",
+            "site.addzero.lsi.type.LsiTypeParameter",
+            "site.addzero.lsi.type.LsiTypeParameterRef",
+            "site.addzero.lsi.type.LsiUnresolvedType",
         )
     )
     forbiddenLegacyNames.set(

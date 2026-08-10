@@ -24,12 +24,17 @@ val verifyLsiJimmerArchitecture by tasks.registering(VerifyCompilerArchitecture:
             "java.",
             "kotlin.",
             "org.babyfish.jimmer.dto.compiler.",
+            "site.addzero.lsi.anno.",
+            "site.addzero.lsi.clazz.",
             "site.addzero.lsi.codegen.",
             "site.addzero.lsi.compiler.",
             "site.addzero.lsi.core.",
             "site.addzero.lsi.diagnostic.",
+            "site.addzero.lsi.field.",
             "site.addzero.lsi.jimmer.",
+            "site.addzero.lsi.method.",
             "site.addzero.lsi.model.",
+            "site.addzero.lsi.type.",
         )
     )
     additionalForbiddenNamespaces.set(

@@ -30,6 +30,7 @@ import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.clazz.copy
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.copy as copyType
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
 
@@ -136,7 +137,7 @@ class TransactionalWorkspaceExtensionsTest {
             declarationId = LsiSymbolId.type("java.util.List"),
             arguments = listOf(LsiTypeArgument.invariant(stringType)),
         )
-        val outputType = invariantType.copy(
+        val outputType = invariantType.copyType(
             arguments = listOf(LsiTypeArgument.output(stringType)),
         )
         fun withReturnType(returnType: LsiDeclaredType): TransactionalSchema {

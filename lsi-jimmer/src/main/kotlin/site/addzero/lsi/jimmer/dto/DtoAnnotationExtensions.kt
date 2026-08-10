@@ -31,6 +31,7 @@ import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSystem
 import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.type.LsiVariance
+import site.addzero.lsi.type.copy as copyType
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.annotationTargetPolicy
 import site.addzero.lsi.model.stableSignature
@@ -1157,12 +1158,12 @@ private fun LsiType.toDtoAnnotationMemberType(): LsiType {
     return when (this) {
         is LsiDeclaredType -> {
             val canonicalArguments = arguments.map { argument ->
-                argument.copy(type = argument.type?.toDtoAnnotationMemberType())
+                argument.copyType(type = argument.type?.toDtoAnnotationMemberType())
             }.let { frozenArguments ->
                 if (declarationId == KOTLIN_KCLASS_TYPE_ID) {
                     frozenArguments.map { argument ->
                         if (argument.variance == LsiVariance.INVARIANT) {
-                            argument.copy(variance = LsiVariance.OUT)
+                            argument.copyType(variance = LsiVariance.OUT)
                         } else {
                             argument
                         }
@@ -1171,15 +1172,15 @@ private fun LsiType.toDtoAnnotationMemberType(): LsiType {
                     frozenArguments
                 }
             }
-            copy(
+            copyType(
                 declarationId = DTO_ANNOTATION_DECLARED_TYPE_ALIASES[declarationId] ?: declarationId,
                 arguments = canonicalArguments,
             )
         }
         is LsiTypeParameterRef -> this
         is LsiPrimitiveType -> this
-        is LsiArrayType -> copy(elementType = elementType.toDtoAnnotationMemberType())
-        is LsiFunctionType -> copy(
+        is LsiArrayType -> copyType(elementType = elementType.toDtoAnnotationMemberType())
+        is LsiFunctionType -> copyType(
             returnType = returnType.toDtoAnnotationMemberType(),
             receiverType = receiverType?.toDtoAnnotationMemberType(),
             parameterTypes = parameterTypes.map(LsiType::toDtoAnnotationMemberType),

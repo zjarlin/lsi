@@ -11,6 +11,7 @@ import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.type.LsiVariance
+import site.addzero.lsi.type.copy
 
 sealed interface LsiJvmTypeParameterOwner {
 

@@ -32,6 +32,7 @@ import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.copy
 
 class DtoAccessorExtensionsTest {
 

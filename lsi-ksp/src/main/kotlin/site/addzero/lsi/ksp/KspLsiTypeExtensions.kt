@@ -36,6 +36,7 @@ import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.type.LsiVariance
+import site.addzero.lsi.type.copy
 import site.addzero.lsi.model.mergeAnnotations
 import site.addzero.lsi.model.toJvmCallableParameterType
 import site.addzero.lsi.model.toJvmReferenceType

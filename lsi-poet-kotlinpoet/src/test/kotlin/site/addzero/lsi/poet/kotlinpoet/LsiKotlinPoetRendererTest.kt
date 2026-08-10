@@ -25,6 +25,7 @@ import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.copy
 import site.addzero.lsi.codegen.LsiSourceArtifact
 import site.addzero.lsi.model.LsiAccessor
 import site.addzero.lsi.model.LsiBodyStyle

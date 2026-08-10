@@ -47,6 +47,7 @@ import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSeed
 import site.addzero.lsi.model.LsiTypeSeedMode
 import site.addzero.lsi.model.LsiWorkspace
+import site.addzero.lsi.model.copy
 import site.addzero.lsi.model.toJvmCallableParameterType
 import site.addzero.lsi.model.mergeLsiTypeSeeds
 import site.addzero.lsi.type.toAnnotationMemberType

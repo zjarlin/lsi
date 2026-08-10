@@ -110,18 +110,30 @@ interface LsiMember {
     val documentation: String?
 }
 
-/**
- * 指向被覆盖声明，距离一表示直接覆盖。
- */
-data class LsiOverride(
-    val declarationId: LsiSymbolId,
-    val distance: Int = 1
-) {
+/** 指向被覆盖声明，距离一表示直接覆盖。 */
+interface LsiOverride {
+    val declarationId: LsiSymbolId
+    val distance: Int
+}
 
+internal data class FrozenLsiOverride(
+    override val declarationId: LsiSymbolId,
+    override val distance: Int,
+) : LsiOverride {
     init {
         require(distance >= 1) { "LSI override distance must be positive: $distance" }
     }
 }
+
+fun LsiOverride(
+    declarationId: LsiSymbolId,
+    distance: Int = 1,
+): LsiOverride = FrozenLsiOverride(declarationId, distance)
+
+fun LsiOverride.copy(
+    declarationId: LsiSymbolId = this.declarationId,
+    distance: Int = this.distance,
+): LsiOverride = LsiOverride(declarationId, distance)
 
 interface LsiDeclaration {
     val id: LsiSymbolId
@@ -275,13 +287,22 @@ internal data class FrozenLsiClass(
     }
 }
 
-data class LsiAnnotationMember(
-    val name: String,
-    val type: LsiType,
-    val vararg: Boolean = false,
-    val hasDefault: Boolean = false,
-    val declarationIndex: Int? = null,
-) {
+/** 注解声明成员接口。 */
+interface LsiAnnotationMember {
+    val name: String
+    val type: LsiType
+    val vararg: Boolean
+    val hasDefault: Boolean
+    val declarationIndex: Int?
+}
+
+internal data class FrozenLsiAnnotationMember(
+    override val name: String,
+    override val type: LsiType,
+    override val vararg: Boolean,
+    override val hasDefault: Boolean,
+    override val declarationIndex: Int?,
+) : LsiAnnotationMember {
     init {
         require(name.isNotBlank()) { "LSI annotation member name cannot be blank" }
         require(declarationIndex == null || declarationIndex >= 0) {
@@ -295,6 +316,34 @@ data class LsiAnnotationMember(
         }
     }
 }
+
+fun LsiAnnotationMember(
+    name: String,
+    type: LsiType,
+    vararg: Boolean = false,
+    hasDefault: Boolean = false,
+    declarationIndex: Int? = null,
+): LsiAnnotationMember = FrozenLsiAnnotationMember(
+    name,
+    type,
+    vararg,
+    hasDefault,
+    declarationIndex,
+)
+
+fun LsiAnnotationMember.copy(
+    name: String = this.name,
+    type: LsiType = this.type,
+    vararg: Boolean = this.vararg,
+    hasDefault: Boolean = this.hasDefault,
+    declarationIndex: Int? = this.declarationIndex,
+): LsiAnnotationMember = LsiAnnotationMember(
+    name,
+    type,
+    vararg,
+    hasDefault,
+    declarationIndex,
+)
 
 internal data class FrozenLsiEnumEntry(
     override val id: LsiSymbolId,
@@ -671,15 +720,26 @@ internal data class FrozenLsiParameter(
     }
 }
 
-data class LsiAccessor(
-    val annotations: List<LsiAnnotation> = emptyList(),
-    val modifiers: Set<LsiModifier> = emptySet(),
-    val setterParameterName: String = "value",
-    val setterParameterNameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
-    val parameterAnnotations: List<LsiAnnotation> = emptyList(),
-    val body: LsiCodeBlock = LsiCodeBlock.EMPTY,
-    val bodyStyle: LsiBodyStyle = LsiBodyStyle.BLOCK,
-) {
+/** 属性访问器接口。 */
+interface LsiAccessor {
+    val annotations: List<LsiAnnotation>
+    val modifiers: Set<LsiModifier>
+    val setterParameterName: String
+    val setterParameterNameStyle: LsiNameStyle
+    val parameterAnnotations: List<LsiAnnotation>
+    val body: LsiCodeBlock
+    val bodyStyle: LsiBodyStyle
+}
+
+internal data class FrozenLsiAccessor(
+    override val annotations: List<LsiAnnotation>,
+    override val modifiers: Set<LsiModifier>,
+    override val setterParameterName: String,
+    override val setterParameterNameStyle: LsiNameStyle,
+    override val parameterAnnotations: List<LsiAnnotation>,
+    override val body: LsiCodeBlock,
+    override val bodyStyle: LsiBodyStyle,
+) : LsiAccessor {
     init {
         requireSourceDeclarationName(setterParameterName, setterParameterNameStyle, "setter parameter")
         require(bodyStyle != LsiBodyStyle.EXPRESSION || !body.isEmpty) {
@@ -688,18 +748,71 @@ data class LsiAccessor(
     }
 }
 
-data class LsiInitializerBlock(
-    val static: Boolean,
-    val body: LsiCodeBlock,
-    override val annotations: List<LsiAnnotation> = emptyList(),
-    override val documentation: String? = null,
-) : LsiMember {
-    override val modifiers: Set<LsiModifier> = if (static) {
-        setOf(LsiModifier.STATIC)
-    } else {
-        emptySet()
-    }
+fun LsiAccessor(
+    annotations: List<LsiAnnotation> = emptyList(),
+    modifiers: Set<LsiModifier> = emptySet(),
+    setterParameterName: String = "value",
+    setterParameterNameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
+    parameterAnnotations: List<LsiAnnotation> = emptyList(),
+    body: LsiCodeBlock = LsiCodeBlock.EMPTY,
+    bodyStyle: LsiBodyStyle = LsiBodyStyle.BLOCK,
+): LsiAccessor = FrozenLsiAccessor(
+    annotations,
+    modifiers,
+    setterParameterName,
+    setterParameterNameStyle,
+    parameterAnnotations,
+    body,
+    bodyStyle,
+)
+
+fun LsiAccessor.copy(
+    annotations: List<LsiAnnotation> = this.annotations,
+    modifiers: Set<LsiModifier> = this.modifiers,
+    setterParameterName: String = this.setterParameterName,
+    setterParameterNameStyle: LsiNameStyle = this.setterParameterNameStyle,
+    parameterAnnotations: List<LsiAnnotation> = this.parameterAnnotations,
+    body: LsiCodeBlock = this.body,
+    bodyStyle: LsiBodyStyle = this.bodyStyle,
+): LsiAccessor = LsiAccessor(
+    annotations,
+    modifiers,
+    setterParameterName,
+    setterParameterNameStyle,
+    parameterAnnotations,
+    body,
+    bodyStyle,
+)
+
+/** 源码初始化块接口。 */
+interface LsiInitializerBlock : LsiMember {
+    val static: Boolean
+    val body: LsiCodeBlock
+
+    override val modifiers: Set<LsiModifier>
+        get() = if (static) setOf(LsiModifier.STATIC) else emptySet()
 }
+
+internal data class FrozenLsiInitializerBlock(
+    override val static: Boolean,
+    override val body: LsiCodeBlock,
+    override val annotations: List<LsiAnnotation>,
+    override val documentation: String?,
+) : LsiInitializerBlock
+
+fun LsiInitializerBlock(
+    static: Boolean,
+    body: LsiCodeBlock,
+    annotations: List<LsiAnnotation> = emptyList(),
+    documentation: String? = null,
+): LsiInitializerBlock = FrozenLsiInitializerBlock(static, body, annotations, documentation)
+
+fun LsiInitializerBlock.copy(
+    static: Boolean = this.static,
+    body: LsiCodeBlock = this.body,
+    annotations: List<LsiAnnotation> = this.annotations,
+    documentation: String? = this.documentation,
+): LsiInitializerBlock = LsiInitializerBlock(static, body, annotations, documentation)
 
 private val GENERATED_DECLARATION_OWNER_ID = LsiSymbolId.type("site.addzero.lsi.generated.Owner")
 

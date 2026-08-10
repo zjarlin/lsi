@@ -16,6 +16,7 @@ import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.type.LsiVariance
+import site.addzero.lsi.type.copy
 
 data class LsiResolvedProperty(
     val ownerId: LsiSymbolId,
@@ -442,9 +443,11 @@ class LsiTypeSystem(
         if (!isAssignable(source.returnType, target.returnType, visiting)) {
             return false
         }
+        val sourceReceiverType = source.receiverType
+        val targetReceiverType = target.receiverType
         if (
-            source.receiverType != null &&
-            !isAssignable(requireNotNull(target.receiverType), source.receiverType, visiting)
+            sourceReceiverType != null &&
+            !isAssignable(requireNotNull(targetReceiverType), sourceReceiverType, visiting)
         ) {
             return false
         }

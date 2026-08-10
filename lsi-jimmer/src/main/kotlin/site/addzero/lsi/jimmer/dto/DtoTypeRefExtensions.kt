@@ -13,6 +13,7 @@ import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.type.LsiVariance
+import site.addzero.lsi.type.copy
 
 /** 将冻结的 DTO 类型引用解析为目标源码语言的 LSI 类型。 */
 fun DtoTypeRef.toLsiType(targetLanguage: LsiLanguage): LsiType {
