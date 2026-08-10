@@ -1,4 +1,5 @@
 import org.babyfish.jimmer.build.VerifyCompilerArchitecture
+import org.babyfish.jimmer.build.VerifyLsiPublicModel
 
 plugins {
     `kotlin-publish-convention`
@@ -21,16 +22,15 @@ val verifyLsiArchitecture by tasks.registering(VerifyCompilerArchitecture::class
         setOf(
             "java.",
             "kotlin.",
-            "site.addzero.lsi.codegen.",
-            "site.addzero.lsi.core.",
-            "site.addzero.lsi.diagnostic.",
-            "site.addzero.lsi.model.",
+            "site.addzero.lsi.",
         )
     )
     additionalForbiddenNamespaces.set(
         setOf(
             "org.babyfish.jimmer.",
+            "site.addzero.lsi.apt.",
             "site.addzero.lsi.jimmer.",
+            "site.addzero.lsi.ksp.",
             "site.addzero.lsi.poet.",
         )
     )
@@ -42,8 +42,39 @@ val verifyLsiArchitecture by tasks.registering(VerifyCompilerArchitecture::class
     )
 }
 
+val verifyLsiPublicModel by tasks.registering(VerifyLsiPublicModel::class) {
+    group = "verification"
+    description = "验证 LSI 公共结构模型保持接口化且不恢复旧重复声明"
+
+    baseDirectory.set(layout.projectDirectory)
+    sourceFiles.from(fileTree("src/main") {
+        include("**/*.kt")
+    })
+    requiredInterfaces.set(
+        setOf(
+            "site.addzero.lsi.anno.LsiAnnotation",
+            "site.addzero.lsi.clazz.LsiClass",
+            "site.addzero.lsi.clazz.LsiEnumEntry",
+            "site.addzero.lsi.field.LsiField",
+            "site.addzero.lsi.field.LsiProperty",
+            "site.addzero.lsi.file.LsiFile",
+            "site.addzero.lsi.method.LsiConstructor",
+            "site.addzero.lsi.method.LsiMethod",
+            "site.addzero.lsi.method.LsiParameter",
+            "site.addzero.lsi.type.LsiType",
+        )
+    )
+    forbiddenLegacyNames.set(
+        setOf(
+            "LsiFunction",
+            "LsiTypeHierarchyEntry",
+            "LsiTypeName",
+        )
+    )
+}
+
 tasks.named("check") {
-    dependsOn(verifyLsiArchitecture)
+    dependsOn(verifyLsiArchitecture, verifyLsiPublicModel)
 }
 
 private val FORBIDDEN_LSI_MODULE_PREFIXES = setOf(
