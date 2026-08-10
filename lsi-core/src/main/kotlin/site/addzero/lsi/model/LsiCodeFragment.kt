@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.file.LsiImport
 /**
  * 描述可嵌入既有源码文件的代码块及其显式导入依赖。
  */

@@ -29,7 +29,7 @@ import site.addzero.lsi.model.LsiCodeBlock
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.method.LsiMethod
-import site.addzero.lsi.model.LsiImport
+import site.addzero.lsi.file.LsiImport
 import site.addzero.lsi.model.LsiMember
 import site.addzero.lsi.model.LsiModifier
 import site.addzero.lsi.model.LsiNameStyle
@@ -38,7 +38,7 @@ import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeReferenceStyle
-import site.addzero.lsi.model.LsiFile
+import site.addzero.lsi.file.LsiFile
 import site.addzero.lsi.model.sourceLsiAnnotation
 
 class LsiJavaPoetRendererTest {

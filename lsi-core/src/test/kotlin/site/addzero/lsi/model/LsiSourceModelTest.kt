@@ -2,6 +2,9 @@ package site.addzero.lsi.model
 
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.file.LsiFile
+import site.addzero.lsi.file.LsiFileNameStyle
+import site.addzero.lsi.file.LsiImport
 import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.method.LsiParameter
 
