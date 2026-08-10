@@ -1,19 +1,19 @@
-package site.addzero.lsi.poet
+package site.addzero.lsi.model
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class LsiPoetCodeFragmentTest {
+class LsiCodeFragmentTest {
 
     @Test
     fun `models embeddable code and explicit imports together`() {
-        val codeBlock = LsiPoetCodeBlock.build {
+        val codeBlock = LsiCodeBlock.build {
             text("source.by()")
         }
-        val sourceImport = LsiPoetImport("demo.model", "by")
+        val sourceImport = LsiImport("demo.model", "by")
 
-        val fragment = LsiPoetCodeFragment(
+        val fragment = LsiCodeFragment(
             codeBlock = codeBlock,
             imports = listOf(sourceImport),
         )
@@ -24,11 +24,11 @@ class LsiPoetCodeFragmentTest {
 
     @Test
     fun `rejects duplicate explicit imports`() {
-        val sourceImport = LsiPoetImport("demo.model", "by")
+        val sourceImport = LsiImport("demo.model", "by")
 
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetCodeFragment(
-                codeBlock = LsiPoetCodeBlock.EMPTY,
+            LsiCodeFragment(
+                codeBlock = LsiCodeBlock.EMPTY,
                 imports = listOf(sourceImport, sourceImport),
             )
         }

@@ -23,16 +23,15 @@ import site.addzero.lsi.model.LsiTypeParameterRef
 import site.addzero.lsi.model.LsiTypeRef
 import site.addzero.lsi.model.LsiUnresolvedType
 import site.addzero.lsi.model.LsiVariance
-import site.addzero.lsi.poet.LsiPoetAnnotation
-import site.addzero.lsi.poet.LsiPoetAnnotationArgument
-import site.addzero.lsi.poet.LsiPoetAnnotationArgumentLayout
-import site.addzero.lsi.poet.LsiPoetAnnotationArrayStyle
-import site.addzero.lsi.poet.LsiPoetAnnotationValue
-import site.addzero.lsi.poet.LsiPoetClassLiteralStyle
-import site.addzero.lsi.poet.LsiPoetTypeName
-import site.addzero.lsi.poet.LsiPoetTypeReferenceStyle
+import site.addzero.lsi.model.LsiSourceAnnotationArgument
+import site.addzero.lsi.model.LsiAnnotationArgumentLayout
+import site.addzero.lsi.model.LsiAnnotationArrayStyle
+import site.addzero.lsi.model.LsiClassLiteralStyle
+import site.addzero.lsi.model.LsiTypeName
+import site.addzero.lsi.model.LsiTypeReferenceStyle
+import site.addzero.lsi.model.toSourceAnnotation
 
-internal fun LsiTypeRef.toJavaTypeName(typeNames: List<LsiPoetTypeName>): TypeName {
+internal fun LsiTypeRef.toJavaTypeName(typeNames: List<LsiTypeName>): TypeName {
     val typeName = when (this) {
         is LsiPrimitiveType -> {
             val primitiveTypeName = kind.toJavaTypeName()
@@ -89,25 +88,25 @@ internal fun LsiTypeRef.toJavaTypeName(typeNames: List<LsiPoetTypeName>): TypeNa
  * 将声明类型的源码限定方式留在 JavaPoet 边界处理，语义类型本身保持不变。
  */
 internal fun LsiTypeRef.toJavaTypeName(
-    typeNames: List<LsiPoetTypeName>,
-    referenceStyle: LsiPoetTypeReferenceStyle,
+    typeNames: List<LsiTypeName>,
+    referenceStyle: LsiTypeReferenceStyle,
     currentPackageName: String?,
 ): TypeName {
-    if (referenceStyle == LsiPoetTypeReferenceStyle.IMPORTED) {
+    if (referenceStyle == LsiTypeReferenceStyle.IMPORTED) {
         return toJavaTypeName(typeNames)
     }
     val declaredType = this as? LsiDeclaredType
         ?: error("Java declaration type reference style requires a declared type: $this")
     val exactTypeName = typeNames.requireTypeName(declaredType.declarationId)
     val rawType = when (referenceStyle) {
-        LsiPoetTypeReferenceStyle.IMPORTED -> error("Imported Java type is handled before source qualification")
-        LsiPoetTypeReferenceStyle.FULLY_QUALIFIED -> {
+        LsiTypeReferenceStyle.IMPORTED -> error("Imported Java type is handled before source qualification")
+        LsiTypeReferenceStyle.FULLY_QUALIFIED -> {
             val sourceSegments = exactTypeName.packageName
                 .split('.')
                 .filter(String::isNotEmpty) + exactTypeName.simpleNames
             ClassName.get("", sourceSegments.first(), *sourceSegments.drop(1).toTypedArray())
         }
-        LsiPoetTypeReferenceStyle.SAME_PACKAGE_OUTER_QUALIFIED -> {
+        LsiTypeReferenceStyle.SAME_PACKAGE_OUTER_QUALIFIED -> {
             requireNotNull(currentPackageName) {
                 "Same-package outer-qualified Java type requires file package context: ${declaredType.declarationId}"
             }
@@ -157,7 +156,7 @@ internal fun LsiTypeRef.toJavaTypeName(
 }
 
 internal fun LsiTypeParameter.toJavaTypeVariableName(
-    typeNames: List<LsiPoetTypeName>,
+    typeNames: List<LsiTypeName>,
 ): TypeVariableName {
     require(variance == LsiVariance.INVARIANT) {
         "JavaPoet renderer cannot emit declaration-site variance for type parameter: $name"
@@ -171,7 +170,7 @@ internal fun LsiTypeParameter.toJavaTypeVariableName(
 }
 
 internal fun LsiAnnotation.toJavaCoreAnnotationSpec(
-    typeNames: List<LsiPoetTypeName>,
+    typeNames: List<LsiTypeName>,
 ): AnnotationSpec {
     return AnnotationSpec.builder(typeNames.requireJavaClassName(type))
         .apply {
@@ -184,29 +183,30 @@ internal fun LsiAnnotation.toJavaCoreAnnotationSpec(
         .build()
 }
 
-internal fun LsiPoetAnnotation.toJavaSourceAnnotationSpec(
-    typeNames: List<LsiPoetTypeName>,
+internal fun LsiAnnotation.toJavaSourceAnnotationSpec(
+    typeNames: List<LsiTypeName>,
 ): AnnotationSpec {
-    require(argumentLayout == LsiPoetAnnotationArgumentLayout.PLATFORM_DEFAULT) {
+    require(argumentLayout == LsiAnnotationArgumentLayout.PLATFORM_DEFAULT) {
         "JavaPoet renderer cannot honor a forced annotation layout: $type"
     }
-    val positionalArguments = arguments.filterIsInstance<LsiPoetAnnotationArgument.Positional>()
+    val sourceArguments = toSourceAnnotation().sourceArguments
+    val positionalArguments = sourceArguments.filterIsInstance<LsiSourceAnnotationArgument.Positional>()
     require(positionalArguments.size <= 1) {
         "Java annotation cannot represent multiple positional arguments: $type"
     }
-    require(positionalArguments.isEmpty() || arguments.size == 1) {
+    require(positionalArguments.isEmpty() || sourceArguments.size == 1) {
         "Java annotation cannot combine positional and named arguments: $type"
     }
     return AnnotationSpec.builder(typeNames.requireJavaClassName(type))
         .apply {
-            arguments.forEach { argument ->
+            sourceArguments.forEach { argument ->
                 when (argument) {
-                    is LsiPoetAnnotationArgument.Named -> addMember(
+                    is LsiSourceAnnotationArgument.Named -> addMember(
                         argument.name,
                         "\$L",
                         argument.value.toJavaSourceAnnotationValue(typeNames),
                     )
-                    is LsiPoetAnnotationArgument.Positional -> addMember(
+                    is LsiSourceAnnotationArgument.Positional -> addMember(
                         "value",
                         "\$L",
                         argument.value.toJavaSourceAnnotationValue(typeNames),
@@ -234,7 +234,7 @@ private fun LsiPrimitiveKind.toJavaTypeName(): TypeName {
 }
 
 private fun LsiAnnotationValue.toJavaCoreAnnotationValue(
-    typeNames: List<LsiPoetTypeName>,
+    typeNames: List<LsiTypeName>,
 ): CodeBlock {
     return when (this) {
         is LsiAnnotationValue.BooleanValue -> CodeBlock.of("\$L", value)
@@ -274,40 +274,40 @@ private fun LsiAnnotationValue.toJavaCoreAnnotationValue(
     }
 }
 
-private fun LsiPoetAnnotationValue.toJavaSourceAnnotationValue(
-    typeNames: List<LsiPoetTypeName>,
+private fun LsiAnnotationValue.toJavaSourceAnnotationValue(
+    typeNames: List<LsiTypeName>,
 ): CodeBlock {
     return when (this) {
-        is LsiPoetAnnotationValue.BooleanValue -> CodeBlock.of("\$L", value)
-        is LsiPoetAnnotationValue.ByteValue -> CodeBlock.of("\$L", value)
-        is LsiPoetAnnotationValue.ShortValue -> CodeBlock.of("\$L", value)
-        is LsiPoetAnnotationValue.IntValue -> CodeBlock.of("\$L", value)
-        is LsiPoetAnnotationValue.LongValue -> CodeBlock.of("\$LL", value)
-        is LsiPoetAnnotationValue.FloatValue -> CodeBlock.of("\$Lf", value)
-        is LsiPoetAnnotationValue.DoubleValue -> CodeBlock.of("\$L", value)
-        is LsiPoetAnnotationValue.CharValue -> CodeBlock.of("\$L", value.toCharacterLiteral())
-        is LsiPoetAnnotationValue.StringValue -> CodeBlock.of("\$S", value)
-        is LsiPoetAnnotationValue.EnumValue -> CodeBlock.of(
+        is LsiAnnotationValue.BooleanValue -> CodeBlock.of("\$L", value)
+        is LsiAnnotationValue.ByteValue -> CodeBlock.of("\$L", value)
+        is LsiAnnotationValue.ShortValue -> CodeBlock.of("\$L", value)
+        is LsiAnnotationValue.IntValue -> CodeBlock.of("\$L", value)
+        is LsiAnnotationValue.LongValue -> CodeBlock.of("\$LL", value)
+        is LsiAnnotationValue.FloatValue -> CodeBlock.of("\$Lf", value)
+        is LsiAnnotationValue.DoubleValue -> CodeBlock.of("\$L", value)
+        is LsiAnnotationValue.CharValue -> CodeBlock.of("\$L", value.toCharacterLiteral())
+        is LsiAnnotationValue.StringValue -> CodeBlock.of("\$S", value)
+        is LsiAnnotationValue.EnumValue -> CodeBlock.of(
             "\$T.\$L",
             typeNames.requireJavaClassName(enumType),
             entryName,
         )
-        is LsiPoetAnnotationValue.ClassValue -> when (sourceStyle) {
-            LsiPoetClassLiteralStyle.PLATFORM_TYPE -> CodeBlock.of(
+        is LsiAnnotationValue.ClassValue -> when (sourceStyle) {
+            LsiClassLiteralStyle.PLATFORM_TYPE -> CodeBlock.of(
                 "\$T.class",
                 type.toJavaClassLiteralTypeName(typeNames),
             )
-            LsiPoetClassLiteralStyle.JAVA_BOXED_PRIMITIVE_QUALIFIED -> CodeBlock.of(
+            LsiClassLiteralStyle.JAVA_BOXED_PRIMITIVE_QUALIFIED -> CodeBlock.of(
                 "\$L.class",
                 type.toJavaBoxedQualifiedName(),
             )
         }
-        is LsiPoetAnnotationValue.NestedAnnotationValue -> CodeBlock.of(
+        is LsiAnnotationValue.NestedAnnotationValue -> CodeBlock.of(
             "\$L",
             annotation.toJavaSourceAnnotationSpec(typeNames),
         )
-        is LsiPoetAnnotationValue.ArrayValue -> when (sourceStyle) {
-            LsiPoetAnnotationArrayStyle.LITERAL -> CodeBlock.builder()
+        is LsiAnnotationValue.ArrayValue -> when (sourceStyle) {
+            LsiAnnotationArrayStyle.LITERAL -> CodeBlock.builder()
                 .add("{")
                 .apply {
                     elements.forEachIndexed { index, element ->
@@ -319,7 +319,7 @@ private fun LsiPoetAnnotationValue.toJavaSourceAnnotationValue(
                 }
                 .add("}")
                 .build()
-            LsiPoetAnnotationArrayStyle.LINE_SEPARATED_LITERAL -> CodeBlock.builder()
+            LsiAnnotationArrayStyle.LINE_SEPARATED_LITERAL -> CodeBlock.builder()
                 .add("{")
                 .apply {
                     elements.forEachIndexed { index, element ->
@@ -331,7 +331,7 @@ private fun LsiPoetAnnotationValue.toJavaSourceAnnotationValue(
                 }
                 .add("}")
                 .build()
-            LsiPoetAnnotationArrayStyle.MULTI_LINE_LITERAL -> CodeBlock.builder()
+            LsiAnnotationArrayStyle.MULTI_LINE_LITERAL -> CodeBlock.builder()
                 .add("{\n\$>")
                 .apply {
                     elements.forEachIndexed { index, element ->
@@ -343,7 +343,7 @@ private fun LsiPoetAnnotationValue.toJavaSourceAnnotationValue(
                 }
                 .add("\$<\n}")
                 .build()
-            LsiPoetAnnotationArrayStyle.COMPACT_MULTI_LINE_LITERAL -> CodeBlock.builder()
+            LsiAnnotationArrayStyle.COMPACT_MULTI_LINE_LITERAL -> CodeBlock.builder()
                 .add("{\n\$>")
                 .apply {
                     elements.forEachIndexed { index, element ->
@@ -355,7 +355,7 @@ private fun LsiPoetAnnotationValue.toJavaSourceAnnotationValue(
                 }
                 .add("\$<\n}")
                 .build()
-            LsiPoetAnnotationArrayStyle.KOTLIN_ARRAY_OF -> throw IllegalArgumentException(
+            LsiAnnotationArrayStyle.KOTLIN_ARRAY_OF -> throw IllegalArgumentException(
                 "JavaPoet renderer cannot emit an annotation array factory call"
             )
         }
@@ -363,7 +363,7 @@ private fun LsiPoetAnnotationValue.toJavaSourceAnnotationValue(
 }
 
 private fun LsiTypeRef.toJavaClassLiteralTypeName(
-    typeNames: List<LsiPoetTypeName>,
+    typeNames: List<LsiTypeName>,
 ): TypeName {
     val primitive = this as? LsiPrimitiveType
     return if (primitive?.kind == LsiPrimitiveKind.UNIT) {
@@ -393,7 +393,7 @@ private fun LsiTypeRef.toJavaBoxedQualifiedName(): String {
     }
 }
 
-private fun List<LsiPoetTypeName>.requireJavaClassName(typeId: LsiSymbolId): ClassName {
+private fun List<LsiTypeName>.requireJavaClassName(typeId: LsiSymbolId): ClassName {
     val typeName = requireTypeName(typeId)
     return ClassName.get(
         typeName.packageName,
@@ -402,9 +402,9 @@ private fun List<LsiPoetTypeName>.requireJavaClassName(typeId: LsiSymbolId): Cla
     )
 }
 
-private fun List<LsiPoetTypeName>.requireTypeName(
+private fun List<LsiTypeName>.requireTypeName(
     typeId: LsiSymbolId,
-): LsiPoetTypeName {
+): LsiTypeName {
     val matches = filter { typeName -> typeName.typeId == typeId }
     require(matches.size == 1) {
         "JavaPoet renderer requires exactly one source type name for $typeId, found ${matches.size}"

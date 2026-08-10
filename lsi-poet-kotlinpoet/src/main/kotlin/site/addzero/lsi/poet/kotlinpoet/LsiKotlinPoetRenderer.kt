@@ -14,28 +14,28 @@ import site.addzero.lsi.codegen.GeneratedArtifact
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.poet.LsiPoetAccessor
-import site.addzero.lsi.poet.LsiPoetArtifact
-import site.addzero.lsi.poet.LsiPoetAnnotation
-import site.addzero.lsi.poet.LsiPoetBodyStyle
-import site.addzero.lsi.poet.LsiPoetCodeBlockIndentation
-import site.addzero.lsi.poet.LsiPoetBracedExpressionCompletion
-import site.addzero.lsi.poet.LsiPoetCodeBlock
-import site.addzero.lsi.poet.LsiPoetCodePart
-import site.addzero.lsi.poet.LsiPoetConstructor
-import site.addzero.lsi.poet.LsiPoetDelegationTarget
-import site.addzero.lsi.poet.LsiPoetEnumConstant
-import site.addzero.lsi.poet.LsiPoetField
-import site.addzero.lsi.poet.LsiPoetFunction
-import site.addzero.lsi.poet.LsiPoetInitializerBlock
-import site.addzero.lsi.poet.LsiPoetMember
-import site.addzero.lsi.poet.LsiPoetModifier
-import site.addzero.lsi.poet.LsiPoetParameter
-import site.addzero.lsi.poet.LsiPoetProperty
+import site.addzero.lsi.model.LsiAccessor
+import site.addzero.lsi.codegen.LsiSourceArtifact
+import site.addzero.lsi.model.LsiAnnotation
+import site.addzero.lsi.model.LsiBodyStyle
+import site.addzero.lsi.model.LsiCodeBlockIndentation
+import site.addzero.lsi.model.LsiBracedExpressionCompletion
+import site.addzero.lsi.model.LsiCodeBlock
+import site.addzero.lsi.model.LsiCodePart
+import site.addzero.lsi.model.LsiConstructor
+import site.addzero.lsi.model.LsiDelegationTarget
+import site.addzero.lsi.model.LsiEnumEntry
+import site.addzero.lsi.model.LsiField
+import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.model.LsiInitializerBlock
+import site.addzero.lsi.model.LsiMember
+import site.addzero.lsi.model.LsiModifier
+import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.poet.LsiPoetRenderer
-import site.addzero.lsi.poet.LsiPoetType
-import site.addzero.lsi.poet.LsiPoetTypeName
-import site.addzero.lsi.poet.LsiPoetTypeReferenceStyle
+import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.model.LsiTypeName
+import site.addzero.lsi.model.LsiTypeReferenceStyle
 
 /**
  * 在边界内使用 KotlinPoet 渲染 Kotlin 源码。
@@ -45,15 +45,15 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
     /** 将单个 LSI 类型引用渲染为可嵌入现有 KotlinPoet 声明的类型。 */
     fun renderTypeName(
         type: LsiTypeRef,
-        typeNames: List<LsiPoetTypeName>,
+        typeNames: List<LsiTypeName>,
     ): TypeName {
         return type.toKotlinTypeName(typeNames)
     }
 
     /** 将任意 LSI Poet 代码块渲染为可嵌入现有 KotlinPoet 声明的代码块。 */
     fun renderCodeBlock(
-        codeBlock: LsiPoetCodeBlock,
-        typeNames: List<LsiPoetTypeName>,
+        codeBlock: LsiCodeBlock,
+        typeNames: List<LsiTypeName>,
     ): CodeBlock {
         return codeBlock.toKotlinCodeBlock(typeNames)
     }
@@ -61,53 +61,53 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
     /** 将 LSI 代码块直接追加到现有 KotlinPoet builder，保留外围语句和缩进状态。 */
     fun appendCodeBlock(
         builder: CodeBlock.Builder,
-        codeBlock: LsiPoetCodeBlock,
-        typeNames: List<LsiPoetTypeName>,
+        codeBlock: LsiCodeBlock,
+        typeNames: List<LsiTypeName>,
     ) {
         codeBlock.appendToKotlinCodeBlock(builder, typeNames)
     }
 
     /** 将单个 LSI 类型渲染为可嵌入现有 KotlinPoet 声明的结构。 */
     fun renderType(
-        type: LsiPoetType,
-        typeNames: List<LsiPoetTypeName>,
+        type: LsiTypeDeclaration,
+        typeNames: List<LsiTypeName>,
     ): TypeSpec {
         return type.toKotlinTypeSpec(typeNames)
     }
 
     /** 将单个 LSI 函数渲染为可嵌入现有 KotlinPoet 类型的结构。 */
     fun renderFunction(
-        function: LsiPoetFunction,
-        typeNames: List<LsiPoetTypeName>,
+        function: LsiFunction,
+        typeNames: List<LsiTypeName>,
     ): FunSpec {
         return function.toKotlinFunction(typeNames)
     }
 
     /** 将单个 LSI 属性渲染为可嵌入现有 KotlinPoet 类型的结构。 */
     fun renderProperty(
-        property: LsiPoetProperty,
-        typeNames: List<LsiPoetTypeName>,
+        property: LsiProperty,
+        typeNames: List<LsiTypeName>,
     ): PropertySpec {
         return property.toKotlinProperty(typeNames)
     }
 
     /** 将单个 LSI Poet 注解渲染为可嵌入现有 KotlinPoet 声明的结构。 */
     fun renderAnnotation(
-        annotation: LsiPoetAnnotation,
-        typeNames: List<LsiPoetTypeName>,
+        annotation: LsiAnnotation,
+        typeNames: List<LsiTypeName>,
     ): AnnotationSpec {
         return annotation.toKotlinSourceAnnotationSpec(typeNames)
     }
 
     /** 按声明顺序将 LSI Poet 注解列表渲染为 KotlinPoet 结构。 */
     fun renderAnnotations(
-        annotations: List<LsiPoetAnnotation>,
-        typeNames: List<LsiPoetTypeName>,
+        annotations: List<LsiAnnotation>,
+        typeNames: List<LsiTypeName>,
     ): List<AnnotationSpec> {
         return annotations.map { annotation -> renderAnnotation(annotation, typeNames) }
     }
 
-    override fun render(artifact: LsiPoetArtifact): GeneratedArtifact {
+    override fun render(artifact: LsiSourceArtifact): GeneratedArtifact {
         val file = artifact.file
         require(file.language == LsiLanguage.KOTLIN) {
             "KotlinPoet renderer requires a Kotlin LSI Poet file: ${artifact.qualifiedFileName}"
@@ -127,25 +127,25 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
 }
 
 private fun FileSpec.Builder.addKotlinTopLevelMember(
-    member: LsiPoetMember,
-    typeNames: List<LsiPoetTypeName>,
+    member: LsiMember,
+    typeNames: List<LsiTypeName>,
 ) {
     when (member) {
-        is LsiPoetFunction -> addFunction(member.toKotlinFunction(typeNames))
-        is LsiPoetProperty -> addProperty(member.toKotlinProperty(typeNames))
-        is LsiPoetType -> addType(member.toKotlinTypeSpec(typeNames))
-        is LsiPoetConstructor -> error("KotlinPoet renderer cannot emit a top-level constructor")
-        is LsiPoetField -> error("KotlinPoet renderer cannot emit a field: ${member.name}")
-        is LsiPoetInitializerBlock -> error("KotlinPoet renderer cannot emit a top-level initializer block")
+        is LsiFunction -> addFunction(member.toKotlinFunction(typeNames))
+        is LsiProperty -> addProperty(member.toKotlinProperty(typeNames))
+        is LsiTypeDeclaration -> addType(member.toKotlinTypeSpec(typeNames))
+        is LsiConstructor -> error("KotlinPoet renderer cannot emit a top-level constructor")
+        is LsiField -> error("KotlinPoet renderer cannot emit a field: ${member.name}")
+        is LsiInitializerBlock -> error("KotlinPoet renderer cannot emit a top-level initializer block")
     }
 }
 
-private fun LsiPoetType.toKotlinTypeSpec(typeNames: List<LsiPoetTypeName>): TypeSpec {
+private fun LsiTypeDeclaration.toKotlinTypeSpec(typeNames: List<LsiTypeName>): TypeSpec {
     val builder = when (kind) {
         LsiTypeDeclarationKind.CLASS -> TypeSpec.classBuilder(name)
         LsiTypeDeclarationKind.INTERFACE -> TypeSpec.interfaceBuilder(name)
         LsiTypeDeclarationKind.ENUM -> TypeSpec.enumBuilder(name)
-        LsiTypeDeclarationKind.OBJECT -> if (LsiPoetModifier.COMPANION in modifiers) {
+        LsiTypeDeclarationKind.OBJECT -> if (LsiModifier.COMPANION in modifiers) {
             TypeSpec.companionObjectBuilder(name.takeUnless { candidate -> candidate == "Companion" })
         } else {
             TypeSpec.objectBuilder(name)
@@ -166,14 +166,14 @@ private fun LsiPoetType.toKotlinTypeSpec(typeNames: List<LsiPoetTypeName>): Type
         builder.addSuperclassConstructorParameter(argument.toKotlinCodeBlock(typeNames))
     }
     superInterfaces.forEach { type -> builder.addSuperinterface(type.toKotlinTypeName(typeNames)) }
-    enumConstants.forEach { constant -> builder.addKotlinEnumConstant(constant, typeNames) }
+    enumEntries.forEach { constant -> builder.addKotlinEnumConstant(constant, typeNames) }
     members.forEach { member -> builder.addKotlinMember(member, typeNames) }
     return builder.build()
 }
 
 private fun TypeSpec.Builder.addKotlinEnumConstant(
-    constant: LsiPoetEnumConstant,
-    typeNames: List<LsiPoetTypeName>,
+    constant: LsiEnumEntry,
+    typeNames: List<LsiTypeName>,
 ) {
     if (constant.constructorArguments.isEmpty() && constant.anonymousType == null) {
         addEnumConstant(constant.name)
@@ -184,7 +184,7 @@ private fun TypeSpec.Builder.addKotlinEnumConstant(
         anonymousBuilder.addSuperclassConstructorParameter(argument.toKotlinCodeBlock(typeNames))
     }
     constant.anonymousType?.let { type ->
-        require(type.primaryConstructor == null && type.enumConstants.isEmpty()) {
+        require(type.primaryConstructor == null && type.enumEntries.isEmpty()) {
             "Kotlin enum constant anonymous type cannot declare constructors or enum constants: ${constant.name}"
         }
         type.annotations.forEach { annotation ->
@@ -199,22 +199,22 @@ private fun TypeSpec.Builder.addKotlinEnumConstant(
 }
 
 private fun TypeSpec.Builder.addKotlinMember(
-    member: LsiPoetMember,
-    typeNames: List<LsiPoetTypeName>,
+    member: LsiMember,
+    typeNames: List<LsiTypeName>,
 ) {
     when (member) {
-        is LsiPoetConstructor -> addFunction(member.toKotlinConstructor(typeNames, primary = false))
-        is LsiPoetField -> error("KotlinPoet renderer cannot emit a field: ${member.name}")
-        is LsiPoetFunction -> addFunction(member.toKotlinFunction(typeNames))
-        is LsiPoetInitializerBlock -> addKotlinInitializer(member, typeNames)
-        is LsiPoetProperty -> addProperty(member.toKotlinProperty(typeNames))
-        is LsiPoetType -> addType(member.toKotlinTypeSpec(typeNames))
+        is LsiConstructor -> addFunction(member.toKotlinConstructor(typeNames, primary = false))
+        is LsiField -> error("KotlinPoet renderer cannot emit a field: ${member.name}")
+        is LsiFunction -> addFunction(member.toKotlinFunction(typeNames))
+        is LsiInitializerBlock -> addKotlinInitializer(member, typeNames)
+        is LsiProperty -> addProperty(member.toKotlinProperty(typeNames))
+        is LsiTypeDeclaration -> addType(member.toKotlinTypeSpec(typeNames))
     }
 }
 
 private fun TypeSpec.Builder.addKotlinInitializer(
-    initializer: LsiPoetInitializerBlock,
-    typeNames: List<LsiPoetTypeName>,
+    initializer: LsiInitializerBlock,
+    typeNames: List<LsiTypeName>,
 ) {
     require(!initializer.static) {
         "KotlinPoet renderer cannot emit a static initializer block"
@@ -225,8 +225,8 @@ private fun TypeSpec.Builder.addKotlinInitializer(
     addInitializerBlock(initializer.body.toKotlinCodeBlock(typeNames))
 }
 
-private fun LsiPoetConstructor.toKotlinConstructor(
-    typeNames: List<LsiPoetTypeName>,
+private fun LsiConstructor.toKotlinConstructor(
+    typeNames: List<LsiTypeName>,
     primary: Boolean,
 ): FunSpec {
     if (primary) {
@@ -246,15 +246,15 @@ private fun LsiPoetConstructor.toKotlinConstructor(
     delegationCall?.let { delegation ->
         val arguments = delegation.arguments.map { argument -> argument.toKotlinCodeBlock(typeNames) }.toTypedArray()
         when (delegation.target) {
-            LsiPoetDelegationTarget.THIS -> builder.callThisConstructor(*arguments)
-            LsiPoetDelegationTarget.SUPER -> builder.callSuperConstructor(*arguments)
+            LsiDelegationTarget.THIS -> builder.callThisConstructor(*arguments)
+            LsiDelegationTarget.SUPER -> builder.callSuperConstructor(*arguments)
         }
     }
     builder.addCode(body.toKotlinCodeBlock(typeNames))
     return builder.build()
 }
 
-private fun LsiPoetFunction.toKotlinFunction(typeNames: List<LsiPoetTypeName>): FunSpec {
+private fun LsiFunction.toKotlinFunction(typeNames: List<LsiTypeName>): FunSpec {
     val builder = FunSpec.builder(name)
         .addModifiers(*modifiers.toKotlinModifiers(KotlinModifierContext.FUNCTION))
     annotations.forEach { annotation -> builder.addAnnotation(annotation.toKotlinSourceAnnotationSpec(typeNames)) }
@@ -272,13 +272,13 @@ private fun LsiPoetFunction.toKotlinFunction(typeNames: List<LsiPoetTypeName>): 
     returnType?.let { type -> builder.returns(type.toKotlinTypeName(typeNames)) }
     builder.addThrownTypes(thrownTypes, typeNames)
     when (bodyStyle) {
-        LsiPoetBodyStyle.BLOCK -> builder.addCode(body.toKotlinCodeBlock(typeNames))
-        LsiPoetBodyStyle.EXPRESSION -> builder.addCode("return %L", body.toKotlinCodeBlock(typeNames))
+        LsiBodyStyle.BLOCK -> builder.addCode(body.toKotlinCodeBlock(typeNames))
+        LsiBodyStyle.EXPRESSION -> builder.addCode("return %L", body.toKotlinCodeBlock(typeNames))
     }
     return builder.build()
 }
 
-private fun LsiPoetParameter.toKotlinParameter(typeNames: List<LsiPoetTypeName>): ParameterSpec {
+private fun LsiParameter.toKotlinParameter(typeNames: List<LsiTypeName>): ParameterSpec {
     val builder = ParameterSpec.builder(name, type.toKotlinTypeName(typeNames))
         .addModifiers(*modifiers.toKotlinModifiers(KotlinModifierContext.PARAMETER))
     annotations.forEach { annotation -> builder.addAnnotation(annotation.toKotlinSourceAnnotationSpec(typeNames)) }
@@ -286,7 +286,7 @@ private fun LsiPoetParameter.toKotlinParameter(typeNames: List<LsiPoetTypeName>)
     return builder.build()
 }
 
-private fun LsiPoetProperty.toKotlinProperty(typeNames: List<LsiPoetTypeName>): PropertySpec {
+private fun LsiProperty.toKotlinProperty(typeNames: List<LsiTypeName>): PropertySpec {
     val builder = PropertySpec.builder(name, type.toKotlinTypeName(typeNames))
         .mutable(mutable)
         .addModifiers(*modifiers.toKotlinModifiers(KotlinModifierContext.PROPERTY))
@@ -299,7 +299,7 @@ private fun LsiPoetProperty.toKotlinProperty(typeNames: List<LsiPoetTypeName>): 
     return builder.build()
 }
 
-private fun LsiPoetAccessor.toKotlinGetter(typeNames: List<LsiPoetTypeName>): FunSpec {
+private fun LsiAccessor.toKotlinGetter(typeNames: List<LsiTypeName>): FunSpec {
     require(parameterAnnotations.isEmpty()) {
         "Kotlin getter cannot declare setter parameter annotations"
     }
@@ -307,17 +307,17 @@ private fun LsiPoetAccessor.toKotlinGetter(typeNames: List<LsiPoetTypeName>): Fu
         .addModifiers(*modifiers.toKotlinModifiers(KotlinModifierContext.ACCESSOR))
     annotations.forEach { annotation -> builder.addAnnotation(annotation.toKotlinSourceAnnotationSpec(typeNames)) }
     when (bodyStyle) {
-        LsiPoetBodyStyle.BLOCK -> builder.addCode(body.toKotlinCodeBlock(typeNames))
-        LsiPoetBodyStyle.EXPRESSION -> builder.addCode("return %L", body.toKotlinCodeBlock(typeNames))
+        LsiBodyStyle.BLOCK -> builder.addCode(body.toKotlinCodeBlock(typeNames))
+        LsiBodyStyle.EXPRESSION -> builder.addCode("return %L", body.toKotlinCodeBlock(typeNames))
     }
     return builder.build()
 }
 
-private fun LsiPoetAccessor.toKotlinSetter(
+private fun LsiAccessor.toKotlinSetter(
     type: LsiTypeRef,
-    typeNames: List<LsiPoetTypeName>,
+    typeNames: List<LsiTypeName>,
 ): FunSpec {
-    require(bodyStyle == LsiPoetBodyStyle.BLOCK) {
+    require(bodyStyle == LsiBodyStyle.BLOCK) {
         "KotlinPoet renderer cannot emit an expression setter body"
     }
     val parameter = ParameterSpec.builder(setterParameterName, type.toKotlinTypeName(typeNames))
@@ -335,67 +335,67 @@ private fun LsiPoetAccessor.toKotlinSetter(
     return builder.build()
 }
 
-private fun LsiPoetCodeBlock.toKotlinCodeBlock(typeNames: List<LsiPoetTypeName>): CodeBlock {
+private fun LsiCodeBlock.toKotlinCodeBlock(typeNames: List<LsiTypeName>): CodeBlock {
     val builder = CodeBlock.builder()
     appendToKotlinCodeBlock(builder, typeNames)
     return builder.build()
 }
 
-private fun LsiPoetCodeBlock.appendToKotlinCodeBlock(
+private fun LsiCodeBlock.appendToKotlinCodeBlock(
     builder: CodeBlock.Builder,
-    typeNames: List<LsiPoetTypeName>,
+    typeNames: List<LsiTypeName>,
 ) {
-    if (indentation == LsiPoetCodeBlockIndentation.EXPLICIT) {
+    if (indentation == LsiCodeBlockIndentation.EXPLICIT) {
         // 空语句标记只抑制外围声明的双倍续行缩进，不产生任何源码字符。
         builder.add("«»")
     }
     parts.forEach { part ->
         when (part) {
-            is LsiPoetCodePart.BeginControlFlow -> builder.beginControlFlow(
+            is LsiCodePart.BeginControlFlow -> builder.beginControlFlow(
                 "%L",
                 part.header.toKotlinCodeBlock(typeNames),
             )
-            is LsiPoetCodePart.BracedExpression -> builder.addKotlinBracedExpression(part, typeNames)
-            is LsiPoetCodePart.CharacterLiteral -> builder.add("%L", part.value.kotlinCharacterLiteral())
-            LsiPoetCodePart.EndControlFlow -> builder.endControlFlow()
-            LsiPoetCodePart.Indent -> builder.indent()
-            is LsiPoetCodePart.Literal -> builder.add("%L", part.value)
-            is LsiPoetCodePart.Name -> builder.add("%N", part.value)
-            LsiPoetCodePart.NewLine -> builder.add("\n")
-            is LsiPoetCodePart.NextControlFlow -> builder.nextControlFlow(
+            is LsiCodePart.BracedExpression -> builder.addKotlinBracedExpression(part, typeNames)
+            is LsiCodePart.CharacterLiteral -> builder.add("%L", part.value.kotlinCharacterLiteral())
+            LsiCodePart.EndControlFlow -> builder.endControlFlow()
+            LsiCodePart.Indent -> builder.indent()
+            is LsiCodePart.Literal -> builder.add("%L", part.value)
+            is LsiCodePart.Name -> builder.add("%N", part.value)
+            LsiCodePart.NewLine -> builder.add("\n")
+            is LsiCodePart.NextControlFlow -> builder.nextControlFlow(
                 "%L",
                 part.header.toKotlinCodeBlock(typeNames),
             )
-            is LsiPoetCodePart.Return -> part.value?.let { value ->
+            is LsiCodePart.Return -> part.value?.let { value ->
                 builder.addStatement("return %L", value.toKotlinCodeBlock(typeNames))
             } ?: builder.addStatement("return")
-            is LsiPoetCodePart.Statement -> builder.addStatement("%L", part.value.toKotlinCodeBlock(typeNames))
-            is LsiPoetCodePart.StringLiteral -> builder.add("%S", part.value)
-            is LsiPoetCodePart.Text -> builder.add("%L", part.value)
-            is LsiPoetCodePart.TopLevelMember -> builder.add(
+            is LsiCodePart.Statement -> builder.addStatement("%L", part.value.toKotlinCodeBlock(typeNames))
+            is LsiCodePart.StringLiteral -> builder.add("%S", part.value)
+            is LsiCodePart.Text -> builder.add("%L", part.value)
+            is LsiCodePart.TopLevelMember -> builder.add(
                 "%M",
                 MemberName(part.packageName, part.simpleName, part.extension),
             )
-            is LsiPoetCodePart.Type -> when (part.referenceStyle) {
-                LsiPoetTypeReferenceStyle.IMPORTED -> builder.add("%T", part.value.toKotlinTypeName(typeNames))
-                LsiPoetTypeReferenceStyle.FULLY_QUALIFIED -> builder.add(
+            is LsiCodePart.Type -> when (part.referenceStyle) {
+                LsiTypeReferenceStyle.IMPORTED -> builder.add("%T", part.value.toKotlinTypeName(typeNames))
+                LsiTypeReferenceStyle.FULLY_QUALIFIED -> builder.add(
                     "%L",
                     part.value.toKotlinTypeName(typeNames),
                 )
-                LsiPoetTypeReferenceStyle.SAME_PACKAGE_OUTER_QUALIFIED -> error(
+                LsiTypeReferenceStyle.SAME_PACKAGE_OUTER_QUALIFIED -> error(
                     "Same-package outer-qualified type references are only valid for Java declarations"
                 )
             }
-            LsiPoetCodePart.Unindent -> builder.unindent()
+            LsiCodePart.Unindent -> builder.unindent()
         }
     }
 }
 
 private fun CodeBlock.Builder.addKotlinBracedExpression(
-    expression: LsiPoetCodePart.BracedExpression,
-    typeNames: List<LsiPoetTypeName>,
+    expression: LsiCodePart.BracedExpression,
+    typeNames: List<LsiTypeName>,
 ) {
-    if (expression.completion == LsiPoetBracedExpressionCompletion.RETURN) {
+    if (expression.completion == LsiBracedExpressionCompletion.RETURN) {
         add("return ")
     }
     add("%L", expression.prefix.toKotlinCodeBlock(typeNames))
@@ -410,7 +410,7 @@ private fun CodeBlock.Builder.addKotlinBracedExpression(
 
 private fun FunSpec.Builder.addThrownTypes(
     thrownTypes: List<LsiTypeRef>,
-    typeNames: List<LsiPoetTypeName>,
+    typeNames: List<LsiTypeName>,
 ) {
     if (thrownTypes.isEmpty()) {
         return
@@ -434,7 +434,7 @@ private enum class KotlinModifierContext {
     ACCESSOR,
 }
 
-private fun Set<LsiPoetModifier>.toKotlinModifiers(
+private fun Set<LsiModifier>.toKotlinModifiers(
     context: KotlinModifierContext,
 ): Array<KModifier> {
     return sorted().mapNotNullTo(linkedSetOf()) { modifier ->
@@ -442,39 +442,39 @@ private fun Set<LsiPoetModifier>.toKotlinModifiers(
     }.toTypedArray()
 }
 
-private fun LsiPoetModifier.toKotlinModifier(context: KotlinModifierContext): KModifier? {
+private fun LsiModifier.toKotlinModifier(context: KotlinModifierContext): KModifier? {
     val modifier = when (this) {
-        LsiPoetModifier.PUBLIC -> KModifier.PUBLIC
-        LsiPoetModifier.PROTECTED -> KModifier.PROTECTED
-        LsiPoetModifier.INTERNAL -> KModifier.INTERNAL
-        LsiPoetModifier.PRIVATE -> KModifier.PRIVATE
-        LsiPoetModifier.ABSTRACT -> KModifier.ABSTRACT
-        LsiPoetModifier.OPEN -> KModifier.OPEN
-        LsiPoetModifier.FINAL -> KModifier.FINAL
-        LsiPoetModifier.SEALED -> KModifier.SEALED
-        LsiPoetModifier.CONST -> KModifier.CONST
-        LsiPoetModifier.OVERRIDE -> KModifier.OVERRIDE
-        LsiPoetModifier.INLINE -> KModifier.INLINE
-        LsiPoetModifier.NOINLINE -> KModifier.NOINLINE
-        LsiPoetModifier.CROSSINLINE -> KModifier.CROSSINLINE
-        LsiPoetModifier.TAILREC -> KModifier.TAILREC
-        LsiPoetModifier.SUSPEND -> KModifier.SUSPEND
-        LsiPoetModifier.OPERATOR -> KModifier.OPERATOR
-        LsiPoetModifier.INFIX -> KModifier.INFIX
-        LsiPoetModifier.EXTERNAL -> KModifier.EXTERNAL
-        LsiPoetModifier.LATEINIT -> KModifier.LATEINIT
-        LsiPoetModifier.DATA -> KModifier.DATA
-        LsiPoetModifier.VALUE -> KModifier.VALUE
-        LsiPoetModifier.INNER -> KModifier.INNER
-        LsiPoetModifier.VARARG -> KModifier.VARARG
-        LsiPoetModifier.COMPANION,
-        LsiPoetModifier.DEFAULT,
+        LsiModifier.PUBLIC -> KModifier.PUBLIC
+        LsiModifier.PROTECTED -> KModifier.PROTECTED
+        LsiModifier.INTERNAL -> KModifier.INTERNAL
+        LsiModifier.PRIVATE -> KModifier.PRIVATE
+        LsiModifier.ABSTRACT -> KModifier.ABSTRACT
+        LsiModifier.OPEN -> KModifier.OPEN
+        LsiModifier.FINAL -> KModifier.FINAL
+        LsiModifier.SEALED -> KModifier.SEALED
+        LsiModifier.CONST -> KModifier.CONST
+        LsiModifier.OVERRIDE -> KModifier.OVERRIDE
+        LsiModifier.INLINE -> KModifier.INLINE
+        LsiModifier.NOINLINE -> KModifier.NOINLINE
+        LsiModifier.CROSSINLINE -> KModifier.CROSSINLINE
+        LsiModifier.TAILREC -> KModifier.TAILREC
+        LsiModifier.SUSPEND -> KModifier.SUSPEND
+        LsiModifier.OPERATOR -> KModifier.OPERATOR
+        LsiModifier.INFIX -> KModifier.INFIX
+        LsiModifier.EXTERNAL -> KModifier.EXTERNAL
+        LsiModifier.LATEINIT -> KModifier.LATEINIT
+        LsiModifier.DATA -> KModifier.DATA
+        LsiModifier.VALUE -> KModifier.VALUE
+        LsiModifier.INNER -> KModifier.INNER
+        LsiModifier.VARARG -> KModifier.VARARG
+        LsiModifier.COMPANION,
+        LsiModifier.DEFAULT,
         -> null
-        LsiPoetModifier.STATIC,
-        LsiPoetModifier.SYNCHRONIZED,
-        LsiPoetModifier.NATIVE,
-        LsiPoetModifier.TRANSIENT,
-        LsiPoetModifier.VOLATILE,
+        LsiModifier.STATIC,
+        LsiModifier.SYNCHRONIZED,
+        LsiModifier.NATIVE,
+        LsiModifier.TRANSIENT,
+        LsiModifier.VOLATILE,
         -> error("KotlinPoet renderer cannot emit modifier $this for $context")
     }
     require(isAllowedInKotlin(context)) {
@@ -483,46 +483,46 @@ private fun LsiPoetModifier.toKotlinModifier(context: KotlinModifierContext): KM
     return modifier
 }
 
-private fun LsiPoetModifier.isAllowedInKotlin(context: KotlinModifierContext): Boolean {
+private fun LsiModifier.isAllowedInKotlin(context: KotlinModifierContext): Boolean {
     return when (this) {
-        LsiPoetModifier.PUBLIC,
-        LsiPoetModifier.PROTECTED,
-        LsiPoetModifier.INTERNAL,
-        LsiPoetModifier.PRIVATE,
+        LsiModifier.PUBLIC,
+        LsiModifier.PROTECTED,
+        LsiModifier.INTERNAL,
+        LsiModifier.PRIVATE,
         -> context != KotlinModifierContext.PARAMETER
-        LsiPoetModifier.ABSTRACT,
-        LsiPoetModifier.OPEN,
-        LsiPoetModifier.FINAL,
+        LsiModifier.ABSTRACT,
+        LsiModifier.OPEN,
+        LsiModifier.FINAL,
         -> context == KotlinModifierContext.TYPE ||
             context == KotlinModifierContext.FUNCTION ||
             context == KotlinModifierContext.PROPERTY
-        LsiPoetModifier.SEALED,
-        LsiPoetModifier.DATA,
-        LsiPoetModifier.VALUE,
-        LsiPoetModifier.INNER,
-        LsiPoetModifier.COMPANION,
+        LsiModifier.SEALED,
+        LsiModifier.DATA,
+        LsiModifier.VALUE,
+        LsiModifier.INNER,
+        LsiModifier.COMPANION,
         -> context == KotlinModifierContext.TYPE
-        LsiPoetModifier.CONST,
-        LsiPoetModifier.LATEINIT,
+        LsiModifier.CONST,
+        LsiModifier.LATEINIT,
         -> context == KotlinModifierContext.PROPERTY
-        LsiPoetModifier.OVERRIDE -> context == KotlinModifierContext.FUNCTION ||
+        LsiModifier.OVERRIDE -> context == KotlinModifierContext.FUNCTION ||
             context == KotlinModifierContext.PROPERTY
-        LsiPoetModifier.INLINE -> context == KotlinModifierContext.FUNCTION ||
+        LsiModifier.INLINE -> context == KotlinModifierContext.FUNCTION ||
             context == KotlinModifierContext.PROPERTY ||
             context == KotlinModifierContext.ACCESSOR
-        LsiPoetModifier.NOINLINE,
-        LsiPoetModifier.CROSSINLINE,
-        LsiPoetModifier.VARARG,
+        LsiModifier.NOINLINE,
+        LsiModifier.CROSSINLINE,
+        LsiModifier.VARARG,
         -> context == KotlinModifierContext.PARAMETER
-        LsiPoetModifier.TAILREC,
-        LsiPoetModifier.SUSPEND,
-        LsiPoetModifier.OPERATOR,
-        LsiPoetModifier.INFIX,
+        LsiModifier.TAILREC,
+        LsiModifier.SUSPEND,
+        LsiModifier.OPERATOR,
+        LsiModifier.INFIX,
         -> context == KotlinModifierContext.FUNCTION
-        LsiPoetModifier.EXTERNAL -> context == KotlinModifierContext.FUNCTION ||
+        LsiModifier.EXTERNAL -> context == KotlinModifierContext.FUNCTION ||
             context == KotlinModifierContext.PROPERTY ||
             context == KotlinModifierContext.ACCESSOR
-        LsiPoetModifier.DEFAULT -> context == KotlinModifierContext.FUNCTION
+        LsiModifier.DEFAULT -> context == KotlinModifierContext.FUNCTION
         else -> false
     }
 }

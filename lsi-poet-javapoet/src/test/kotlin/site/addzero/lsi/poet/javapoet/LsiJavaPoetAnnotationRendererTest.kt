@@ -6,11 +6,12 @@ import kotlin.test.assertEquals
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiPrimitiveKind
 import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.poet.LsiPoetAnnotation
-import site.addzero.lsi.poet.LsiPoetAnnotationArgument
-import site.addzero.lsi.poet.LsiPoetAnnotationValue
-import site.addzero.lsi.poet.LsiPoetClassLiteralStyle
-import site.addzero.lsi.poet.LsiPoetTypeName
+import site.addzero.lsi.model.LsiAnnotation
+import site.addzero.lsi.model.LsiSourceAnnotationArgument
+import site.addzero.lsi.model.LsiAnnotationValue
+import site.addzero.lsi.model.LsiClassLiteralStyle
+import site.addzero.lsi.model.LsiTypeName
+import site.addzero.lsi.model.sourceLsiAnnotation
 
 class LsiJavaPoetAnnotationRendererTest {
 
@@ -19,23 +20,23 @@ class LsiJavaPoetAnnotationRendererTest {
         val firstId = LsiSymbolId.type("sample.First")
         val secondId = LsiSymbolId.type("sample.Second")
         val typeNames = listOf(
-            LsiPoetTypeName(firstId, "sample", listOf("First")),
-            LsiPoetTypeName(secondId, "sample", listOf("Second")),
+            LsiTypeName(firstId, "sample", listOf("First")),
+            LsiTypeName(secondId, "sample", listOf("Second")),
         )
-        val first = LsiPoetAnnotation(
+        val first = sourceLsiAnnotation(
             type = firstId,
             arguments = listOf(
-                LsiPoetAnnotationArgument.Positional(
-                    LsiPoetAnnotationValue.StringValue("first"),
+                LsiSourceAnnotationArgument.Positional(
+                    LsiAnnotationValue.StringValue("first"),
                 )
             ),
         )
-        val second = LsiPoetAnnotation(
+        val second = sourceLsiAnnotation(
             type = secondId,
             arguments = listOf(
-                LsiPoetAnnotationArgument.Named(
+                LsiSourceAnnotationArgument.Named(
                     name = "count",
-                    value = LsiPoetAnnotationValue.IntValue(2),
+                    value = LsiAnnotationValue.IntValue(2),
                 )
             ),
         )
@@ -55,14 +56,14 @@ class LsiJavaPoetAnnotationRendererTest {
     @Test
     fun `renders qualified java boxed primitive class literal without an import`() {
         val annotationId = LsiSymbolId.type("sample.Boxed")
-        val annotation = LsiPoetAnnotation(
+        val annotation = sourceLsiAnnotation(
             type = annotationId,
             arguments = listOf(
-                LsiPoetAnnotationArgument.Named(
+                LsiSourceAnnotationArgument.Named(
                     name = "type",
-                    value = LsiPoetAnnotationValue.ClassValue(
+                    value = LsiAnnotationValue.ClassValue(
                         type = LsiPrimitiveType(LsiPrimitiveKind.INT, boxed = true),
-                        sourceStyle = LsiPoetClassLiteralStyle.JAVA_BOXED_PRIMITIVE_QUALIFIED,
+                        sourceStyle = LsiClassLiteralStyle.JAVA_BOXED_PRIMITIVE_QUALIFIED,
                     ),
                 ),
             ),
@@ -70,7 +71,7 @@ class LsiJavaPoetAnnotationRendererTest {
 
         val rendered = LsiJavaPoetRenderer().renderAnnotation(
             annotation,
-            listOf(LsiPoetTypeName(annotationId, "sample", listOf("Boxed"))),
+            listOf(LsiTypeName(annotationId, "sample", listOf("Boxed"))),
         )
 
         assertEquals(

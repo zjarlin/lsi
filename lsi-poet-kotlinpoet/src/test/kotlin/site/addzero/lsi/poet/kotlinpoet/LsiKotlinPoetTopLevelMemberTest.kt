@@ -5,24 +5,24 @@ import kotlin.test.assertEquals
 import site.addzero.lsi.codegen.ArtifactAggregationMode
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.poet.LsiPoetArtifact
-import site.addzero.lsi.poet.LsiPoetCodeBlock
-import site.addzero.lsi.poet.LsiPoetFile
-import site.addzero.lsi.poet.LsiPoetFunction
-import site.addzero.lsi.poet.LsiPoetType
+import site.addzero.lsi.codegen.LsiSourceArtifact
+import site.addzero.lsi.model.LsiCodeBlock
+import site.addzero.lsi.model.LsiFile
+import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 
 class LsiKotlinPoetTopLevelMemberTest {
 
     @Test
     fun `renders exact imports for keyword and extension members`() {
-        val type = LsiPoetType(
+        val type = LsiTypeDeclaration(
             name = "References",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
-                LsiPoetFunction(
+                LsiFunction(
                     name = "render",
-                    body = LsiPoetCodeBlock.build {
+                    body = LsiCodeBlock.build {
                         statement {
                             topLevelMember(
                                 packageName = "org.babyfish.jimmer.kt",
@@ -55,8 +55,8 @@ class LsiKotlinPoetTopLevelMemberTest {
                 )
             ),
         )
-        val artifact = LsiPoetArtifact(
-            file = LsiPoetFile(
+        val artifact = LsiSourceArtifact(
+            file = LsiFile(
                 language = LsiLanguage.KOTLIN,
                 packageName = "demo.generated",
                 fileName = "References",

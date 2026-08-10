@@ -13,7 +13,7 @@ import site.addzero.lsi.model.LsiDeclaredType
 import site.addzero.lsi.model.LsiFunctionType
 import site.addzero.lsi.model.LsiPrimitiveKind
 import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.poet.LsiPoetTypeName
+import site.addzero.lsi.model.LsiTypeName
 
 class JavaPoetTypesTest {
 
@@ -51,9 +51,9 @@ class JavaPoetTypesTest {
             ),
         )
         val typeNames = listOf(
-            LsiPoetTypeName(annotationId, "UPPER.meta", listOf("marker")),
-            LsiPoetTypeName(enumId, "UPPER.values", listOf("outer", "mode")),
-            LsiPoetTypeName(targetId, "UPPER.pkg", listOf("lowercase")),
+            LsiTypeName(annotationId, "UPPER.meta", listOf("marker")),
+            LsiTypeName(enumId, "UPPER.values", listOf("outer", "mode")),
+            LsiTypeName(targetId, "UPPER.pkg", listOf("lowercase")),
         )
 
         val rendered = annotation.toJavaCoreAnnotationSpec(typeNames).toString()

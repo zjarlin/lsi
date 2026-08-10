@@ -1,9 +1,10 @@
-package site.addzero.lsi.poet
+package site.addzero.lsi.model
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import site.addzero.lsi.codegen.ArtifactAggregationMode
+import site.addzero.lsi.codegen.LsiSourceArtifact
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiOriginKind
@@ -13,31 +14,31 @@ import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiWorkspace
 
-class LsiPoetTypeNameTest {
+class LsiTypeNameTest {
 
     @Test
     fun `使用显式边界创建顶层生成类型名`() {
         assertEquals(
-            LsiPoetTypeName(
+            LsiTypeName(
                 typeId = LsiSymbolId.type("Demo.API.Result"),
                 packageName = "Demo.API",
                 simpleNames = listOf("Result"),
             ),
-            generatedTopLevelPoetTypeName("Demo.API", "Result"),
+            generatedTopLevelTypeName("Demo.API", "Result"),
         )
         assertEquals(
-            LsiPoetTypeName(
+            LsiTypeName(
                 typeId = LsiSymbolId.type("Result"),
                 packageName = "",
                 simpleNames = listOf("Result"),
             ),
-            generatedTopLevelPoetTypeName("", "Result"),
+            generatedTopLevelTypeName("", "Result"),
         )
     }
 
     @Test
     fun `保留大写包和小写嵌套类型的精确边界`() {
-        val typeName = LsiPoetTypeName(
+        val typeName = LsiTypeName(
             typeId = LsiSymbolId.type("Demo.API.order.item"),
             packageName = "Demo.API",
             simpleNames = listOf("order", "item"),
@@ -48,7 +49,7 @@ class LsiPoetTypeNameTest {
 
     @Test
     fun `保留需要 Kotlin 转义的源码类型名`() {
-        val typeName = LsiPoetTypeName(
+        val typeName = LsiTypeName(
             typeId = LsiSymbolId.type("demo.escaped.Order-Item.Draft Impl"),
             packageName = "demo.escaped",
             simpleNames = listOf("Order-Item", "Draft Impl"),
@@ -60,7 +61,7 @@ class LsiPoetTypeNameTest {
     @Test
     fun `拒绝与稳定类型身份不一致的源码名`() {
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetTypeName(
+            LsiTypeName(
                 typeId = LsiSymbolId.type("demo.order.item"),
                 packageName = "demo.order",
                 simpleNames = listOf("Item"),
@@ -79,7 +80,7 @@ class LsiPoetTypeNameTest {
                 typeDeclaration(nestedId, "item", outerId),
             ),
         )
-        val generated = LsiPoetTypeName(
+        val generated = LsiTypeName(
             typeId = generatedId,
             packageName = "Generated.Package",
             simpleNames = listOf("result", "row"),
@@ -87,10 +88,10 @@ class LsiPoetTypeNameTest {
 
         assertEquals(
             listOf(
-                LsiPoetTypeName(nestedId, "Demo.API", listOf("order", "item")),
+                LsiTypeName(nestedId, "Demo.API", listOf("order", "item")),
                 generated,
             ),
-            workspace.toLsiPoetTypeNames(
+            workspace.toLsiTypeNames(
                 typeIds = listOf(nestedId, generatedId),
                 additional = listOf(generated),
             ),
@@ -110,12 +111,12 @@ class LsiPoetTypeNameTest {
         )
 
         assertEquals(
-            LsiPoetTypeName(
+            LsiTypeName(
                 typeId = generatedId,
                 packageName = "Demo.API",
                 simpleNames = listOf("order", "itemTable", "Remote"),
             ),
-            workspace.generatedSiblingPoetTypeName(
+            workspace.generatedSiblingTypeName(
                 sourceTypeId = nestedId,
                 generatedTypeId = generatedId,
                 simpleNameSuffix = "Table",
@@ -123,7 +124,7 @@ class LsiPoetTypeNameTest {
             ),
         )
         assertFailsWith<IllegalArgumentException> {
-            workspace.generatedSiblingPoetTypeName(
+            workspace.generatedSiblingTypeName(
                 sourceTypeId = nestedId,
                 generatedTypeId = generatedId,
                 simpleNameSuffix = "Table.Remote",
@@ -137,30 +138,30 @@ class LsiPoetTypeNameTest {
         val workspace = LsiWorkspace(
             declarations = listOf(typeDeclaration(typeId, "item")),
         )
-        val conflicting = LsiPoetTypeName(
+        val conflicting = LsiTypeName(
             typeId = typeId,
             packageName = "demo",
             simpleNames = listOf("order", "item"),
         )
-        val unused = LsiPoetTypeName(
+        val unused = LsiTypeName(
             typeId = LsiSymbolId.type("generated.value"),
             packageName = "generated",
             simpleNames = listOf("value"),
         )
 
-        assertEquals(emptyList(), LsiWorkspace.EMPTY.toLsiPoetTypeNames(emptyList(), listOf(unused)))
+        assertEquals(emptyList(), LsiWorkspace.EMPTY.toLsiTypeNames(emptyList(), listOf(unused)))
         assertFailsWith<IllegalArgumentException> {
-            workspace.toLsiPoetTypeNames(listOf(typeId), listOf(conflicting))
+            workspace.toLsiTypeNames(listOf(typeId), listOf(conflicting))
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiWorkspace.EMPTY.toLsiPoetTypeNames(emptyList(), listOf(unused, unused))
+            LsiWorkspace.EMPTY.toLsiTypeNames(emptyList(), listOf(unused, unused))
         }
     }
 
     @Test
     fun `声明缺失时不回退到类型标识字符串拆分`() {
         assertFailsWith<IllegalArgumentException> {
-            LsiWorkspace.EMPTY.toLsiPoetTypeNames(
+            LsiWorkspace.EMPTY.toLsiTypeNames(
                 listOf(LsiSymbolId.type("demo.missing.type")),
             )
         }
@@ -178,20 +179,20 @@ class LsiPoetTypeNameTest {
         )
 
         assertFailsWith<IllegalArgumentException> {
-            workspace.toLsiPoetTypeNames(listOf(nestedId))
+            workspace.toLsiTypeNames(listOf(nestedId))
         }
     }
 
     @Test
     fun `源码产物拒绝重复和缺失类型名`() {
         val referencedId = LsiSymbolId.type("demo.value")
-        val typeName = LsiPoetTypeName(referencedId, "demo", listOf("value"))
-        val file = LsiPoetFile(
+        val typeName = LsiTypeName(referencedId, "demo", listOf("value"))
+        val file = LsiFile(
             language = LsiLanguage.KOTLIN,
             packageName = "demo.generated",
             fileName = "Result",
             members = listOf(
-                LsiPoetFunction(
+                LsiFunction(
                     name = "value",
                     returnType = LsiDeclaredType(referencedId),
                 )
@@ -199,14 +200,14 @@ class LsiPoetTypeNameTest {
         )
 
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetArtifact(
+            LsiSourceArtifact(
                 file = file,
                 typeNames = emptyList(),
                 aggregationMode = ArtifactAggregationMode.AGGREGATING,
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetArtifact(
+            LsiSourceArtifact(
                 file = file,
                 typeNames = listOf(typeName, typeName),
                 aggregationMode = ArtifactAggregationMode.AGGREGATING,

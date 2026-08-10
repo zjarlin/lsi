@@ -1,4 +1,4 @@
-package site.addzero.lsi.poet
+package site.addzero.lsi.model
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -7,6 +7,7 @@ import kotlin.test.assertTrue
 import site.addzero.lsi.codegen.ArtifactAggregationMode
 import site.addzero.lsi.codegen.ArtifactEmissionMode
 import site.addzero.lsi.codegen.ArtifactKind
+import site.addzero.lsi.codegen.LsiSourceArtifact
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
@@ -20,19 +21,19 @@ import site.addzero.lsi.model.LsiPrimitiveType
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeParameter
 
-class LsiPoetModelTest {
+class LsiSourceModelTest {
 
     @Test
     fun `rejects unsupported type alias declaration`() {
         val exception = assertFailsWith<IllegalArgumentException> {
-            LsiPoetType(
+            LsiTypeDeclaration(
                 name = "BookAlias",
                 kind = LsiTypeDeclarationKind.TYPE_ALIAS,
             )
         }
 
         assertEquals(
-            "LSI Poet type alias declarations are not supported: BookAlias",
+            "Generated LSI type alias declarations are not supported: BookAlias",
             exception.message,
         )
     }
@@ -41,26 +42,26 @@ class LsiPoetModelTest {
     fun `builds language independent source artifact`() {
         val source = LsiSource.of("demo/Book.kt", LsiLanguage.KOTLIN)
         val bookTypeId = LsiSymbolId.type("demo.Book")
-        val body = LsiPoetCodeBlock.build {
+        val body = LsiCodeBlock.build {
             text("return ")
             name("value")
             line()
         }
-        val file = LsiPoetFile(
+        val file = LsiFile(
             language = LsiLanguage.KOTLIN,
             packageName = "demo.generated",
             fileName = "BookView",
             members = listOf(
-                LsiPoetType(
+                LsiTypeDeclaration(
                     name = "BookView",
                     kind = LsiTypeDeclarationKind.CLASS,
                     members = listOf(
-                        LsiPoetProperty(
+                        LsiProperty(
                             name = "id",
                             type = LsiPrimitiveType(LsiPrimitiveKind.LONG),
                             mutable = false,
                         ),
-                        LsiPoetFunction(
+                        LsiFunction(
                             name = "book",
                             returnType = LsiDeclaredType(bookTypeId),
                             body = body,
@@ -69,9 +70,9 @@ class LsiPoetModelTest {
                 )
             ),
         )
-        val artifact = LsiPoetArtifact(
+        val artifact = LsiSourceArtifact(
             file = file,
-            typeNames = listOf(LsiPoetTypeName(bookTypeId, "demo", listOf("Book"))),
+            typeNames = listOf(LsiTypeName(bookTypeId, "demo", listOf("Book"))),
             aggregationMode = ArtifactAggregationMode.ISOLATING,
             originatingSymbols = setOf(bookTypeId),
             originatingSources = setOf(source),
@@ -87,28 +88,28 @@ class LsiPoetModelTest {
     @Test
     fun `rejects malformed code indentation and artifact origins`() {
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetCodeBlock(listOf(LsiPoetCodePart.Unindent))
+            LsiCodeBlock(listOf(LsiCodePart.Unindent))
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetCodeBlock(listOf(LsiPoetCodePart.EndControlFlow))
+            LsiCodeBlock(listOf(LsiCodePart.EndControlFlow))
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetCodeBlock(
+            LsiCodeBlock(
                 listOf(
-                    LsiPoetCodePart.NextControlFlow(
-                        LsiPoetCodeBlock.build { text("else") }
+                    LsiCodePart.NextControlFlow(
+                        LsiCodeBlock.build { text("else") }
                     )
                 )
             )
         }
-        val file = LsiPoetFile(
+        val file = LsiFile(
             language = LsiLanguage.JAVA,
             packageName = "demo",
             fileName = "Book",
-            members = listOf(LsiPoetType("Book", LsiTypeDeclarationKind.CLASS)),
+            members = listOf(LsiTypeDeclaration("Book", LsiTypeDeclarationKind.CLASS)),
         )
         val exception = assertFailsWith<IllegalArgumentException> {
-            LsiPoetArtifact(
+            LsiSourceArtifact(
                 file = file,
                 typeNames = emptyList(),
                 aggregationMode = ArtifactAggregationMode.ISOLATING,
@@ -116,7 +117,7 @@ class LsiPoetModelTest {
         }
         assertTrue(exception.message.orEmpty().contains("originating symbol"))
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetArtifact(
+            LsiSourceArtifact(
                 file = file,
                 typeNames = emptyList(),
                 aggregationMode = ArtifactAggregationMode.ISOLATING,
@@ -128,7 +129,7 @@ class LsiPoetModelTest {
 
     @Test
     fun `builds balanced structural statements and control flow`() {
-        val body = LsiPoetCodeBlock.build {
+        val body = LsiCodeBlock.build {
             beginControlFlow { text("if (ready)") }
             statement { text("run()") }
             nextControlFlow { text("else") }
@@ -137,25 +138,25 @@ class LsiPoetModelTest {
         }
 
         assertEquals(5, body.parts.size)
-        assertTrue(body.parts.first() is LsiPoetCodePart.BeginControlFlow)
-        assertTrue(body.parts.last() is LsiPoetCodePart.EndControlFlow)
+        assertTrue(body.parts.first() is LsiCodePart.BeginControlFlow)
+        assertTrue(body.parts.last() is LsiCodePart.EndControlFlow)
     }
 
     @Test
     fun `models return with and without a value`() {
-        val body = LsiPoetCodeBlock.build {
+        val body = LsiCodeBlock.build {
             returnValue { name("value") }
             returnVoid()
         }
 
         assertEquals(2, body.parts.size)
-        assertTrue((body.parts[0] as LsiPoetCodePart.Return).value != null)
-        assertEquals(null, (body.parts[1] as LsiPoetCodePart.Return).value)
+        assertTrue((body.parts[0] as LsiCodePart.Return).value != null)
+        assertEquals(null, (body.parts[1] as LsiCodePart.Return).value)
     }
 
     @Test
     fun `models returned and statement braced expressions`() {
-        val body = LsiPoetCodeBlock.build {
+        val body = LsiCodeBlock.build {
             returnBracedExpression(
                 prefix = { text("transaction()") },
                 body = { statement { text("run()") } },
@@ -167,36 +168,36 @@ class LsiPoetModelTest {
             )
         }
 
-        val expressions = body.parts.filterIsInstance<LsiPoetCodePart.BracedExpression>()
+        val expressions = body.parts.filterIsInstance<LsiCodePart.BracedExpression>()
         assertEquals(
             listOf(
-                LsiPoetBracedExpressionCompletion.RETURN,
-                LsiPoetBracedExpressionCompletion.STATEMENT,
+                LsiBracedExpressionCompletion.RETURN,
+                LsiBracedExpressionCompletion.STATEMENT,
             ),
-            expressions.map(LsiPoetCodePart.BracedExpression::completion),
+            expressions.map(LsiCodePart.BracedExpression::completion),
         )
     }
 
     @Test
     fun `rejects source extension and non trailing vararg`() {
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetFile(
+            LsiFile(
                 language = LsiLanguage.JAVA,
                 packageName = "demo",
                 fileName = "Book.java",
-                members = listOf(LsiPoetType("Book", LsiTypeDeclarationKind.CLASS)),
+                members = listOf(LsiTypeDeclaration("Book", LsiTypeDeclarationKind.CLASS)),
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetFunction(
+            LsiFunction(
                 name = "consume",
                 parameters = listOf(
-                    LsiPoetParameter(
+                    LsiParameter(
                         name = "values",
                         type = LsiDeclaredType(LsiSymbolId.type("java.lang.String")),
-                        modifiers = setOf(LsiPoetModifier.VARARG),
+                        modifiers = setOf(LsiModifier.VARARG),
                     ),
-                    LsiPoetParameter(
+                    LsiParameter(
                         name = "tail",
                         type = LsiPrimitiveType(LsiPrimitiveKind.INT),
                     ),
@@ -207,162 +208,162 @@ class LsiPoetModelTest {
 
     @Test
     fun `models escaped Kotlin declarations and explicit imports`() {
-        val type = LsiPoetType(
+        val type = LsiTypeDeclaration(
             name = "Order-ItemFetcherDsl",
             kind = LsiTypeDeclarationKind.CLASS,
-            nameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
+            nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
         )
-        val function = LsiPoetFunction(
+        val function = LsiFunction(
             name = "children*",
-            nameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
+            nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
         )
-        val property = LsiPoetProperty(
+        val property = LsiProperty(
             name = "emptyOrder-ItemFetcher",
             type = LsiDeclaredType(LsiSymbolId.type("java.lang.String")),
             mutable = false,
-            nameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
+            nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
         )
-        val parameter = LsiPoetParameter(
+        val parameter = LsiParameter(
             name = "display-name",
             type = LsiDeclaredType(LsiSymbolId.type("java.lang.String")),
-            nameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
+            nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
         )
-        val setter = LsiPoetAccessor(
+        val setter = LsiAccessor(
             setterParameterName = "display-name",
-            setterParameterNameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
+            setterParameterNameStyle = LsiNameStyle.KOTLIN_ESCAPED,
         )
-        val sourceImport = LsiPoetImport("demo.child", "by")
+        val sourceImport = LsiImport("demo.child", "by")
 
-        assertEquals(LsiPoetNameStyle.KOTLIN_ESCAPED, type.nameStyle)
-        assertEquals(LsiPoetNameStyle.KOTLIN_ESCAPED, function.nameStyle)
-        assertEquals(LsiPoetNameStyle.KOTLIN_ESCAPED, property.nameStyle)
-        assertEquals(LsiPoetNameStyle.KOTLIN_ESCAPED, parameter.nameStyle)
+        assertEquals(LsiNameStyle.KOTLIN_ESCAPED, type.nameStyle)
+        assertEquals(LsiNameStyle.KOTLIN_ESCAPED, function.nameStyle)
+        assertEquals(LsiNameStyle.KOTLIN_ESCAPED, property.nameStyle)
+        assertEquals(LsiNameStyle.KOTLIN_ESCAPED, parameter.nameStyle)
         assertEquals("display-name", setter.setterParameterName)
-        assertEquals(LsiPoetNameStyle.KOTLIN_ESCAPED, setter.setterParameterNameStyle)
+        assertEquals(LsiNameStyle.KOTLIN_ESCAPED, setter.setterParameterNameStyle)
         assertEquals("demo.child", sourceImport.packageName)
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetType(
+            LsiTypeDeclaration(
                 name = "broken`name",
                 kind = LsiTypeDeclarationKind.CLASS,
-                nameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
+                nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetFunction(
+            LsiFunction(
                 name = "broken`name",
-                nameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
+                nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetProperty(
+            LsiProperty(
                 name = "broken`name",
                 type = LsiDeclaredType(LsiSymbolId.type("java.lang.String")),
                 mutable = false,
-                nameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
+                nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetParameter(
+            LsiParameter(
                 name = "broken`name",
                 type = LsiDeclaredType(LsiSymbolId.type("java.lang.String")),
-                nameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
+                nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetAccessor(
+            LsiAccessor(
                 setterParameterName = "broken`name",
-                setterParameterNameStyle = LsiPoetNameStyle.KOTLIN_ESCAPED,
+                setterParameterNameStyle = LsiNameStyle.KOTLIN_ESCAPED,
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetImport("demo.child", "broken-name")
+            LsiImport("demo.child", "broken-name")
         }
     }
 
     @Test
     fun `models annotation array source styles without changing the default`() {
-        val literal = LsiPoetAnnotationValue.ArrayValue(emptyList())
-        val factoryCall = LsiPoetAnnotationValue.ArrayValue(
+        val literal = LsiAnnotationValue.ArrayValue(emptyList())
+        val factoryCall = LsiAnnotationValue.ArrayValue(
             elements = emptyList(),
-            sourceStyle = LsiPoetAnnotationArrayStyle.KOTLIN_ARRAY_OF,
+            sourceStyle = LsiAnnotationArrayStyle.KOTLIN_ARRAY_OF,
         )
 
-        assertEquals(LsiPoetAnnotationArrayStyle.LITERAL, literal.sourceStyle)
-        assertEquals(LsiPoetAnnotationArrayStyle.KOTLIN_ARRAY_OF, factoryCall.sourceStyle)
+        assertEquals(LsiAnnotationArrayStyle.LITERAL, literal.sourceStyle)
+        assertEquals(LsiAnnotationArrayStyle.KOTLIN_ARRAY_OF, factoryCall.sourceStyle)
     }
 
     @Test
     fun `models source layout independently from semantic types and code`() {
         val producerType = LsiDeclaredType(LsiSymbolId.type("demo.BookDraft.Producer"))
-        val field = LsiPoetField(
+        val field = LsiField(
             name = "producer",
             type = producerType,
-            typeReferenceStyle = LsiPoetTypeReferenceStyle.SAME_PACKAGE_OUTER_QUALIFIED,
+            typeReferenceStyle = LsiTypeReferenceStyle.SAME_PACKAGE_OUTER_QUALIFIED,
         )
-        val expression = LsiPoetFunction(
+        val expression = LsiFunction(
             name = "producer",
             returnType = producerType,
-            body = LsiPoetCodeBlock.build { name("producer") },
-            bodyStyle = LsiPoetBodyStyle.EXPRESSION,
+            body = LsiCodeBlock.build { name("producer") },
+            bodyStyle = LsiBodyStyle.EXPRESSION,
         )
-        val explicitlyIndented = LsiPoetCodeBlock.build {
+        val explicitlyIndented = LsiCodeBlock.build {
             preserveExplicitIndentation()
             text("Factory\n")
             indent { text(".create()") }
         }
-        val composedIndentation = LsiPoetCodeBlock.build {
+        val composedIndentation = LsiCodeBlock.build {
             text("val value = ")
             add(explicitlyIndented)
         }
-        val annotation = LsiPoetAnnotation(
+        val annotation = sourceLsiAnnotation(
             type = LsiSymbolId.type("demo.Ordered"),
             arguments = listOf(
-                LsiPoetAnnotationArgument.Positional(LsiPoetAnnotationValue.StringValue("id")),
-                LsiPoetAnnotationArgument.Positional(LsiPoetAnnotationValue.StringValue("name")),
+                LsiSourceAnnotationArgument.Positional(LsiAnnotationValue.StringValue("id")),
+                LsiSourceAnnotationArgument.Positional(LsiAnnotationValue.StringValue("name")),
             ),
-            argumentLayout = LsiPoetAnnotationArgumentLayout.SINGLE_LINE,
+            argumentLayout = LsiAnnotationArgumentLayout.SINGLE_LINE,
         )
 
         assertEquals(producerType, field.type)
-        assertEquals(LsiPoetBodyStyle.EXPRESSION, expression.bodyStyle)
-        assertEquals(LsiPoetCodeBlockIndentation.EXPLICIT, explicitlyIndented.indentation)
-        assertEquals(LsiPoetCodeBlockIndentation.EXPLICIT, composedIndentation.indentation)
-        assertEquals(LsiPoetAnnotationArgumentLayout.SINGLE_LINE, annotation.argumentLayout)
+        assertEquals(LsiBodyStyle.EXPRESSION, expression.bodyStyle)
+        assertEquals(LsiCodeBlockIndentation.EXPLICIT, explicitlyIndented.indentation)
+        assertEquals(LsiCodeBlockIndentation.EXPLICIT, composedIndentation.indentation)
+        assertEquals(LsiAnnotationArgumentLayout.SINGLE_LINE, annotation.argumentLayout)
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetFunction(name = "empty", bodyStyle = LsiPoetBodyStyle.EXPRESSION)
+            LsiFunction(name = "empty", bodyStyle = LsiBodyStyle.EXPRESSION)
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetAccessor(bodyStyle = LsiPoetBodyStyle.EXPRESSION)
+            LsiAccessor(bodyStyle = LsiBodyStyle.EXPRESSION)
         }
     }
 
     @Test
     fun `models raw Kotlin source stems without weakening Java file names`() {
-        val kotlinFile = LsiPoetFile(
+        val kotlinFile = LsiFile(
             language = LsiLanguage.KOTLIN,
             packageName = "demo",
             fileName = "order-itemFetcher",
-            fileNameStyle = LsiPoetFileNameStyle.KOTLIN_SOURCE_STEM,
-            members = listOf(LsiPoetType("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
+            fileNameStyle = LsiFileNameStyle.KOTLIN_SOURCE_STEM,
+            members = listOf(LsiTypeDeclaration("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
         )
 
         assertEquals("order-itemFetcher", kotlinFile.fileName)
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetFile(
+            LsiFile(
                 language = LsiLanguage.JAVA,
                 packageName = "demo",
                 fileName = "order-itemFetcher",
-                fileNameStyle = LsiPoetFileNameStyle.KOTLIN_SOURCE_STEM,
-                members = listOf(LsiPoetType("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
+                fileNameStyle = LsiFileNameStyle.KOTLIN_SOURCE_STEM,
+                members = listOf(LsiTypeDeclaration("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetFile(
+            LsiFile(
                 language = LsiLanguage.KOTLIN,
                 packageName = "demo",
                 fileName = " order-itemFetcher",
-                fileNameStyle = LsiPoetFileNameStyle.KOTLIN_SOURCE_STEM,
-                members = listOf(LsiPoetType("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
+                fileNameStyle = LsiFileNameStyle.KOTLIN_SOURCE_STEM,
+                members = listOf(LsiTypeDeclaration("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
             )
         }
     }
@@ -374,25 +375,25 @@ class LsiPoetModelTest {
             "S",
         )
         val parameter = LsiTypeParameter(parameterId, "S")
-        val function = LsiPoetFunction(
+        val function = LsiFunction(
             name = "query",
-            modifiers = setOf(LsiPoetModifier.INLINE),
+            modifiers = setOf(LsiModifier.INLINE),
             typeParameters = listOf(parameter),
             reifiedTypeParameterIds = setOf(parameterId),
         )
 
         assertEquals(setOf(parameterId), function.reifiedTypeParameterIds)
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetFunction(
+            LsiFunction(
                 name = "query",
                 typeParameters = listOf(parameter),
                 reifiedTypeParameterIds = setOf(parameterId),
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetFunction(
+            LsiFunction(
                 name = "query",
-                modifiers = setOf(LsiPoetModifier.INLINE),
+                modifiers = setOf(LsiModifier.INLINE),
                 reifiedTypeParameterIds = setOf(parameterId),
             )
         }
@@ -420,45 +421,45 @@ class LsiPoetModelTest {
             ),
         )
 
-        val lowered = annotation.toLsiPoetAnnotation()
+        val lowered = annotation.toSourceAnnotation()
 
-        val namedArguments = lowered.arguments.filterIsInstance<LsiPoetAnnotationArgument.Named>()
+        val namedArguments = lowered.sourceArguments.filterIsInstance<LsiSourceAnnotationArgument.Named>()
         assertEquals(listOf("label", "nested"), namedArguments.map { argument -> argument.name })
-        val nestedValue = namedArguments.last().value as LsiPoetAnnotationValue.NestedAnnotationValue
+        val nestedValue = namedArguments.last().value as LsiAnnotationValue.NestedAnnotationValue
         assertEquals(
             listOf("alpha", "beta"),
-            nestedValue.annotation.arguments
-                .filterIsInstance<LsiPoetAnnotationArgument.Named>()
+            nestedValue.annotation.sourceArguments
+                .filterIsInstance<LsiSourceAnnotationArgument.Named>()
                 .map { argument -> argument.name },
         )
     }
 
     @Test
     fun `models positional arguments before named arguments`() {
-        val annotation = LsiPoetAnnotation(
+        val annotation = sourceLsiAnnotation(
             type = LsiSymbolId.type("kotlin.Suppress"),
             arguments = listOf(
-                LsiPoetAnnotationArgument.Positional(LsiPoetAnnotationValue.StringValue("first")),
-                LsiPoetAnnotationArgument.Positional(LsiPoetAnnotationValue.StringValue("second")),
-                LsiPoetAnnotationArgument.Named(
+                LsiSourceAnnotationArgument.Positional(LsiAnnotationValue.StringValue("first")),
+                LsiSourceAnnotationArgument.Positional(LsiAnnotationValue.StringValue("second")),
+                LsiSourceAnnotationArgument.Named(
                     name = "level",
-                    value = LsiPoetAnnotationValue.StringValue("warning"),
+                    value = LsiAnnotationValue.StringValue("warning"),
                 ),
             ),
         )
 
-        assertTrue(annotation.arguments[0] is LsiPoetAnnotationArgument.Positional)
-        assertEquals("level", (annotation.arguments[2] as LsiPoetAnnotationArgument.Named).name)
+        assertTrue(annotation.sourceArguments[0] is LsiSourceAnnotationArgument.Positional)
+        assertEquals("level", (annotation.sourceArguments[2] as LsiSourceAnnotationArgument.Named).name)
         assertFailsWith<IllegalArgumentException> {
-            LsiPoetAnnotation(
+            sourceLsiAnnotation(
                 type = annotation.type,
                 arguments = listOf(
-                    LsiPoetAnnotationArgument.Named(
+                    LsiSourceAnnotationArgument.Named(
                         name = "level",
-                        value = LsiPoetAnnotationValue.StringValue("warning"),
+                        value = LsiAnnotationValue.StringValue("warning"),
                     ),
-                    LsiPoetAnnotationArgument.Positional(
-                        LsiPoetAnnotationValue.StringValue("late")
+                    LsiSourceAnnotationArgument.Positional(
+                        LsiAnnotationValue.StringValue("late")
                     ),
                 ),
             )

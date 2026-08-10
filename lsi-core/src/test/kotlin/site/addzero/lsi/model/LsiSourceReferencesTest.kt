@@ -1,4 +1,4 @@
-package site.addzero.lsi.poet
+package site.addzero.lsi.model
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -9,13 +9,13 @@ import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeParameter
 import site.addzero.lsi.model.LsiTypeParameterRef
 
-class LsiPoetReferencesTest {
+class LsiSourceReferencesTest {
 
     @Test
     fun `collects standalone code block type references recursively`() {
         val conditionTypeId = LsiSymbolId.type("demo.Condition")
         val resultTypeId = LsiSymbolId.type("demo.Result")
-        val codeBlock = LsiPoetCodeBlock.build {
+        val codeBlock = LsiCodeBlock.build {
             beginControlFlow {
                 type(LsiDeclaredType(conditionTypeId))
             }
@@ -35,28 +35,28 @@ class LsiPoetReferencesTest {
     fun `collects declarations annotations and code types recursively`() {
         val ownerId = LsiSymbolId.type("demo.Generated")
         val parameterId = LsiSymbolId.typeParameter(ownerId, "T")
-        val nestedAnnotation = LsiPoetAnnotation(
+        val nestedAnnotation = sourceLsiAnnotation(
             type = LsiSymbolId.type("demo.Nested"),
             arguments = listOf(
-                LsiPoetAnnotationArgument.Named(
+                LsiSourceAnnotationArgument.Named(
                     name = "kind",
-                    value = LsiPoetAnnotationValue.EnumValue(
+                    value = LsiAnnotationValue.EnumValue(
                         enumType = LsiSymbolId.type("demo.Kind"),
                         entryName = "ONE",
                     ),
                 )
             ),
         )
-        val typeAnnotation = LsiPoetAnnotation(
+        val typeAnnotation = sourceLsiAnnotation(
             type = LsiSymbolId.type("demo.TypeMarker"),
             arguments = listOf(
-                LsiPoetAnnotationArgument.Named(
+                LsiSourceAnnotationArgument.Named(
                     name = "nested",
-                    value = LsiPoetAnnotationValue.NestedAnnotationValue(nestedAnnotation),
+                    value = LsiAnnotationValue.NestedAnnotationValue(nestedAnnotation),
                 )
             ),
         )
-        val generatedType = LsiPoetType(
+        val generatedType = LsiTypeDeclaration(
             name = "Generated",
             kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(typeAnnotation),
@@ -69,24 +69,24 @@ class LsiPoetReferencesTest {
             ),
             superInterfaces = listOf(LsiDeclaredType(LsiSymbolId.type("demo.Contract"))),
             members = listOf(
-                LsiPoetProperty(
+                LsiProperty(
                     name = "value",
                     type = LsiTypeParameterRef(parameterId),
                     mutable = true,
-                    setter = LsiPoetAccessor(
+                    setter = LsiAccessor(
                         parameterAnnotations = listOf(
-                            LsiPoetAnnotation(LsiSymbolId.type("demo.ParameterMarker"))
+                            sourceLsiAnnotation(LsiSymbolId.type("demo.ParameterMarker"))
                         ),
-                        body = LsiPoetCodeBlock.build {
+                        body = LsiCodeBlock.build {
                             statement { type(LsiDeclaredType(LsiSymbolId.type("demo.SetterRuntime"))) }
                         },
                     ),
                 ),
-                LsiPoetFunction(
+                LsiFunction(
                     name = "render",
                     receiverType = LsiDeclaredType(LsiSymbolId.type("demo.Receiver")),
                     returnType = LsiDeclaredType(LsiSymbolId.type("demo.Result")),
-                    body = LsiPoetCodeBlock.build {
+                    body = LsiCodeBlock.build {
                         returnBracedExpression(
                             prefix = { type(LsiDeclaredType(LsiSymbolId.type("demo.Factory"))) },
                             body = {
@@ -99,11 +99,11 @@ class LsiPoetReferencesTest {
                 ),
             ),
         )
-        val file = LsiPoetFile(
+        val file = LsiFile(
             language = LsiLanguage.KOTLIN,
             packageName = "demo",
             fileName = "Generated",
-            annotations = listOf(LsiPoetAnnotation(LsiSymbolId.type("demo.FileMarker"))),
+            annotations = listOf(sourceLsiAnnotation(LsiSymbolId.type("demo.FileMarker"))),
             members = listOf(generatedType),
         )
 

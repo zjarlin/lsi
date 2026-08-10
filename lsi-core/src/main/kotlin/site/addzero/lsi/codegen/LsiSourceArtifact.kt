@@ -1,19 +1,16 @@
-package site.addzero.lsi.poet
+package site.addzero.lsi.codegen
 
-import site.addzero.lsi.codegen.ArtifactAggregationMode
-import site.addzero.lsi.codegen.ArtifactEmissionMode
-import site.addzero.lsi.codegen.ArtifactKind
-import site.addzero.lsi.codegen.GeneratedArtifact
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.model.LsiFile
+import site.addzero.lsi.model.LsiTypeName
+import site.addzero.lsi.model.referencedTypeIds
 
-/**
- * 描述尚未绑定具体 Poet 实现的源码产物。
- */
-data class LsiPoetArtifact(
-    val file: LsiPoetFile,
-    val typeNames: List<LsiPoetTypeName>,
+/** 描述尚未绑定具体渲染实现的源码产物。 */
+data class LsiSourceArtifact(
+    val file: LsiFile,
+    val typeNames: List<LsiTypeName>,
     val aggregationMode: ArtifactAggregationMode,
     val emissionMode: ArtifactEmissionMode = ArtifactEmissionMode.IMMEDIATE,
     val originatingSymbols: Set<LsiSymbolId> = emptySet(),
@@ -24,7 +21,7 @@ data class LsiPoetArtifact(
     val kind: ArtifactKind = when (file.language) {
         LsiLanguage.JAVA -> ArtifactKind.JAVA_SOURCE
         LsiLanguage.KOTLIN -> ArtifactKind.KOTLIN_SOURCE
-        LsiLanguage.UNKNOWN -> error("LSI Poet artifact requires Java or Kotlin source")
+        LsiLanguage.UNKNOWN -> error("LSI source artifact requires Java or Kotlin source")
     }
 
     val qualifiedFileName: String = if (file.packageName.isEmpty()) {
@@ -43,42 +40,42 @@ data class LsiPoetArtifact(
             when (kind) {
                 ArtifactKind.JAVA_SOURCE -> ".java"
                 ArtifactKind.KOTLIN_SOURCE -> ".kt"
-                ArtifactKind.RESOURCE -> error("LSI Poet artifact cannot be a resource")
+                ArtifactKind.RESOURCE -> error("LSI source artifact cannot be a resource")
             }
         )
     }
 
     init {
         val duplicateTypeIds = typeNames
-            .groupingBy(LsiPoetTypeName::typeId)
+            .groupingBy(LsiTypeName::typeId)
             .eachCount()
             .filterValues { count -> count > 1 }
             .keys
             .sorted()
         require(duplicateTypeIds.isEmpty()) {
-            "Duplicate LSI Poet type ids: ${duplicateTypeIds.joinToString { id -> id.value }}"
+            "Duplicate LSI source type ids: ${duplicateTypeIds.joinToString { id -> id.value }}"
         }
-        val missingTypeIds = file.referencedTypeIds - typeNames.mapTo(hashSetOf(), LsiPoetTypeName::typeId)
+        val missingTypeIds = file.referencedTypeIds - typeNames.mapTo(hashSetOf(), LsiTypeName::typeId)
         require(missingTypeIds.isEmpty()) {
-            "Missing LSI Poet type names for $qualifiedFileName: " +
+            "Missing LSI source type names for $qualifiedFileName: " +
                 missingTypeIds.joinToString { id -> id.value }
         }
         if (aggregationMode == ArtifactAggregationMode.ISOLATING) {
             require(originatingSymbols.size == 1) {
-                "Isolating LSI Poet artifact requires exactly one originating symbol: $qualifiedFileName"
+                "Isolating LSI source artifact requires exactly one originating symbol: $qualifiedFileName"
             }
         }
         require(dependencySymbols.containsAll(originatingSymbols)) {
-            "LSI Poet artifact dependencies must contain all originating symbols: $qualifiedFileName"
+            "LSI source artifact dependencies must contain all originating symbols: $qualifiedFileName"
         }
         require(dependencySources.containsAll(originatingSources)) {
-            "LSI Poet artifact dependencies must contain all originating sources: $qualifiedFileName"
+            "LSI source artifact dependencies must contain all originating sources: $qualifiedFileName"
         }
         require(
             emissionMode != ArtifactEmissionMode.STABLE ||
                 aggregationMode == ArtifactAggregationMode.AGGREGATING
         ) {
-            "Stable LSI Poet artifact must be aggregating: $qualifiedFileName"
+            "Stable LSI source artifact must be aggregating: $qualifiedFileName"
         }
     }
 
@@ -95,11 +92,4 @@ data class LsiPoetArtifact(
             dependencySources = dependencySources,
         )
     }
-}
-
-/**
- * 将纯 LSI Poet 模型渲染为平台 filer 可写出的产物。
- */
-fun interface LsiPoetRenderer {
-    fun render(artifact: LsiPoetArtifact): GeneratedArtifact
 }

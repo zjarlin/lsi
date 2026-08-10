@@ -17,7 +17,7 @@ import site.addzero.lsi.model.LsiFunctionType
 import site.addzero.lsi.model.LsiNullability
 import site.addzero.lsi.model.LsiPrimitiveKind
 import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.poet.LsiPoetTypeName
+import site.addzero.lsi.model.LsiTypeName
 
 class KotlinPoetTypesTest {
 
@@ -31,7 +31,7 @@ class KotlinPoetTypesTest {
         assertEquals(
             ClassName("demo", "ModelDraft", "\$", "DraftImpl"),
             type.toKotlinTypeName(
-                listOf(LsiPoetTypeName(typeId, "demo", listOf("ModelDraft", "\$", "DraftImpl")))
+                listOf(LsiTypeName(typeId, "demo", listOf("ModelDraft", "\$", "DraftImpl")))
             ),
         )
     }
@@ -41,8 +41,8 @@ class KotlinPoetTypesTest {
         val topLevelId = LsiSymbolId.type("Demo.API.order")
         val nestedId = LsiSymbolId.type("Demo.API.order.item.detail")
         val typeNames = listOf(
-            LsiPoetTypeName(topLevelId, "Demo.API", listOf("order")),
-            LsiPoetTypeName(nestedId, "Demo.API", listOf("order", "item", "detail")),
+            LsiTypeName(topLevelId, "Demo.API", listOf("order")),
+            LsiTypeName(nestedId, "Demo.API", listOf("order", "item", "detail")),
         )
 
         assertEquals(
@@ -65,13 +65,13 @@ class KotlinPoetTypesTest {
         assertEquals(
             ClassName("kotlin.collections", "Map", "Entry"),
             LsiDeclaredType(mapEntryId).toKotlinTypeName(
-                listOf(LsiPoetTypeName(mapEntryId, "java.util", listOf("Map", "Entry"))),
+                listOf(LsiTypeName(mapEntryId, "java.util", listOf("Map", "Entry"))),
             ),
         )
         assertEquals(
             ClassName("java.util.Map", "Entry"),
             LsiDeclaredType(mapEntryId).toKotlinTypeName(
-                listOf(LsiPoetTypeName(mapEntryId, "java.util.Map", listOf("Entry"))),
+                listOf(LsiTypeName(mapEntryId, "java.util.Map", listOf("Entry"))),
             ),
         )
     }
@@ -94,9 +94,9 @@ class KotlinPoetTypesTest {
         )
 
         val typeNames = listOf(
-            LsiPoetTypeName(LsiSymbolId.type("sample.Scope"), "sample", listOf("Scope")),
-            LsiPoetTypeName(LsiSymbolId.type("sample.FunctionMarker"), "sample", listOf("FunctionMarker")),
-            LsiPoetTypeName(LsiSymbolId.type("java.lang.String"), "java.lang", listOf("String")),
+            LsiTypeName(LsiSymbolId.type("sample.Scope"), "sample", listOf("Scope")),
+            LsiTypeName(LsiSymbolId.type("sample.FunctionMarker"), "sample", listOf("FunctionMarker")),
+            LsiTypeName(LsiSymbolId.type("java.lang.String"), "java.lang", listOf("String")),
         )
         val typeName = assertIs<LambdaTypeName>(functionType.toKotlinTypeName(typeNames))
 

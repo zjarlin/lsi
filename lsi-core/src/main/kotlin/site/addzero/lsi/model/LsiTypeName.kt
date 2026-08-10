@@ -1,4 +1,4 @@
-package site.addzero.lsi.poet
+package site.addzero.lsi.model
 
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiTypeDeclaration
@@ -7,7 +7,7 @@ import site.addzero.lsi.model.LsiWorkspace
 /**
  * 类型稳定身份对应的精确源码名称结构。
  */
-data class LsiPoetTypeName(
+data class LsiTypeName(
     val typeId: LsiSymbolId,
     val packageName: String,
     val simpleNames: List<String>,
@@ -17,33 +17,33 @@ data class LsiPoetTypeName(
 
     init {
         require(typeId.isTypeId()) {
-            "LSI Poet type name requires a type id: ${typeId.value}"
+            "LSI type name requires a type id: ${typeId.value}"
         }
         require(packageName == packageName.trim()) {
-            "LSI Poet type package cannot have surrounding whitespace: '$packageName'"
+            "LSI type package cannot have surrounding whitespace: '$packageName'"
         }
-        require(packageName.isEmpty() || packageName.isPoetPackageName()) {
-            "LSI Poet type package must contain non-empty source-name segments: '$packageName'"
+        require(packageName.isEmpty() || packageName.isSourcePackageName()) {
+            "LSI type package must contain non-empty source-name segments: '$packageName'"
         }
         require(simpleNames.isNotEmpty()) {
-            "LSI Poet type name requires at least one simple name: ${typeId.value}"
+            "LSI type name requires at least one simple name: ${typeId.value}"
         }
-        require(simpleNames.all(String::isPoetSimpleName)) {
-            "LSI Poet type simple names must be non-empty source names without '.': ${simpleNames.joinToString(".")}"
+        require(simpleNames.all(String::isSourceSimpleName)) {
+            "LSI type simple names must be non-empty source names without '.': ${simpleNames.joinToString(".")}"
         }
         require(canonicalName == typeId.requireTypeQualifiedName()) {
-            "LSI Poet type name '$canonicalName' does not match type id '${typeId.value}'"
+            "LSI type name '$canonicalName' does not match type id '${typeId.value}'"
         }
     }
 }
 
 /** 使用显式包名和简单名创建顶层生成类型的精确源码名称。 */
-fun generatedTopLevelPoetTypeName(
+fun generatedTopLevelTypeName(
     packageName: String,
     simpleName: String,
-): LsiPoetTypeName {
+): LsiTypeName {
     val qualifiedName = if (packageName.isEmpty()) simpleName else "$packageName.$simpleName"
-    return LsiPoetTypeName(
+    return LsiTypeName(
         typeId = LsiSymbolId.type(qualifiedName),
         packageName = packageName,
         simpleNames = listOf(simpleName),
@@ -53,17 +53,17 @@ fun generatedTopLevelPoetTypeName(
 /**
  * 以冻结源码类型的精确包和 enclosing 链为基准，派生同级生成类型名。
  */
-fun LsiWorkspace.generatedSiblingPoetTypeName(
+fun LsiWorkspace.generatedSiblingTypeName(
     sourceTypeId: LsiSymbolId,
     generatedTypeId: LsiSymbolId,
     simpleNameSuffix: String,
     nestedSimpleNames: List<String> = emptyList(),
-): LsiPoetTypeName {
+): LsiTypeName {
     require(simpleNameSuffix.isNotEmpty() && '.' !in simpleNameSuffix) {
         "Generated sibling type suffix must be a non-empty source-name fragment: '$simpleNameSuffix'"
     }
-    val sourceTypeName = toLsiPoetTypeNames(listOf(sourceTypeId)).single()
-    return LsiPoetTypeName(
+    val sourceTypeName = toLsiTypeNames(listOf(sourceTypeId)).single()
+    return LsiTypeName(
         typeId = generatedTypeId,
         packageName = sourceTypeName.packageName,
         simpleNames = sourceTypeName.simpleNames.dropLast(1) +
@@ -75,42 +75,42 @@ fun LsiWorkspace.generatedSiblingPoetTypeName(
 /**
  * 从冻结声明及显式生成类型中解析精确源码名称，不根据字符大小写推断包边界。
  */
-fun LsiWorkspace.toLsiPoetTypeNames(
+fun LsiWorkspace.toLsiTypeNames(
     typeIds: Collection<LsiSymbolId>,
-    additional: Collection<LsiPoetTypeName> = emptyList(),
-): List<LsiPoetTypeName> {
+    additional: Collection<LsiTypeName> = emptyList(),
+): List<LsiTypeName> {
     val duplicateAdditionalIds = additional
-        .groupingBy(LsiPoetTypeName::typeId)
+        .groupingBy(LsiTypeName::typeId)
         .eachCount()
         .filterValues { count -> count > 1 }
         .keys
         .sorted()
     require(duplicateAdditionalIds.isEmpty()) {
-        "Duplicate additional LSI Poet type ids: ${duplicateAdditionalIds.joinToString { id -> id.value }}"
+        "Duplicate additional LSI type ids: ${duplicateAdditionalIds.joinToString { id -> id.value }}"
     }
-    val additionalById = additional.associateBy(LsiPoetTypeName::typeId)
+    val additionalById = additional.associateBy(LsiTypeName::typeId)
     additionalById.forEach { (typeId, explicitTypeName) ->
         if (this[typeId] != null) {
-            val workspaceTypeName = requirePoetTypeName(typeId)
+            val workspaceTypeName = requireTypeName(typeId)
             require(explicitTypeName == workspaceTypeName) {
-                "Additional LSI Poet type name conflicts with workspace declaration: ${typeId.value}"
+                "Additional LSI type name conflicts with workspace declaration: ${typeId.value}"
             }
         }
     }
     val requestedTypeIds = sortedSetOf<LsiSymbolId>().apply {
         typeIds.forEach { typeId ->
             require(typeId.isTypeId()) {
-                "LSI Poet type-name resolution requires type ids: ${typeId.value}"
+                "LSI type-name resolution requires type ids: ${typeId.value}"
             }
             add(typeId)
         }
     }
     return requestedTypeIds.map { typeId ->
-        additionalById[typeId] ?: requirePoetTypeName(typeId)
+        additionalById[typeId] ?: requireTypeName(typeId)
     }
 }
 
-private fun LsiWorkspace.requirePoetTypeName(typeId: LsiSymbolId): LsiPoetTypeName {
+private fun LsiWorkspace.requireTypeName(typeId: LsiSymbolId): LsiTypeName {
     val declarationChain = mutableListOf<LsiTypeDeclaration>()
     val visitedTypeIds = mutableSetOf<LsiSymbolId>()
     var currentTypeId: LsiSymbolId? = typeId
@@ -121,7 +121,7 @@ private fun LsiWorkspace.requirePoetTypeName(typeId: LsiSymbolId): LsiPoetTypeNa
         }
         val declaration = this[currentTypeId]
         require(declaration is LsiTypeDeclaration) {
-            "Missing LSI type declaration for Poet type name: ${currentTypeId.value}"
+            "Missing LSI type declaration for source type name: ${currentTypeId.value}"
         }
         require(declaration.qualifiedName == currentTypeId.requireTypeQualifiedName()) {
             "LSI type declaration qualified name does not match its id: ${currentTypeId.value}"
@@ -146,13 +146,13 @@ private fun LsiWorkspace.requirePoetTypeName(typeId: LsiSymbolId): LsiPoetTypeNa
             "LSI type declaration name chain does not match qualified name: $qualifiedName"
         )
     }
-    return LsiPoetTypeName(
+    return LsiTypeName(
         typeId = typeId,
         packageName = packageName,
         simpleNames = simpleNames,
     )
 }
 
-private fun String.isPoetPackageName(): Boolean = split('.').all(String::isPoetSimpleName)
+private fun String.isSourcePackageName(): Boolean = split('.').all(String::isSourceSimpleName)
 
-private fun String.isPoetSimpleName(): Boolean = isNotEmpty() && '.' !in this
+private fun String.isSourceSimpleName(): Boolean = isNotEmpty() && '.' !in this
