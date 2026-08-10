@@ -98,6 +98,22 @@ class LsiSymbolIdTest {
     }
 
     @Test
+    fun `成员标识可以恢复顶层类型标识`() {
+        val type = LsiSymbolId.type("example.Container")
+        val property = LsiSymbolId.property(type, "value")
+        val parameter = LsiSymbolId.parameter(
+            LsiSymbolId.function(type, "setValue", listOf("string")),
+            0,
+            "value",
+        )
+
+        assertEquals(type, type.rootTypeIdOrNull())
+        assertEquals(type, property.rootTypeIdOrNull())
+        assertEquals(type, parameter.rootTypeIdOrNull())
+        assertEquals(null, LsiSymbolId.packageScope("example").rootTypeIdOrNull())
+    }
+
+    @Test
     fun `包和文件作用域使用稳定分域标识`() {
         val packageScope = LsiSymbolId.packageScope("demo.model")
         val fileScope = LsiSymbolId.fileScope("demo.model", "generated/Book.kt")

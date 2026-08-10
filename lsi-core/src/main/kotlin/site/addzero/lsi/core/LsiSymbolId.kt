@@ -27,6 +27,11 @@ value class LsiSymbolId(
         return decodeComponent(value.removePrefix(TYPE_PREFIX))
     }
 
+    fun rootTypeIdOrNull(): LsiSymbolId? {
+        val rootTypeId = LsiSymbolId(value.substringBefore('/'))
+        return rootTypeId.takeIf(LsiSymbolId::isTypeId)
+    }
+
     fun requireTypeParameterName(): String {
         val markerIndex = value.lastIndexOf(TYPE_PARAMETER_MARKER)
         require(markerIndex >= 0) { "LSI symbol id is not a type parameter id: '$value'" }

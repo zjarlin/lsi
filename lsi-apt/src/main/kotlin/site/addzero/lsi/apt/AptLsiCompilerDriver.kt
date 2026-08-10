@@ -283,13 +283,6 @@ class AptLsiCompilerDriver(
         }
     }
 
-    private fun LsiSymbolId.rootTypeIdOrNull(): LsiSymbolId? {
-        val rootTypeId = LsiSymbolId(value.substringBefore('/'))
-        return runCatching { rootTypeId.requireTypeQualifiedName() }
-            .getOrNull()
-            ?.let { rootTypeId }
-    }
-
     private fun emitDiagnostic(
         diagnostic: LsiDiagnostic,
         currentRoundSymbols: AptLsiRoundSymbols,

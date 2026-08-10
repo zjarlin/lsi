@@ -62,6 +62,8 @@ class KspLsiCompilerDriver(
 
     private var workspace = LsiWorkspace.EMPTY
 
+    private var pendingTypeIds = emptySet<LsiSymbolId>()
+
     private var inputResources = emptyMap<String, String>()
 
     private var availableTypeIds = emptySet<LsiSymbolId>()
@@ -97,18 +99,25 @@ class KspLsiCompilerDriver(
             inputDocumentDiscoveryComplete = inputDocumentProvider.isFileSystemDiscoveryComplete(sourceSet)
         }
         val documentSeeds = inputDocumentSnapshots.flatMap { snapshot -> snapshot.typeSeeds }
+        val currentRootTypes = (
+            currentRoundSymbols.currentValidRootTypes +
+                currentRoundSymbols.allValidRootTypes.filter { type ->
+                    val qualifiedName = type.qualifiedName?.asString() ?: return@filter false
+                    LsiSymbolId.type(qualifiedName) in pendingTypeIds
+                }
+            ).distinctBy { type -> type.qualifiedName?.asString() }
         val initialWorkspace = currentRoundSymbols.allValidRootTypes.toLsiWorkspace(
             resolver = resolver,
             frontendOptions = frontendOptions,
             fileScopes = currentRoundSymbols.allValidFileScopes,
             additionalSeeds = documentSeeds,
         )
-        val currentWorkspace = currentRoundSymbols.currentValidRootTypes.toLsiWorkspace(
+        val currentWorkspace = currentRootTypes.toLsiWorkspace(
             resolver = resolver,
             frontendOptions = frontendOptions,
             fileScopes = currentRoundSymbols.currentValidFileScopes,
         )
-        val currentRootTypeIds = currentRoundSymbols.currentValidRootTypes.mapTo(sortedSetOf()) { type ->
+        val currentRootTypeIds = currentRootTypes.mapTo(sortedSetOf()) { type ->
             LsiSymbolId.type(requireNotNull(type.qualifiedName?.asString()))
         }
         workspace = resolveLsiTypeSeedFixedPoint(
@@ -140,6 +149,14 @@ class KspLsiCompilerDriver(
         )
         lastRoundResult = roundResult
         nextRoundNumber++
+        pendingTypeIds = buildSet {
+            roundResult.unresolvedSymbols.mapNotNullTo(this) { symbolId ->
+                symbolId.rootTypeIdOrNull()
+            }
+            session.pendingStableSourceOriginatingSymbols().mapNotNullTo(this) { symbolId ->
+                symbolId.rootTypeIdOrNull()
+            }
+        }
         pendingFileScopeSourcePaths = currentRoundSymbols.invalidFileAnnotationScopes
             .mapTo(sortedSetOf(), KspLsiFileScopeInput::normalizedSourcePath)
         roundResult.diagnostics.forEach { diagnostic ->

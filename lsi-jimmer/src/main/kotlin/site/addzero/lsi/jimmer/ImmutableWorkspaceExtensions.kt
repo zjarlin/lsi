@@ -1,6 +1,7 @@
 package site.addzero.lsi.jimmer
 
 import site.addzero.lsi.core.LsiLanguage
+import site.addzero.lsi.core.LsiSourceKind
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
@@ -1714,17 +1715,17 @@ private fun LsiWorkspace.hasUnresolvedImmutableType(targetTypeId: LsiSymbolId): 
         }
         val type = this[typeId] as? LsiTypeDeclaration ?: return true
         if (
-            type.superTypes.any(LsiTypeRef::containsUnresolvedType) ||
-            type.typeParameters.any(LsiTypeParameter::containsUnresolvedType) ||
-            type.annotations.any(LsiAnnotation::containsUnresolvedType)
+            type.superTypes.any { typeRef -> typeRef.containsUnresolvedType(this) } ||
+            type.typeParameters.any { typeParameter -> typeParameter.containsUnresolvedType(this) } ||
+            type.annotations.any { annotation -> annotation.containsUnresolvedType(this) }
         ) {
             return true
         }
         for (memberId in type.memberIds) {
             val property = this[memberId] as? LsiProperty ?: continue
             if (
-                property.type.containsUnresolvedType() ||
-                property.annotations.any(LsiAnnotation::containsUnresolvedType) ||
+                property.type.containsUnresolvedType(this) ||
+                property.annotations.any { annotation -> annotation.containsUnresolvedType(this) } ||
                 property.overrides.any { override -> !contains(override.declarationId) }
             ) {
                 return true
@@ -1742,34 +1743,44 @@ private fun LsiWorkspace.hasUnresolvedImmutableType(targetTypeId: LsiSymbolId): 
     return false
 }
 
-private fun LsiTypeParameter.containsUnresolvedType(): Boolean {
-    return upperBounds.any(LsiTypeRef::containsUnresolvedType)
+private fun LsiTypeParameter.containsUnresolvedType(workspace: LsiWorkspace): Boolean {
+    return upperBounds.any { upperBound -> upperBound.containsUnresolvedType(workspace) }
 }
 
-private fun LsiTypeRef.containsUnresolvedType(): Boolean {
+private fun LsiTypeRef.containsUnresolvedType(workspace: LsiWorkspace): Boolean {
     return when (this) {
         is LsiUnresolvedType -> true
-        is LsiDeclaredType -> arguments.any { argument -> argument.type?.containsUnresolvedType() == true }
-        is LsiArrayType -> elementType.containsUnresolvedType()
+        is LsiDeclaredType ->
+            workspace.hasMissingSourceTypeDeclaration(declarationId) ||
+                arguments.any { argument -> argument.type?.containsUnresolvedType(workspace) == true }
+        is LsiArrayType -> elementType.containsUnresolvedType(workspace)
         is LsiFunctionType ->
-            receiverType?.containsUnresolvedType() == true ||
-                parameterTypes.any(LsiTypeRef::containsUnresolvedType) ||
-                returnType.containsUnresolvedType()
+            receiverType?.containsUnresolvedType(workspace) == true ||
+                parameterTypes.any { parameterType -> parameterType.containsUnresolvedType(workspace) } ||
+                returnType.containsUnresolvedType(workspace)
         is LsiPrimitiveType,
         is LsiTypeParameterRef,
         -> false
     }
 }
 
-private fun LsiAnnotation.containsUnresolvedType(): Boolean {
-    return arguments.values.any { argument -> argument.value.containsUnresolvedType() }
+private fun LsiWorkspace.hasMissingSourceTypeDeclaration(typeId: LsiSymbolId): Boolean {
+    if (contains(typeId)) {
+        return false
+    }
+    val sourceKind = typeHierarchyEntry(typeId)?.source?.kind ?: return false
+    return sourceKind == LsiSourceKind.SOURCE || sourceKind == LsiSourceKind.GENERATED
 }
 
-private fun LsiAnnotationValue.containsUnresolvedType(): Boolean {
+private fun LsiAnnotation.containsUnresolvedType(workspace: LsiWorkspace): Boolean {
+    return arguments.values.any { argument -> argument.value.containsUnresolvedType(workspace) }
+}
+
+private fun LsiAnnotationValue.containsUnresolvedType(workspace: LsiWorkspace): Boolean {
     return when (this) {
-        is LsiAnnotationValue.ClassValue -> type.containsUnresolvedType()
-        is LsiAnnotationValue.NestedAnnotationValue -> annotation.containsUnresolvedType()
-        is LsiAnnotationValue.ArrayValue -> elements.any(LsiAnnotationValue::containsUnresolvedType)
+        is LsiAnnotationValue.ClassValue -> type.containsUnresolvedType(workspace)
+        is LsiAnnotationValue.NestedAnnotationValue -> annotation.containsUnresolvedType(workspace)
+        is LsiAnnotationValue.ArrayValue -> elements.any { element -> element.containsUnresolvedType(workspace) }
         is LsiAnnotationValue.BooleanValue,
         is LsiAnnotationValue.ByteValue,
         is LsiAnnotationValue.ShortValue,
