@@ -12,7 +12,7 @@ import site.addzero.lsi.codegen.GeneratedArtifact
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
@@ -21,10 +21,10 @@ import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.codegen.LsiSourceArtifact
 import site.addzero.lsi.model.LsiBodyStyle
-import site.addzero.lsi.model.LsiSourceAnnotationArgument
-import site.addzero.lsi.model.LsiAnnotationArgumentLayout
-import site.addzero.lsi.model.LsiAnnotationArrayStyle
-import site.addzero.lsi.model.LsiAnnotationValue
+import site.addzero.lsi.anno.LsiSourceAnnotationArgument
+import site.addzero.lsi.anno.LsiAnnotationArgumentLayout
+import site.addzero.lsi.anno.LsiAnnotationArrayStyle
+import site.addzero.lsi.anno.LsiAnnotationValue
 import site.addzero.lsi.model.LsiCodeBlock
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.field.LsiField
@@ -39,7 +39,7 @@ import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeReferenceStyle
 import site.addzero.lsi.file.LsiFile
-import site.addzero.lsi.model.sourceLsiAnnotation
+import site.addzero.lsi.anno.sourceLsiAnnotation
 
 class LsiJavaPoetRendererTest {
 

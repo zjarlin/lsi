@@ -22,7 +22,7 @@ import site.addzero.lsi.jimmer.dto.DtoTypeId
 import site.addzero.lsi.jimmer.dto.DtoTypeRef
 import site.addzero.lsi.jimmer.dto.DtoUserProp
 import site.addzero.lsi.jimmer.toImmutableSchema
-import site.addzero.lsi.model.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.clazz.LsiClass

@@ -16,7 +16,7 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.codegen.LsiSourceArtifact
-import site.addzero.lsi.model.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.model.LsiBodyStyle
 import site.addzero.lsi.model.LsiBracedExpressionCompletion
 import site.addzero.lsi.model.LsiCodeBlock

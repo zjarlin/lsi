@@ -5,7 +5,7 @@ import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.FrozenLsiMethod
 import site.addzero.lsi.model.FrozenLsiParameter
-import site.addzero.lsi.model.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.model.LsiBodyStyle
 import site.addzero.lsi.model.LsiCodeBlock
 import site.addzero.lsi.model.LsiDeclaration

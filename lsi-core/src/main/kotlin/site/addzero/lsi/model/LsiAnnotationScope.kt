@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiSource

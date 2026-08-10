@@ -1,8 +1,8 @@
 package site.addzero.lsi.jimmer.error
 
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiAnnotation
-import site.addzero.lsi.model.LsiAnnotationValue
+import site.addzero.lsi.anno.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotationValue
 import site.addzero.lsi.model.LsiEnumEntry
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.clazz.LsiClass

@@ -1,5 +1,6 @@
 package site.addzero.lsi.ksp
 
+import site.addzero.lsi.anno.LsiAnnotation
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.AnnotationUseSiteTarget
 import com.google.devtools.ksp.symbol.ClassKind
@@ -37,9 +38,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
-import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
-import site.addzero.lsi.model.LsiAnnotationValue
+import site.addzero.lsi.anno.LsiAnnotationArgumentOrigin
+import site.addzero.lsi.anno.LsiAnnotationUseSiteTarget
+import site.addzero.lsi.anno.LsiAnnotationValue
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.type.LsiDeclaredType
@@ -1791,7 +1792,7 @@ class KspLsiWorkspaceTest {
             .single { property -> property.ownerId == ownerId && property.name == name }
     }
 
-    private fun LsiProperty.annotation(qualifiedName: String): site.addzero.lsi.model.LsiAnnotation {
+    private fun LsiProperty.annotation(qualifiedName: String): site.addzero.lsi.anno.LsiAnnotation {
         return annotations.single { annotation -> annotation.type == LsiSymbolId.type(qualifiedName) }
     }
 

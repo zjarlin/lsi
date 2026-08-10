@@ -10,11 +10,11 @@ import com.google.devtools.ksp.symbol.KSValueArgument
 import com.google.devtools.ksp.symbol.NonExistLocation
 import com.google.devtools.ksp.symbol.Origin
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiAnnotation
-import site.addzero.lsi.model.LsiAnnotationArgument
-import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
-import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
-import site.addzero.lsi.model.LsiAnnotationValue
+import site.addzero.lsi.anno.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotationArgument
+import site.addzero.lsi.anno.LsiAnnotationArgumentOrigin
+import site.addzero.lsi.anno.LsiAnnotationUseSiteTarget
+import site.addzero.lsi.anno.LsiAnnotationValue
 
 fun KSAnnotation.toLsiAnnotation(
     resolver: Resolver,

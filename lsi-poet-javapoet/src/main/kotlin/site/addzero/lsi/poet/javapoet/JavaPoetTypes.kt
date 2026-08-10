@@ -11,8 +11,8 @@ import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeVariableName
 import com.squareup.javapoet.WildcardTypeName
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiAnnotation
-import site.addzero.lsi.model.LsiAnnotationValue
+import site.addzero.lsi.anno.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotationValue
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.type.LsiFunctionType
@@ -23,13 +23,13 @@ import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.type.LsiVariance
-import site.addzero.lsi.model.LsiSourceAnnotationArgument
-import site.addzero.lsi.model.LsiAnnotationArgumentLayout
-import site.addzero.lsi.model.LsiAnnotationArrayStyle
-import site.addzero.lsi.model.LsiClassLiteralStyle
+import site.addzero.lsi.anno.LsiSourceAnnotationArgument
+import site.addzero.lsi.anno.LsiAnnotationArgumentLayout
+import site.addzero.lsi.anno.LsiAnnotationArrayStyle
+import site.addzero.lsi.anno.LsiClassLiteralStyle
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeReferenceStyle
-import site.addzero.lsi.model.toSourceAnnotation
+import site.addzero.lsi.anno.toSourceAnnotation
 
 internal fun LsiType.toJavaTypeName(typeNames: List<LsiClass>): TypeName {
     val typeName = when (this) {

@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.file.LsiFile
 import site.addzero.lsi.file.LsiFileNameStyle

@@ -1,12 +1,14 @@
 package site.addzero.lsi.apt
 
+import site.addzero.lsi.anno.LsiAnnotation
+import site.addzero.lsi.anno.copy
 import kotlin.Metadata
 import kotlin.metadata.jvm.KotlinClassMetadata
 import site.addzero.lsi.model.mergeDeclarationsById
 import site.addzero.lsi.model.referencedTypeIds
 import site.addzero.lsi.model.LsiFrontendOptions
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
+import site.addzero.lsi.anno.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationMember
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
@@ -566,7 +568,7 @@ class AptLsiWorkspaceBuilder(
         )
     }
 
-    private fun toLsiCallableAnnotations(method: ExecutableElement): List<site.addzero.lsi.model.LsiAnnotation> {
+    private fun toLsiCallableAnnotations(method: ExecutableElement): List<site.addzero.lsi.anno.LsiAnnotation> {
         val methodAnnotationMirrors = method.annotationMirrors
         val methodAnnotations = context.toLsiAnnotations(
             annotations = methodAnnotationMirrors,

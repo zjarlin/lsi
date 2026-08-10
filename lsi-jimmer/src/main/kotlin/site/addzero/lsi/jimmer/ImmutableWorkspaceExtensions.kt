@@ -2,9 +2,9 @@ package site.addzero.lsi.jimmer
 
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiAnnotation
-import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
-import site.addzero.lsi.model.LsiAnnotationValue
+import site.addzero.lsi.anno.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotationUseSiteTarget
+import site.addzero.lsi.anno.LsiAnnotationValue
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.method.LsiMethod

@@ -1,9 +1,10 @@
 package site.addzero.lsi.jimmer
 
+import site.addzero.lsi.anno.copy
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationTarget
-import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
+import site.addzero.lsi.anno.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.annotationTargetPolicy

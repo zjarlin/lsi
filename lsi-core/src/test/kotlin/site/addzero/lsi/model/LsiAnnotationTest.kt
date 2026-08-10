@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.anno.*
 import site.addzero.lsi.type.*
 
 import site.addzero.lsi.core.LsiSymbolId

@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.field.copy
 

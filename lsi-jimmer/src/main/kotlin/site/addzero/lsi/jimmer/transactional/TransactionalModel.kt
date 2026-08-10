@@ -2,7 +2,7 @@ package site.addzero.lsi.jimmer.transactional
 
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.type.LsiType

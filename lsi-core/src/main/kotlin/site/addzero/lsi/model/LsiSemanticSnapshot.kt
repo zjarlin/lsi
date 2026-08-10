@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.anno.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotationValue
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.field.LsiProperty
@@ -266,11 +268,12 @@ private fun List<LsiAnnotation>.toSemanticSnapshot(options: LsiSemanticSnapshotO
 }
 
 private fun LsiAnnotation.toSemanticSnapshot(options: LsiSemanticSnapshotOptions): String {
+    val target = useSiteTarget
     return buildString {
         append(type.value)
-        if (options.includeAnnotationUseSiteTarget && useSiteTarget != null) {
+        if (options.includeAnnotationUseSiteTarget && target != null) {
             append('@')
-            append(useSiteTarget.name)
+            append(target.name)
         }
         append('(')
         append(

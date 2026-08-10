@@ -5,7 +5,8 @@ import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.jimmer.targetIdPropOf
-import site.addzero.lsi.model.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotation
+import site.addzero.lsi.anno.get
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.type.LsiFunctionType

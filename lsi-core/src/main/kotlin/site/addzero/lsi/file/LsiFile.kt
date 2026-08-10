@@ -2,7 +2,7 @@ package site.addzero.lsi.file
 
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.model.FrozenLsiFile
-import site.addzero.lsi.model.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.model.LsiMember
 import site.addzero.lsi.model.isJvmIdentifier
 

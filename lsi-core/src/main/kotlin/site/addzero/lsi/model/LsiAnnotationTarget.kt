@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.anno.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotationValue
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.core.LsiSymbolId
 

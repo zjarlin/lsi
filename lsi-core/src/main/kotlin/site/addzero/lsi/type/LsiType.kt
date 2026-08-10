@@ -1,6 +1,6 @@
 package site.addzero.lsi.type
 
-import site.addzero.lsi.model.LsiAnnotation
+import site.addzero.lsi.anno.LsiAnnotation
 
 /**
  * 语言无关的类型使用接口。
