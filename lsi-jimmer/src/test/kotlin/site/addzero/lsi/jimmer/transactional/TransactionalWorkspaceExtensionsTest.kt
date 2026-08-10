@@ -25,7 +25,8 @@ import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.type.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.copy
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeHierarchyEntry
 import site.addzero.lsi.type.LsiTypeParameter
@@ -264,7 +265,7 @@ class TransactionalWorkspaceExtensionsTest {
     @Test
     fun `rejects tx on kotlin property`() {
         val workspace = kotlinWorkspace()
-        val service = workspace[TYPE_ID] as LsiTypeDeclaration
+        val service = workspace[TYPE_ID] as LsiClass
         val origin = service.origin
         val property = LsiProperty(
             id = LsiSymbolId.property(TYPE_ID, "version"),
@@ -337,7 +338,7 @@ class TransactionalWorkspaceExtensionsTest {
         thrownType: LsiDeclaredType? = null,
         receiverType: LsiDeclaredType? = null,
         suspending: Boolean = false,
-        extraDeclarations: List<LsiTypeDeclaration> = emptyList(),
+        extraDeclarations: List<LsiClass> = emptyList(),
     ): LsiWorkspace {
         val source = LsiSource.of(
             "demo/BookService.${if (language == LsiLanguage.JAVA) "java" else "kt"}",
@@ -446,8 +447,8 @@ class TransactionalWorkspaceExtensionsTest {
         memberIds: List<LsiSymbolId> = emptyList(),
         annotations: List<LsiAnnotation> = emptyList(),
         origin: LsiOrigin = SYNTHETIC_ORIGIN,
-    ): LsiTypeDeclaration {
-        return LsiTypeDeclaration(
+    ): LsiClass {
+        return LsiClass(
             id = id,
             name = qualifiedName.substringAfterLast('.'),
             qualifiedName = qualifiedName,
@@ -473,9 +474,9 @@ class TransactionalWorkspaceExtensionsTest {
         )
     }
 
-    private fun annotationDeclaration(target: String): LsiTypeDeclaration {
+    private fun annotationDeclaration(target: String): LsiClass {
         val source = LsiSource.of("demo/ParameterMarker.kt", LsiLanguage.KOTLIN)
-        return LsiTypeDeclaration(
+        return LsiClass(
             id = PARAMETER_MARKER,
             name = "ParameterMarker",
             qualifiedName = "demo.ParameterMarker",

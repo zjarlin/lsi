@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.core.LsiSymbolId
 
 enum class LsiAnnotationTarget {
@@ -32,7 +33,7 @@ data class LsiAnnotationTargetPolicy(
     }
 }
 
-fun LsiTypeDeclaration.annotationTargetPolicy(): LsiAnnotationTargetPolicy {
+fun LsiClass.annotationTargetPolicy(): LsiAnnotationTargetPolicy {
     val javaTarget = annotations.firstOrNull { annotation -> annotation.type == JAVA_TARGET }
     val kotlinTarget = annotations.firstOrNull { annotation -> annotation.type == KOTLIN_TARGET }
     if (javaTarget == null && kotlinTarget == null) {

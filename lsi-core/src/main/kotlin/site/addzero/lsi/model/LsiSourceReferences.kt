@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.type.LsiTypeParameter
 
 import site.addzero.lsi.core.LsiSymbolId
@@ -88,7 +89,7 @@ private fun MutableSet<LsiSymbolId>.collectSourceMemberDependencies(member: LsiM
             member.getter?.let(::collectSourceAccessorDependencies)
             member.setter?.let(::collectSourceAccessorDependencies)
         }
-        is LsiTypeDeclaration -> {
+        is LsiClass -> {
             member.typeParameters.forEach(::collectSourceTypeParameterDependencies)
             member.superClass?.let(::collectTypeRefDependencies)
             member.superClassConstructorArguments.forEach(::collectSourceCodeDependencies)

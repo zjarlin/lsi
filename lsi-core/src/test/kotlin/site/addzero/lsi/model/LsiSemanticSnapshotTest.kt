@@ -1,5 +1,8 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.copy
+
 import site.addzero.lsi.type.*
 
 import kotlin.test.Test
@@ -131,14 +134,14 @@ class LsiSemanticSnapshotTest {
         val source = LsiSource.of("src/main/kotlin/sample/Source.kt")
         val workspace = LsiWorkspace(
             declarations = listOf(
-                LsiTypeDeclaration(
+                LsiClass(
                     id = sourceTypeId,
                     name = "Source",
                     qualifiedName = "sample.Source",
                     kind = LsiTypeDeclarationKind.INTERFACE,
                     origin = LsiOrigin(LsiOriginKind.SOURCE, source),
                 ),
-                LsiTypeDeclaration(
+                LsiClass(
                     id = generatedTypeId,
                     name = "Generated",
                     qualifiedName = "sample.Generated",
@@ -208,14 +211,14 @@ class LsiSemanticSnapshotTest {
         val nestedId = LsiSymbolId.type("sample.Outer.Row")
         val dataWorkspace = LsiWorkspace(
             declarations = listOf(
-                LsiTypeDeclaration(
+                LsiClass(
                     id = outerId,
                     name = "Outer",
                     qualifiedName = "sample.Outer",
                     kind = LsiTypeDeclarationKind.CLASS,
                     origin = ORIGIN,
                 ),
-                LsiTypeDeclaration(
+                LsiClass(
                     id = nestedId,
                     name = "Row",
                     qualifiedName = "sample.Outer.Row",
@@ -230,7 +233,7 @@ class LsiSemanticSnapshotTest {
         )
         val plainWorkspace = LsiWorkspace(
             declarations = dataWorkspace.declarations.map { declaration ->
-                if (declaration is LsiTypeDeclaration && declaration.id == nestedId) {
+                if (declaration is LsiClass && declaration.id == nestedId) {
                     declaration.copy(
                         enclosingTypeId = null,
                         requiresEnclosingInstance = false,
@@ -293,7 +296,7 @@ class LsiSemanticSnapshotTest {
     ): LsiWorkspace {
         return LsiWorkspace(
             declarations = listOf(
-                LsiTypeDeclaration(
+                LsiClass(
                     id = ownerId,
                     name = "Switch",
                     qualifiedName = "sample.Switch",
@@ -333,7 +336,7 @@ class LsiSemanticSnapshotTest {
     ): LsiWorkspace {
         return LsiWorkspace(
             declarations = listOf(
-                LsiTypeDeclaration(
+                LsiClass(
                     id = ownerId,
                     name = "Model",
                     qualifiedName = "sample.Model",

@@ -21,7 +21,7 @@ import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.type.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.type.LsiTypeParameterRef
@@ -55,7 +55,7 @@ class DtoInterfaceContractTest {
             )
             return LsiWorkspace(
                 declarations = listOf(
-                    LsiTypeDeclaration(
+                    LsiClass(
                         id = contractTypeId,
                         name = "BinaryContract",
                         qualifiedName = "contract.BinaryContract",
@@ -82,7 +82,7 @@ class DtoInterfaceContractTest {
                         modality = LsiModality.ABSTRACT,
                         origin = binaryOrigin,
                     ),
-                    LsiTypeDeclaration(
+                    LsiClass(
                         id = stringTypeId,
                         name = "String",
                         qualifiedName = "java.lang.String",
@@ -325,7 +325,7 @@ class DtoInterfaceContractTest {
         val classTypeId = typeId("contract.NotAnInterface")
         val workspace = LsiWorkspace(
             declarations = listOf(
-                LsiTypeDeclaration(
+                LsiClass(
                     id = classTypeId,
                     name = "NotAnInterface",
                     qualifiedName = "contract.NotAnInterface",
@@ -619,8 +619,8 @@ class DtoInterfaceContractTest {
         typeParameters: List<LsiTypeParameter> = emptyList(),
         superTypes: List<LsiDeclaredType> = emptyList(),
         memberIds: List<LsiSymbolId> = emptyList(),
-    ): LsiTypeDeclaration {
-        return LsiTypeDeclaration(
+    ): LsiClass {
+        return LsiClass(
             id = id,
             name = id.requireTypeQualifiedName().substringAfterLast('.'),
             qualifiedName = id.requireTypeQualifiedName(),

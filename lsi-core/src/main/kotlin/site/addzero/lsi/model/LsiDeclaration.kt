@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiOriginKind
@@ -93,7 +94,7 @@ data class LsiDelegationCall(
     val arguments: List<LsiCodeBlock>,
 )
 
-sealed interface LsiMember {
+interface LsiMember {
     val annotations: List<LsiAnnotation>
 
     val modifiers: Set<LsiModifier>
@@ -115,7 +116,7 @@ data class LsiOverride(
     }
 }
 
-sealed interface LsiDeclaration {
+interface LsiDeclaration {
     val id: LsiSymbolId
     val name: String
     val visibility: LsiVisibility
@@ -128,35 +129,35 @@ sealed interface LsiDeclaration {
     val origin: LsiOrigin
 }
 
-data class LsiTypeDeclaration(
+internal data class FrozenLsiClass(
     override val id: LsiSymbolId,
     override val name: String,
-    val qualifiedName: String,
-    val kind: LsiTypeDeclarationKind,
-    val enclosingTypeId: LsiSymbolId? = null,
-    val requiresEnclosingInstance: Boolean = false,
-    val abstractDeclaration: Boolean = false,
-    val dataClass: Boolean = false,
+    override val qualifiedName: String,
+    override val kind: LsiTypeDeclarationKind,
+    override val enclosingTypeId: LsiSymbolId? = null,
+    override val requiresEnclosingInstance: Boolean = false,
+    override val abstractDeclaration: Boolean = false,
+    override val dataClass: Boolean = false,
     override val visibility: LsiVisibility = LsiVisibility.PUBLIC,
-    val modality: LsiModality = LsiModality.FINAL,
-    val typeParameters: List<LsiTypeParameter> = emptyList(),
-    val superTypes: List<LsiType> = emptyList(),
-    val memberIds: List<LsiSymbolId> = emptyList(),
-    val enumEntries: List<LsiEnumEntry> = emptyList(),
-    val annotationMembers: List<LsiAnnotationMember> = emptyList(),
+    override val modality: LsiModality = LsiModality.FINAL,
+    override val typeParameters: List<LsiTypeParameter> = emptyList(),
+    override val superTypes: List<LsiType> = emptyList(),
+    override val memberIds: List<LsiSymbolId> = emptyList(),
+    override val enumEntries: List<LsiEnumEntry> = emptyList(),
+    override val annotationMembers: List<LsiAnnotationMember> = emptyList(),
     override val documentation: String? = null,
     override val sourceDocumentation: String? = null,
     override val annotations: List<LsiAnnotation> = emptyList(),
     override val location: LsiLocation? = null,
     override val origin: LsiOrigin,
     override val modifiers: Set<LsiModifier> = emptySet(),
-    val nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
-    val superClass: LsiType? = null,
-    val superClassConstructorArguments: List<LsiCodeBlock> = emptyList(),
-    val superInterfaces: List<LsiType> = emptyList(),
-    val primaryConstructor: LsiConstructor? = null,
-    val members: List<LsiMember> = emptyList(),
-) : LsiDeclaration, LsiMember {
+    override val nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
+    override val superClass: LsiType? = null,
+    override val superClassConstructorArguments: List<LsiCodeBlock> = emptyList(),
+    override val superInterfaces: List<LsiType> = emptyList(),
+    override val primaryConstructor: LsiConstructor? = null,
+    override val members: List<LsiMember> = emptyList(),
+) : LsiClass {
 
     constructor(
         name: String,
@@ -280,13 +281,13 @@ data class LsiEnumEntry(
     override val origin: LsiOrigin,
     override val modifiers: Set<LsiModifier> = emptySet(),
     val constructorArguments: List<LsiCodeBlock> = emptyList(),
-    val anonymousType: LsiTypeDeclaration? = null,
+    val anonymousType: LsiClass? = null,
 ) : LsiDeclaration {
 
     constructor(
         name: String,
         constructorArguments: List<LsiCodeBlock> = emptyList(),
-        anonymousType: LsiTypeDeclaration? = null,
+        anonymousType: LsiClass? = null,
     ) : this(
         id = LsiSymbolId.enumEntry(GENERATED_DECLARATION_OWNER_ID, name),
         name = name,

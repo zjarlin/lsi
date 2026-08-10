@@ -8,7 +8,7 @@ import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiWorkspace
 
@@ -609,7 +609,7 @@ private class DraftValidationPlanCompiler(
         workspace: LsiWorkspace,
     ) {
         val declaration = workspace[annotation.type] ?: return
-        if (declaration !is LsiTypeDeclaration || declaration.kind != LsiTypeDeclarationKind.ANNOTATION) {
+        if (declaration !is LsiClass || declaration.kind != LsiTypeDeclarationKind.ANNOTATION) {
             throw invalid(prop, "'${annotation.type.requireTypeQualifiedName()}' is not an annotation type")
         }
     }
@@ -621,7 +621,7 @@ private class DraftValidationPlanCompiler(
         workspace: LsiWorkspace,
     ) {
         val declaration = workspace[typeId] ?: return
-        if (declaration !is LsiTypeDeclaration) {
+        if (declaration !is LsiClass) {
             throw invalid(prop, "$role '${typeId.value}' is not a type declaration")
         }
     }

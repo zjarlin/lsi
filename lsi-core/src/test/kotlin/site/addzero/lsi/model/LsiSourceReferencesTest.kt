@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import site.addzero.lsi.core.LsiLanguage
@@ -56,7 +58,7 @@ class LsiSourceReferencesTest {
                 )
             ),
         )
-        val generatedType = LsiTypeDeclaration(
+        val generatedType = LsiClass(
             name = "Generated",
             kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(typeAnnotation),

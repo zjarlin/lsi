@@ -43,7 +43,8 @@ import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.copy
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.type.LsiVariance
@@ -172,7 +173,7 @@ class DtoAnnotationContractTest {
     fun `restores immutable property defaults only for source applications`() {
         val fixture = fixture()
         val nestedAnnotationType = LsiSymbolId.type("demo.Nested")
-        val javaTagDeclaration = assertIs<LsiTypeDeclaration>(fixture.workspace[JAVA_TAG])
+        val javaTagDeclaration = assertIs<LsiClass>(fixture.workspace[JAVA_TAG])
         val declarations = fixture.workspace.declarations.map { declaration ->
             if (declaration.id == JAVA_TAG) {
                 javaTagDeclaration.copy(
@@ -1272,8 +1273,8 @@ class DtoAnnotationContractTest {
         memberIds: List<LsiSymbolId> = emptyList(),
         annotationMembers: List<LsiAnnotationMember> = emptyList(),
         language: LsiLanguage,
-    ): LsiTypeDeclaration {
-        return LsiTypeDeclaration(
+    ): LsiClass {
+        return LsiClass(
             id = LsiSymbolId.type(qualifiedName),
             name = qualifiedName.substringAfterLast('.'),
             qualifiedName = qualifiedName,

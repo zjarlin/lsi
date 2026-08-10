@@ -7,7 +7,7 @@ import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiModality
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
@@ -254,12 +254,12 @@ internal class ClientExceptionMetadataResolver private constructor(
         ): ClientExceptionMetadataResolver {
             val generatedMetadata = schema.families.flatMap(ErrorFamily::toClientExceptionMetadata)
             val generatedMetadataByTypeId = generatedMetadata.associateBy(ClientExceptionMetadata::typeId)
-            val manualTypeIds = workspace.declarationsOfType<LsiTypeDeclaration>()
+            val manualTypeIds = workspace.declarationsOfType<LsiClass>()
                 .filter { type ->
                     type.id !in generatedMetadataByTypeId &&
                         type.annotations.hasAnnotation(CLIENT_EXCEPTION_ANNOTATION)
                 }
-                .mapTo(linkedSetOf(), LsiTypeDeclaration::id)
+                .mapTo(linkedSetOf(), LsiClass::id)
             return ClientExceptionMetadataResolver(
                 knownTypeIds = generatedMetadataByTypeId.keys + manualTypeIds,
                 metadataProvider = { operationId ->
@@ -279,27 +279,27 @@ private class ManualClientExceptionMetadataCompiler(
     private val generatedMetadataByTypeId: Map<LsiSymbolId, ClientExceptionMetadata>,
     private val operationId: LsiSymbolId,
 ) {
-    private val typesById = workspace.declarationsOfType<LsiTypeDeclaration>()
-        .associateBy(LsiTypeDeclaration::id)
+    private val typesById = workspace.declarationsOfType<LsiClass>()
+        .associateBy(LsiClass::id)
 
     private val manualTypesById = typesById.values
         .filter { type ->
             type.id !in generatedMetadataByTypeId &&
                 type.annotations.hasAnnotation(CLIENT_EXCEPTION_ANNOTATION)
         }
-        .associateBy(LsiTypeDeclaration::id)
+        .associateBy(LsiClass::id)
 
     private val metadataByTypeId = linkedMapOf<LsiSymbolId, ClientExceptionMetadata>()
     private val compilingTypeIds = linkedSetOf<LsiSymbolId>()
 
     fun compile(): List<ClientExceptionMetadata> {
         manualTypesById.values
-            .sortedBy(LsiTypeDeclaration::qualifiedName)
+            .sortedBy(LsiClass::qualifiedName)
             .forEach { type -> compile(type) }
         return metadataByTypeId.values.toList()
     }
 
-    private fun compile(type: LsiTypeDeclaration): ClientExceptionMetadata {
+    private fun compile(type: LsiClass): ClientExceptionMetadata {
         metadataByTypeId[type.id]?.let { metadata -> return metadata }
         if (!compilingTypeIds.add(type.id)) {
             throw invalidExceptionTree(
@@ -368,8 +368,8 @@ private fun ErrorFamily.toClientExceptionMetadata(): List<ClientExceptionMetadat
     return listOf(baseMetadata) + codeMetadata
 }
 
-private fun LsiTypeDeclaration.checkedException(
-    typesById: Map<LsiSymbolId, LsiTypeDeclaration>,
+private fun LsiClass.checkedException(
+    typesById: Map<LsiSymbolId, LsiClass>,
     operationId: LsiSymbolId,
 ): Boolean {
     val visitingTypeIds = linkedSetOf<LsiSymbolId>()
@@ -404,8 +404,8 @@ private fun LsiTypeDeclaration.checkedException(
     return checked(id)
 }
 
-private fun LsiTypeDeclaration.directClassSuperTypeId(
-    typesById: Map<LsiSymbolId, LsiTypeDeclaration>,
+private fun LsiClass.directClassSuperTypeId(
+    typesById: Map<LsiSymbolId, LsiClass>,
 ): LsiSymbolId? {
     val superTypeIds = superTypes.mapNotNull(LsiType::declaredTypeId)
     return superTypeIds.firstOrNull { typeId ->

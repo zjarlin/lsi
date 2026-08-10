@@ -14,7 +14,7 @@ import site.addzero.lsi.model.LsiFunction
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSystem
@@ -35,8 +35,8 @@ fun LsiWorkspace.toTransactionalSchema(): TransactionalSchema {
 
 private class TransactionalSchemaBuilder {
     fun build(workspace: LsiWorkspace): TransactionalSchema {
-        val types = workspace.declarationsOfType<LsiTypeDeclaration>()
-            .sortedBy(LsiTypeDeclaration::qualifiedName)
+        val types = workspace.declarationsOfType<LsiClass>()
+            .sortedBy(LsiClass::qualifiedName)
         val typeSystem = LsiTypeSystem(workspace)
         val transactionalTypes = types
             .filter { type -> type.isTransactionalType(workspace) }
@@ -45,8 +45,8 @@ private class TransactionalSchemaBuilder {
     }
 
     private fun compileType(
-        type: LsiTypeDeclaration,
-        allTypes: List<LsiTypeDeclaration>,
+        type: LsiClass,
+        allTypes: List<LsiClass>,
         workspace: LsiWorkspace,
         typeSystem: LsiTypeSystem,
     ): TransactionalType {
@@ -85,8 +85,8 @@ private class TransactionalSchemaBuilder {
     }
 
     private fun validateType(
-        type: LsiTypeDeclaration,
-        allTypes: List<LsiTypeDeclaration>,
+        type: LsiClass,
+        allTypes: List<LsiClass>,
         workspace: LsiWorkspace,
     ) {
         if (type.kind != LsiTypeDeclarationKind.CLASS) {
@@ -134,7 +134,7 @@ private class TransactionalSchemaBuilder {
     }
 
     private fun determineSqlClient(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         members: List<LsiDeclaration>,
         typeSystem: LsiTypeSystem,
     ): TransactionalSqlClient {
@@ -290,7 +290,7 @@ private class TransactionalSchemaBuilder {
     }
 }
 
-private fun LsiTypeDeclaration.isTransactionalType(workspace: LsiWorkspace): Boolean {
+private fun LsiClass.isTransactionalType(workspace: LsiWorkspace): Boolean {
     if (annotations.annotation(TX_ANNOTATION) != null) {
         return true
     }
@@ -362,7 +362,7 @@ private fun List<LsiAnnotation>.transactionalParameterAnnotationProjection(
 }
 
 private fun LsiWorkspace.allowsParameterTarget(annotationTypeId: LsiSymbolId): Boolean {
-    val declaration = this[annotationTypeId] as? LsiTypeDeclaration ?: return false
+    val declaration = this[annotationTypeId] as? LsiClass ?: return false
     return declaration.annotationTargetPolicy().allows(LsiAnnotationTarget.PARAMETER)
 }
 

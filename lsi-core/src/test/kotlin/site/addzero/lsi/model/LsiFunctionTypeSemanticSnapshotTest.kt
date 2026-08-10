@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
+
 import site.addzero.lsi.type.*
 
 import kotlin.test.Test
@@ -33,7 +35,7 @@ class LsiFunctionTypeSemanticSnapshotTest {
         val origin = LsiOrigin(LsiOriginKind.SYNTHETIC)
         val workspace = LsiWorkspace(
             declarations = listOf(
-                LsiTypeDeclaration(
+                LsiClass(
                     id = ownerId,
                     name = "Service",
                     qualifiedName = "sample.Service",

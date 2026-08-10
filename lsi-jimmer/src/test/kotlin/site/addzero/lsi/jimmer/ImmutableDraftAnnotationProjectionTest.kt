@@ -12,7 +12,7 @@ import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.type.LsiDeclaredType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiWorkspace
 
@@ -91,8 +91,8 @@ private fun marker(
     )
 }
 
-private fun annotationType(id: LsiSymbolId, target: String): LsiTypeDeclaration {
-    return LsiTypeDeclaration(
+private fun annotationType(id: LsiSymbolId, target: String): LsiClass {
+    return LsiClass(
         id = id,
         name = id.value.substringAfterLast('.'),
         qualifiedName = id.value,

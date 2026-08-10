@@ -34,7 +34,7 @@ import site.addzero.lsi.model.LsiNameStyle
 import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.poet.LsiPoetRenderer
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeName
 import site.addzero.lsi.model.LsiTypeReferenceStyle
 
@@ -61,7 +61,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
 
     /** 将单个 LSI 类型渲染为可嵌入现有 JavaPoet 声明的结构。 */
     fun renderType(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         typeNames: List<LsiTypeName>,
     ): TypeSpec {
         return type.toJavaTypeSpec(typeNames, currentPackageName = null)
@@ -111,7 +111,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
         require(file.imports.isEmpty()) {
             "JavaPoet renderer does not support explicit imports: ${artifact.qualifiedFileName}"
         }
-        val type = file.members.singleOrNull() as? LsiTypeDeclaration
+        val type = file.members.singleOrNull() as? LsiClass
             ?: error("Java LSI Poet file must contain exactly one top-level type: ${artifact.qualifiedFileName}")
         require(type.name == file.fileName) {
             "Java LSI Poet file name must match its top-level type: ${artifact.qualifiedFileName}"
@@ -129,7 +129,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
     }
 }
 
-private fun LsiTypeDeclaration.toJavaTypeSpec(
+private fun LsiClass.toJavaTypeSpec(
     typeNames: List<LsiTypeName>,
     currentPackageName: String?,
 ): TypeSpec {
@@ -209,7 +209,7 @@ private fun TypeSpec.Builder.addJavaMember(
         is LsiFunction -> addMethod(member.toJavaMethod(typeNames))
         is LsiInitializerBlock -> addJavaInitializer(member, typeNames)
         is LsiProperty -> error("JavaPoet renderer cannot emit a Kotlin property: ${member.name}")
-        is LsiTypeDeclaration -> addType(member.toJavaTypeSpec(typeNames, currentPackageName))
+        is LsiClass -> addType(member.toJavaTypeSpec(typeNames, currentPackageName))
     }
 }
 

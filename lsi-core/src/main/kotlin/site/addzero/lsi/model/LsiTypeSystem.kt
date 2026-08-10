@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.type.LsiDeclaredType
@@ -164,7 +165,7 @@ class LsiTypeSystem(
     }
 
     fun effectiveProperties(typeId: LsiSymbolId): List<LsiResolvedProperty> {
-        val type = workspace[typeId] as? LsiTypeDeclaration
+        val type = workspace[typeId] as? LsiClass
             ?: throw IllegalArgumentException("No LSI type declaration '${typeId.value}'")
         return resolveProperties(
             type = type,
@@ -176,7 +177,7 @@ class LsiTypeSystem(
     }
 
     private fun resolveProperties(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         substitutions: Map<LsiSymbolId, LsiTypeArgument>,
         ownerId: LsiSymbolId,
         distance: Int,
@@ -187,7 +188,7 @@ class LsiTypeSystem(
             val inheritedByName = linkedMapOf<String, MutableList<LsiResolvedProperty>>()
             for (superType in type.superTypes.filterIsInstance<LsiDeclaredType>()) {
                 val resolvedSuperType = substitute(superType, substitutions) as LsiDeclaredType
-                val superDeclaration = workspace[resolvedSuperType.declarationId] as? LsiTypeDeclaration ?: continue
+                val superDeclaration = workspace[resolvedSuperType.declarationId] as? LsiClass ?: continue
                 val superProperties = resolveProperties(
                     type = superDeclaration,
                     substitutions = superDeclaration.substitutionsFrom(resolvedSuperType),
@@ -464,7 +465,7 @@ class LsiTypeSystem(
         return typeParameters.identitySubstitutions()
     }
 
-    private fun LsiTypeDeclaration.identitySubstitutions(): Map<LsiSymbolId, LsiTypeArgument> {
+    private fun LsiClass.identitySubstitutions(): Map<LsiSymbolId, LsiTypeArgument> {
         return typeParameters.identitySubstitutions()
     }
 
@@ -489,7 +490,7 @@ class LsiTypeSystem(
         return typeParameters.substitutionsFrom(normalizeArguments(resolvedType))
     }
 
-    private fun LsiTypeDeclaration.substitutionsFrom(
+    private fun LsiClass.substitutionsFrom(
         resolvedType: LsiDeclaredType,
     ): Map<LsiSymbolId, LsiTypeArgument> {
         return typeParameters.substitutionsFrom(

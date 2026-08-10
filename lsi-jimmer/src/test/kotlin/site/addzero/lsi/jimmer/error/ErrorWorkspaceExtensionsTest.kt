@@ -17,7 +17,7 @@ import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.model.LsiEnumEntry
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
@@ -84,7 +84,7 @@ class ErrorWorkspaceExtensionsTest {
     @Test
     fun `target selection excludes classpath error families from generation`() {
         val sourceWorkspace = errorWorkspace(LsiLanguage.JAVA, repeatableContainer = false)
-        val sourceFamily = sourceWorkspace.declarationsOfType<LsiTypeDeclaration>().single()
+        val sourceFamily = sourceWorkspace.declarationsOfType<LsiClass>().single()
         val binaryFamilyId = LsiSymbolId.type("external.ExternalErrorCode")
         val binaryEntry = LsiEnumEntry(
             id = LsiSymbolId("${binaryFamilyId.value}#FAILED"),
@@ -252,8 +252,8 @@ class ErrorWorkspaceExtensionsTest {
         enumEntries: List<LsiEnumEntry> = emptyList(),
         documentation: String? = null,
         origin: LsiOrigin = SYNTHETIC_ORIGIN,
-    ): LsiTypeDeclaration {
-        return LsiTypeDeclaration(
+    ): LsiClass {
+        return LsiClass(
             id = LsiSymbolId.type(qualifiedName),
             name = qualifiedName.substringAfterLast('.'),
             qualifiedName = qualifiedName,

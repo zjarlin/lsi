@@ -5,7 +5,7 @@ import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.model.LsiEnumEntry
 import site.addzero.lsi.type.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
@@ -26,8 +26,8 @@ fun LsiWorkspace.toErrorSchema(
     options: ErrorSchemaOptions = ErrorSchemaOptions(),
     targetTypeIds: Set<LsiSymbolId>? = null,
 ): ErrorSchema {
-    val types = declarationsOfType<LsiTypeDeclaration>()
-        .sortedBy(LsiTypeDeclaration::qualifiedName)
+    val types = declarationsOfType<LsiClass>()
+        .sortedBy(LsiClass::qualifiedName)
     val families = types
         .filter { type -> targetTypeIds == null || type.id in targetTypeIds }
         .filter { type -> type.annotations.hasAnnotation(ERROR_FAMILY_ANNOTATION) }
@@ -36,8 +36,8 @@ fun LsiWorkspace.toErrorSchema(
 }
 
 private fun compileFamily(
-    type: LsiTypeDeclaration,
-    allTypes: List<LsiTypeDeclaration>,
+    type: LsiClass,
+    allTypes: List<LsiClass>,
     options: ErrorSchemaOptions,
 ): ErrorFamily {
     if (type.kind != LsiTypeDeclarationKind.ENUM) {
@@ -164,15 +164,15 @@ private fun List<LsiAnnotation>.compileFields(
     }
 }
 
-private fun LsiTypeDeclaration.longSimpleName(
-    allTypes: List<LsiTypeDeclaration>,
+private fun LsiClass.longSimpleName(
+    allTypes: List<LsiClass>,
 ): String {
     val enclosingType = enclosingType(allTypes) ?: return name
     return enclosingType.longSimpleName(allTypes) + "_" + name
 }
 
-private fun LsiTypeDeclaration.packageName(
-    allTypes: List<LsiTypeDeclaration>,
+private fun LsiClass.packageName(
+    allTypes: List<LsiClass>,
 ): String {
     val enclosingType = enclosingType(allTypes)
     if (enclosingType != null) {
@@ -181,9 +181,9 @@ private fun LsiTypeDeclaration.packageName(
     return qualifiedName.removeSuffix(".$name").takeUnless { value -> value == qualifiedName }.orEmpty()
 }
 
-private fun LsiTypeDeclaration.enclosingType(
-    allTypes: List<LsiTypeDeclaration>,
-): LsiTypeDeclaration? {
+private fun LsiClass.enclosingType(
+    allTypes: List<LsiClass>,
+): LsiClass? {
     return allTypes
         .asSequence()
         .filter { candidate -> candidate.id != id }

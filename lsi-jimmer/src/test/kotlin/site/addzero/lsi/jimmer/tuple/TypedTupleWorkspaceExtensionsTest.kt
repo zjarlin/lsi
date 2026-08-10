@@ -26,7 +26,8 @@ import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.type.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.copy
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.type.LsiType
@@ -434,7 +435,7 @@ class TypedTupleWorkspaceExtensionsTest {
     }
 
     private fun assertRejected(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         messagePart: String,
     ): TypedTupleValidationException {
         val exception = assertFailsWith<TypedTupleValidationException> {
@@ -495,8 +496,8 @@ class TypedTupleWorkspaceExtensionsTest {
         typeParameters: List<LsiTypeParameter> = emptyList(),
         superTypes: List<LsiType> = emptyList(),
         origin: LsiOrigin = SYNTHETIC_ORIGIN,
-    ): LsiTypeDeclaration {
-        return LsiTypeDeclaration(
+    ): LsiClass {
+        return LsiClass(
             id = LsiSymbolId.type(qualifiedName),
             name = qualifiedName.substringAfterLast('.'),
             qualifiedName = qualifiedName,

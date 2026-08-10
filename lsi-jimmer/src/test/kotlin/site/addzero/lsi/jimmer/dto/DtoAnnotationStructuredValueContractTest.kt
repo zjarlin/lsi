@@ -26,7 +26,7 @@ import site.addzero.lsi.type.LsiNullability
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.type.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.type.LsiTypeParameterRef
@@ -593,7 +593,7 @@ class DtoAnnotationStructuredValueContractTest {
         private fun annotationDeclaration(
             id: LsiSymbolId,
             vararg members: LsiAnnotationMember,
-        ): LsiTypeDeclaration {
+        ): LsiClass {
             return typeDeclaration(
                 id = id,
                 kind = LsiTypeDeclarationKind.ANNOTATION,
@@ -604,7 +604,7 @@ class DtoAnnotationStructuredValueContractTest {
         private fun enumDeclaration(
             id: LsiSymbolId,
             vararg entries: String,
-        ): LsiTypeDeclaration {
+        ): LsiClass {
             return typeDeclaration(
                 id = id,
                 kind = LsiTypeDeclarationKind.ENUM,
@@ -622,7 +622,7 @@ class DtoAnnotationStructuredValueContractTest {
         private fun classDeclaration(
             id: LsiSymbolId,
             superTypeId: LsiSymbolId? = null,
-        ): LsiTypeDeclaration {
+        ): LsiClass {
             return typeDeclaration(
                 id = id,
                 kind = LsiTypeDeclarationKind.CLASS,
@@ -637,9 +637,9 @@ class DtoAnnotationStructuredValueContractTest {
             enumEntries: List<LsiEnumEntry> = emptyList(),
             annotationMembers: List<LsiAnnotationMember> = emptyList(),
             typeParameters: List<LsiTypeParameter> = emptyList(),
-        ): LsiTypeDeclaration {
+        ): LsiClass {
             val qualifiedName = id.requireTypeQualifiedName()
-            return LsiTypeDeclaration(
+            return LsiClass(
                 id = id,
                 name = qualifiedName.substringAfterLast('.'),
                 qualifiedName = qualifiedName,

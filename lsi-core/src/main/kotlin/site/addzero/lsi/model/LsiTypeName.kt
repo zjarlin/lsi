@@ -1,7 +1,7 @@
 package site.addzero.lsi.model
 
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiWorkspace
 
 /**
@@ -111,16 +111,16 @@ fun LsiWorkspace.toLsiTypeNames(
 }
 
 private fun LsiWorkspace.requireTypeName(typeId: LsiSymbolId): LsiTypeName {
-    val declarationChain = mutableListOf<LsiTypeDeclaration>()
+    val declarationChain = mutableListOf<LsiClass>()
     val visitedTypeIds = mutableSetOf<LsiSymbolId>()
     var currentTypeId: LsiSymbolId? = typeId
-    var nestedDeclaration: LsiTypeDeclaration? = null
+    var nestedDeclaration: LsiClass? = null
     while (currentTypeId != null) {
         require(visitedTypeIds.add(currentTypeId)) {
             "Cyclic LSI enclosing type chain: ${currentTypeId.value}"
         }
         val declaration = this[currentTypeId]
-        require(declaration is LsiTypeDeclaration) {
+        require(declaration is LsiClass) {
             "Missing LSI type declaration for source type name: ${currentTypeId.value}"
         }
         require(declaration.qualifiedName == currentTypeId.requireTypeQualifiedName()) {
@@ -136,7 +136,7 @@ private fun LsiWorkspace.requireTypeName(typeId: LsiSymbolId): LsiTypeName {
         currentTypeId = declaration.enclosingTypeId
     }
 
-    val simpleNames = declarationChain.asReversed().map(LsiTypeDeclaration::name)
+    val simpleNames = declarationChain.asReversed().map(LsiClass::name)
     val qualifiedName = declarationChain.first().qualifiedName
     val simpleNameSuffix = simpleNames.joinToString(".")
     val packageName = when {

@@ -11,7 +11,7 @@ import site.addzero.lsi.type.LsiFunctionType
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
@@ -37,7 +37,7 @@ fun LsiWorkspace.toTypedTupleSchema(
 
 /** 返回当前工作区直接声明的全部 TypedTuple 类型符号。 */
 fun LsiWorkspace.typedTupleTypeIds(): Set<LsiSymbolId> {
-    return declarationsOfType<LsiTypeDeclaration>()
+    return declarationsOfType<LsiClass>()
         .filter { type -> type.hasAnnotation(TYPED_TUPLE_ANNOTATION) }
         .mapTo(sortedSetOf()) { type -> type.id }
 }
@@ -50,21 +50,21 @@ private class TypedTupleSchemaBuilder(
     private val typeSystem = LsiTypeSystem(workspace)
 
     private val entityTypeIds = entityTypeIds + workspace
-        .declarationsOfType<LsiTypeDeclaration>()
+        .declarationsOfType<LsiClass>()
         .filter { type -> type.hasAnnotation(ENTITY_ANNOTATION) }
-        .map(LsiTypeDeclaration::id)
+        .map(LsiClass::id)
 
     fun build(): TypedTupleSchema {
-        val tuples = workspace.declarationsOfType<LsiTypeDeclaration>()
+        val tuples = workspace.declarationsOfType<LsiClass>()
             .asSequence()
             .filter { type -> type.hasAnnotation(TYPED_TUPLE_ANNOTATION) }
-            .sortedBy(LsiTypeDeclaration::qualifiedName)
+            .sortedBy(LsiClass::qualifiedName)
             .map(::compileType)
             .toList()
         return TypedTupleSchema(tuples)
     }
 
-    private fun compileType(type: LsiTypeDeclaration): TypedTupleType {
+    private fun compileType(type: LsiClass): TypedTupleType {
         val members = type.memberIds.map { memberId ->
             workspace[memberId] ?: throw TypedTupleValidationException(
                 declarationId = type.id,
@@ -202,7 +202,7 @@ private class TypedTupleSchemaBuilder(
     }
 
     private fun determineSourceLanguage(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         members: List<LsiDeclaration>,
     ): LsiLanguage {
         return when (type.origin.source?.language) {
@@ -219,7 +219,7 @@ private class TypedTupleSchemaBuilder(
     }
 
     private fun validateType(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         sourceLanguage: LsiLanguage,
     ) {
         if (type.kind != LsiTypeDeclarationKind.CLASS) {
@@ -289,7 +289,7 @@ private class TypedTupleSchemaBuilder(
     }
 
     private fun prepareJavaType(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         members: List<LsiDeclaration>,
     ): PreparedTypedTupleType {
         val fields = members.filterIsInstance<LsiField>()
@@ -314,7 +314,7 @@ private class TypedTupleSchemaBuilder(
     }
 
     private fun determineJavaConstruction(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         fields: List<LsiField>,
         constructors: List<LsiConstructor>,
     ): TypedTupleConstruction {
@@ -358,7 +358,7 @@ private class TypedTupleSchemaBuilder(
     }
 
     private fun prepareKotlinType(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         members: List<LsiDeclaration>,
     ): PreparedTypedTupleType {
         val properties = members.filterIsInstance<LsiProperty>()
@@ -415,7 +415,7 @@ private class TypedTupleSchemaBuilder(
     }
 
     private fun validateMemberOwner(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         memberId: LsiSymbolId,
         ownerId: LsiSymbolId,
     ) {
@@ -506,7 +506,7 @@ private fun constructorConstruction(
     )
 }
 
-private fun LsiTypeDeclaration.hasAnnotation(annotationType: LsiSymbolId): Boolean {
+private fun LsiClass.hasAnnotation(annotationType: LsiSymbolId): Boolean {
     return annotations.any { annotation -> annotation.type == annotationType }
 }
 

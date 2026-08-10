@@ -31,7 +31,7 @@ import site.addzero.lsi.type.LsiFunctionType
 import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.type.LsiUnresolvedType
@@ -312,7 +312,7 @@ private fun File.compilerSourceSet(): CompilerSourceSet {
 }
 
 private fun LsiWorkspace.knownSourceRootTypes(): Map<String, LsiSource> {
-    return declarationsOfType<LsiTypeDeclaration>()
+    return declarationsOfType<LsiClass>()
         .asSequence()
         .filter { type -> type.enclosingTypeId == null }
         .mapNotNull { type -> type.origin.source?.let { source -> type.qualifiedName to source } }
@@ -323,19 +323,19 @@ private fun LsiWorkspace.refreshedTypeIds(
     currentRootTypeIds: Set<LsiSymbolId>,
 ): Set<LsiSymbolId> {
     val currentRootSources = currentRootTypeIds.mapNotNullTo(hashSetOf()) { typeId ->
-        (this[typeId] as? LsiTypeDeclaration)?.origin?.source
+        (this[typeId] as? LsiClass)?.origin?.source
     }
-    return declarationsOfType<LsiTypeDeclaration>()
+    return declarationsOfType<LsiClass>()
         .asSequence()
         .filter { declaration ->
             declaration.id in currentRootTypeIds || declaration.origin.source in currentRootSources
         }
-        .mapTo(sortedSetOf(), LsiTypeDeclaration::id)
+        .mapTo(sortedSetOf(), LsiClass::id)
 }
 
 private fun LsiDeclaration.containsUnresolvedTypes(): Boolean {
     return when (this) {
-        is LsiTypeDeclaration -> superTypes.any(LsiType::containsUnresolvedType) ||
+        is LsiClass -> superTypes.any(LsiType::containsUnresolvedType) ||
             typeParameters.any { parameter ->
                 parameter.upperBounds.any(LsiType::containsUnresolvedType)
             }

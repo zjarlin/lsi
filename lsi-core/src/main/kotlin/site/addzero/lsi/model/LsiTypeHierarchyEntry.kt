@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiDeclaredType
@@ -33,7 +34,7 @@ data class LsiTypeHierarchyEntry(
 
     companion object {
 
-        fun from(declaration: LsiTypeDeclaration): LsiTypeHierarchyEntry {
+        fun from(declaration: LsiClass): LsiTypeHierarchyEntry {
             return LsiTypeHierarchyEntry(
                 id = declaration.id,
                 qualifiedName = declaration.qualifiedName,

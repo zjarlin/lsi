@@ -34,7 +34,7 @@ import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.type.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeHierarchyEntry
 import site.addzero.lsi.type.LsiTypeParameter
@@ -877,7 +877,7 @@ class DtoConfigContractTest {
                 origin = origin,
             )
         }
-        val implementation = LsiTypeDeclaration(
+        val implementation = LsiClass(
             id = implementationTypeId,
             name = implementationTypeId.requireTypeQualifiedName().substringAfterLast('.'),
             qualifiedName = implementationTypeId.requireTypeQualifiedName(),
@@ -893,7 +893,7 @@ class DtoConfigContractTest {
             origin = origin,
         )
         val enclosingDeclaration = enclosingTypeId?.let { typeId ->
-            LsiTypeDeclaration(
+            LsiClass(
                 id = typeId,
                 name = typeId.requireTypeQualifiedName().substringAfterLast('.'),
                 qualifiedName = typeId.requireTypeQualifiedName(),

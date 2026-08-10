@@ -6,7 +6,7 @@ import kotlin.test.assertFailsWith
 import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiOriginKind
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeSeed
 import site.addzero.lsi.model.LsiTypeSeedMode
@@ -105,9 +105,9 @@ class LsiTypeSeedFixedPointTest {
         assertEquals(2, exception.seeds.size)
     }
 
-    private fun type(id: LsiSymbolId): LsiTypeDeclaration {
+    private fun type(id: LsiSymbolId): LsiClass {
         val qualifiedName = id.requireTypeQualifiedName()
-        return LsiTypeDeclaration(
+        return LsiClass(
             id = id,
             name = qualifiedName.substringAfterLast('.'),
             qualifiedName = qualifiedName,

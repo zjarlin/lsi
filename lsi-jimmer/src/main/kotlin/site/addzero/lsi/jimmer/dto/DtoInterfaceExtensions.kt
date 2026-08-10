@@ -17,7 +17,7 @@ import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.type.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
@@ -40,8 +40,8 @@ private class DtoInterfaceContractResolver(
     private val typeSystem: LsiTypeSystem = LsiTypeSystem(workspace),
 ) {
     private val declarationsByQualifiedName = workspace.declarations
-        .filterIsInstance<LsiTypeDeclaration>()
-        .associateBy(LsiTypeDeclaration::qualifiedName)
+        .filterIsInstance<LsiClass>()
+        .associateBy(LsiClass::qualifiedName)
 
     fun resolve(graph: DtoGraph): DtoInterfaceContractResolution {
         val contracts = mutableListOf<DtoInterfaceContract>()
@@ -125,7 +125,7 @@ private class DtoInterfaceContractResolver(
             return null
         }
         val resolvedType = resolveDtoTypeRef(dtoType, typeRef, diagnostics) as? LsiDeclaredType ?: return null
-        val declaration = workspace[resolvedType.declarationId] as? LsiTypeDeclaration
+        val declaration = workspace[resolvedType.declarationId] as? LsiClass
         if (declaration == null) {
             diagnostics += diagnostic(
                 code = "jimmer.dto.interface.unresolved-super-type",
@@ -179,7 +179,7 @@ private class DtoInterfaceContractResolver(
             if (!visitedSignatures.add(signature)) {
                 return
             }
-            val declaration = workspace[interfaceType.declarationId] as? LsiTypeDeclaration
+            val declaration = workspace[interfaceType.declarationId] as? LsiClass
             if (declaration == null) {
                 diagnostics += diagnostic(
                     code = "jimmer.dto.interface.unresolved-inherited-type",
@@ -279,7 +279,7 @@ private class DtoInterfaceContractResolver(
 
     private fun collectMember(
         dtoType: DtoType,
-        declaringType: LsiTypeDeclaration,
+        declaringType: LsiClass,
         member: LsiDeclaration,
         substitutions: Map<LsiSymbolId, LsiTypeArgument>,
         rootIndex: Int,
@@ -317,7 +317,7 @@ private class DtoInterfaceContractResolver(
 
     private fun collectProperty(
         dtoType: DtoType,
-        declaringType: LsiTypeDeclaration,
+        declaringType: LsiClass,
         property: LsiProperty,
         substitutions: Map<LsiSymbolId, LsiTypeArgument>,
         rootIndex: Int,
@@ -354,7 +354,7 @@ private class DtoInterfaceContractResolver(
 
     private fun collectFunction(
         dtoType: DtoType,
-        declaringType: LsiTypeDeclaration,
+        declaringType: LsiClass,
         function: LsiFunction,
         substitutions: Map<LsiSymbolId, LsiTypeArgument>,
         rootIndex: Int,
@@ -522,7 +522,7 @@ private class DtoInterfaceContractResolver(
 
     private fun validateTypeArgumentCount(
         dtoType: DtoType,
-        declaration: LsiTypeDeclaration,
+        declaration: LsiClass,
         type: LsiDeclaredType,
         location: LsiLocation,
         diagnostics: MutableList<LsiDiagnostic>,
@@ -633,7 +633,7 @@ private class DtoInterfaceContractResolver(
         }
         if (validateDeclaredArity) {
             val expectedArgumentCount = STANDARD_TYPE_ARGUMENT_COUNTS[typeRef.typeName]
-                ?: (workspace[typeId] as? LsiTypeDeclaration)?.typeParameters?.size
+                ?: (workspace[typeId] as? LsiClass)?.typeParameters?.size
                 ?: workspace.typeHierarchyEntry(typeId)?.typeParameters?.size
             if (expectedArgumentCount != null && expectedArgumentCount != arguments.size) {
                 diagnostics += invalidDtoTypeRefDiagnostic(
@@ -673,7 +673,7 @@ private class DtoInterfaceContractResolver(
 
     private fun illegalFunctionDiagnostic(
         dtoType: DtoType,
-        declaringType: LsiTypeDeclaration,
+        declaringType: LsiClass,
         function: LsiFunction,
         reason: String,
         fallbackLocation: LsiLocation,

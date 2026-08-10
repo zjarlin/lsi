@@ -4,7 +4,7 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationTarget
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.annotationTargetPolicy
 
@@ -93,7 +93,7 @@ private fun LsiAnnotation.isNullableMarker(): Boolean {
 }
 
 private fun LsiWorkspace.allowsMethodTarget(annotationTypeId: LsiSymbolId): Boolean {
-    val declaration = this[annotationTypeId] as? LsiTypeDeclaration ?: return false
+    val declaration = this[annotationTypeId] as? LsiClass ?: return false
     return declaration.annotationTargetPolicy().allows(LsiAnnotationTarget.METHOD)
 }
 

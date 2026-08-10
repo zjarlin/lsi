@@ -41,7 +41,7 @@ import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeHierarchyEntry
@@ -84,7 +84,7 @@ fun Collection<KSClassDeclaration>.toLsiWorkspace(
 fun KSClassDeclaration.toLsiTypeDeclaration(
     resolver: Resolver,
     frontendOptions: LsiFrontendOptions,
-): LsiTypeDeclaration {
+): LsiClass {
     val qualifiedName = requireNotNull(qualifiedName?.asString()) {
         "KSP LSI type declaration must have a qualified name"
     }
@@ -93,7 +93,7 @@ fun KSClassDeclaration.toLsiTypeDeclaration(
         frontendOptions = frontendOptions,
         fileScopes = listOfNotNull(containingFile).toKspLsiFileScopePlan().validScopes,
     )
-    return requireNotNull(workspace[LsiSymbolId.type(qualifiedName)] as? LsiTypeDeclaration)
+    return requireNotNull(workspace[LsiSymbolId.type(qualifiedName)] as? LsiClass)
 }
 
 /**
@@ -344,7 +344,7 @@ internal class KspLsiWorkspaceBuilder(
     private fun toLsiTypeHeader(
         typeDeclaration: KSClassDeclaration,
         typeId: LsiSymbolId,
-    ): LsiTypeDeclaration {
+    ): LsiClass {
         return toLsiTypeDeclaration(
             typeDeclaration = typeDeclaration,
             typeId = typeId,
@@ -358,7 +358,7 @@ internal class KspLsiWorkspaceBuilder(
         typeId: LsiSymbolId,
         memberIds: List<LsiSymbolId>,
         enumEntries: List<LsiEnumEntry>,
-    ): LsiTypeDeclaration {
+    ): LsiClass {
         val inheritedTypeParameterIds = typeContext.typeParameterIdsInScope(typeDeclaration)
         val (typeParameters, typeParameterIds) = typeContext.toLsiTypeParameters(
             ownerId = typeId,
@@ -374,7 +374,7 @@ internal class KspLsiWorkspaceBuilder(
                 enclosingDeclaration?.classKind in setOf(ClassKind.CLASS, ClassKind.ENUM_CLASS) &&
                 Modifier.JAVA_STATIC !in typeDeclaration.modifiers &&
                 !javaRecord
-        return LsiTypeDeclaration(
+        return LsiClass(
             id = typeId,
             name = typeDeclaration.simpleName.asString(),
             qualifiedName = typeId.requireTypeQualifiedName(),
@@ -828,7 +828,7 @@ private fun mergeProjectedAnnotationChannels(
     }
 }
 
-private fun LsiTypeDeclaration.requiresFullExternalDeclaration(
+private fun LsiClass.requiresFullExternalDeclaration(
     frontendOptions: LsiFrontendOptions,
 ): Boolean {
     return kind == LsiTypeDeclarationKind.ANNOTATION ||

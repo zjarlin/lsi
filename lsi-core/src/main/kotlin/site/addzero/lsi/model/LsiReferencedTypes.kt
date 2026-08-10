@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.type.LsiDeclaredType
@@ -19,7 +20,7 @@ fun Iterable<LsiDeclaration>.referencedTypeIds(): Set<LsiSymbolId> {
 private fun MutableSet<LsiSymbolId>.collect(declaration: LsiDeclaration) {
     declaration.annotations.forEach(::collect)
     when (declaration) {
-        is LsiTypeDeclaration -> {
+        is LsiClass -> {
             declaration.enclosingTypeId?.let(::add)
             declaration.typeParameters.forEach(::collect)
             declaration.superTypes.forEach(::collect)

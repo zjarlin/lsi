@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
 
@@ -61,7 +62,7 @@ class LsiWorkspace(
             "Duplicate LSI type hierarchy ids: ${duplicateHierarchyIds.joinToString { id -> id.value }}"
         }
         val hierarchyById = typeHierarchy.associateByTo(linkedMapOf(), LsiTypeHierarchyEntry::id)
-        this.declarations.filterIsInstance<LsiTypeDeclaration>().forEach { declaration ->
+        this.declarations.filterIsInstance<LsiClass>().forEach { declaration ->
             hierarchyById[declaration.id] = LsiTypeHierarchyEntry.from(declaration)
         }
         this.typeHierarchy = hierarchyById.values.sortedBy(LsiTypeHierarchyEntry::id)
@@ -174,7 +175,7 @@ private fun Collection<LsiDeclaration>.expandedRefreshedTypeIds(
     refreshedTypeIds: Set<LsiSymbolId>,
 ): Set<LsiSymbolId> {
     val expandedTypeIds = refreshedTypeIds.toMutableSet()
-    val nestedTypes = filterIsInstance<LsiTypeDeclaration>()
+    val nestedTypes = filterIsInstance<LsiClass>()
     var changed: Boolean
     do {
         changed = false

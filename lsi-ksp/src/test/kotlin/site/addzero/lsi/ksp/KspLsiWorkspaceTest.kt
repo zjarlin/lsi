@@ -52,7 +52,7 @@ import site.addzero.lsi.model.LsiGeneratedPeerDocumentationConvention
 import site.addzero.lsi.type.LsiNullability
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.type.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiVariance
@@ -178,21 +178,21 @@ class KspLsiWorkspaceTest {
         val directTypeId = LsiSymbolId.type("demo.DirectModel")
         assertEquals(
             "annotated type",
-            assertIs<LsiTypeDeclaration>(workspace[annotatedTypeId]).documentation,
+            assertIs<LsiClass>(workspace[annotatedTypeId]).documentation,
         )
         assertEquals(
             null,
-            assertIs<LsiTypeDeclaration>(workspace[annotatedTypeId]).sourceDocumentation,
+            assertIs<LsiClass>(workspace[annotatedTypeId]).sourceDocumentation,
         )
         assertEquals("annotated property", workspace.requireProperty(annotatedTypeId, "name").documentation)
         assertEquals(null, workspace.requireProperty(annotatedTypeId, "name").sourceDocumentation)
         assertEquals(
             "direct type",
-            assertIs<LsiTypeDeclaration>(workspace[directTypeId]).documentation,
+            assertIs<LsiClass>(workspace[directTypeId]).documentation,
         )
         assertEquals(
             "direct type",
-            assertIs<LsiTypeDeclaration>(workspace[directTypeId]).sourceDocumentation,
+            assertIs<LsiClass>(workspace[directTypeId]).sourceDocumentation,
         )
         assertEquals("direct property", workspace.requireProperty(directTypeId, "name").documentation)
         assertEquals("direct property", workspace.requireProperty(directTypeId, "name").sourceDocumentation)
@@ -309,7 +309,7 @@ class KspLsiWorkspaceTest {
         )
 
         val bookId = LsiSymbolId.type("demo.BinaryBook")
-        assertEquals("binary type", assertIs<LsiTypeDeclaration>(workspace[bookId]).documentation)
+        assertEquals("binary type", assertIs<LsiClass>(workspace[bookId]).documentation)
         assertEquals("binary property", workspace.requireProperty(bookId, "name").documentation)
     }
 
@@ -332,10 +332,10 @@ class KspLsiWorkspaceTest {
             frontendOptions = frontendOptions,
             fileScopes = emptyList(),
         )
-        val javaDeclaration = assertIs<LsiTypeDeclaration>(
+        val javaDeclaration = assertIs<LsiClass>(
             workspace[LsiSymbolId.type("demo.JavaBinary")]
         )
-        val kotlinDeclaration = assertIs<LsiTypeDeclaration>(
+        val kotlinDeclaration = assertIs<LsiClass>(
             workspace[LsiSymbolId.type("demo.KotlinBinary")]
         )
 
@@ -819,7 +819,7 @@ class KspLsiWorkspaceTest {
         val ownerId = LsiSymbolId.type("demo.Tree")
         val fieldId = LsiSymbolId.field(ownerId, "data")
         val propertyId = LsiSymbolId.property(ownerId, "data")
-        val frozenType = assertIs<LsiTypeDeclaration>(workspace[ownerId])
+        val frozenType = assertIs<LsiClass>(workspace[ownerId])
         val frozenField = assertIs<LsiField>(workspace[fieldId])
         val frozenProperty = assertIs<LsiProperty>(workspace[propertyId])
         assertEquals(setOf(fieldId, propertyId), frozenType.memberIds.toSet())
@@ -864,14 +864,14 @@ class KspLsiWorkspaceTest {
         )
 
         val outerId = LsiSymbolId.type("demo.Outer")
-        val outerSnapshot = assertIs<LsiTypeDeclaration>(workspace[outerId])
+        val outerSnapshot = assertIs<LsiClass>(workspace[outerId])
         assertEquals(null, outerSnapshot.enclosingTypeId)
         assertFalse(outerSnapshot.dataClass)
-        val nestedSnapshot = assertIs<LsiTypeDeclaration>(workspace[LsiSymbolId.type("demo.Outer.Row")])
+        val nestedSnapshot = assertIs<LsiClass>(workspace[LsiSymbolId.type("demo.Outer.Row")])
         assertEquals(outerId, nestedSnapshot.enclosingTypeId)
         assertFalse(nestedSnapshot.requiresEnclosingInstance)
         assertTrue(nestedSnapshot.dataClass)
-        val innerSnapshot = assertIs<LsiTypeDeclaration>(workspace[LsiSymbolId.type("demo.Outer.Inner")])
+        val innerSnapshot = assertIs<LsiClass>(workspace[LsiSymbolId.type("demo.Outer.Inner")])
         assertEquals(outerId, innerSnapshot.enclosingTypeId)
         assertTrue(innerSnapshot.requiresEnclosingInstance)
     }
@@ -942,27 +942,27 @@ class KspLsiWorkspaceTest {
         )
 
         assertTrue(
-            assertIs<LsiTypeDeclaration>(workspace[LsiSymbolId.type("demo.JavaTypes.Inner")])
+            assertIs<LsiClass>(workspace[LsiSymbolId.type("demo.JavaTypes.Inner")])
                 .requiresEnclosingInstance,
         )
         assertFalse(
-            assertIs<LsiTypeDeclaration>(workspace[LsiSymbolId.type("demo.JavaTypes.StaticNested")])
+            assertIs<LsiClass>(workspace[LsiSymbolId.type("demo.JavaTypes.StaticNested")])
                 .requiresEnclosingInstance,
         )
         assertFalse(
-            assertIs<LsiTypeDeclaration>(workspace[LsiSymbolId.type("demo.JavaTypes.NestedRecord")])
+            assertIs<LsiClass>(workspace[LsiSymbolId.type("demo.JavaTypes.NestedRecord")])
                 .requiresEnclosingInstance,
         )
         assertEquals(
             LsiTypeDeclarationKind.RECORD,
-            assertIs<LsiTypeDeclaration>(workspace[LsiSymbolId.type("demo.JavaTypes.NestedRecord")]).kind,
+            assertIs<LsiClass>(workspace[LsiSymbolId.type("demo.JavaTypes.NestedRecord")]).kind,
         )
         assertFalse(
-            assertIs<LsiTypeDeclaration>(workspace[LsiSymbolId.type("demo.JavaSealed")])
+            assertIs<LsiClass>(workspace[LsiSymbolId.type("demo.JavaSealed")])
                 .abstractDeclaration,
         )
         assertTrue(
-            assertIs<LsiTypeDeclaration>(workspace[LsiSymbolId.type("demo.KotlinSealed")])
+            assertIs<LsiClass>(workspace[LsiSymbolId.type("demo.KotlinSealed")])
                 .abstractDeclaration,
         )
     }
@@ -1024,7 +1024,7 @@ class KspLsiWorkspaceTest {
         assertEquals(LsiAnnotationUseSiteTarget.CONSTRUCTOR, frozen.annotations.single().useSiteTarget)
         assertEquals(LsiSymbolId.type("demo.ParameterMarker"), frozen.parameters.single().annotations.single().type)
         assertEquals(frozen.id, frozen.parameters.single().callableId)
-        assertTrue(assertIs<LsiTypeDeclaration>(workspace[serviceId]).memberIds.contains(frozen.id))
+        assertTrue(assertIs<LsiClass>(workspace[serviceId]).memberIds.contains(frozen.id))
     }
 
     @Test
@@ -1206,9 +1206,9 @@ class KspLsiWorkspaceTest {
         val parentId = LsiSymbolId.type("demo.Parent")
         val middleId = LsiSymbolId.type("demo.Middle")
         val childId = LsiSymbolId.type("demo.Child")
-        val parent = assertIs<LsiTypeDeclaration>(workspace[parentId])
-        val middle = assertIs<LsiTypeDeclaration>(workspace[middleId])
-        val child = assertIs<LsiTypeDeclaration>(workspace[childId])
+        val parent = assertIs<LsiClass>(workspace[parentId])
+        val middle = assertIs<LsiClass>(workspace[middleId])
+        val child = assertIs<LsiClass>(workspace[childId])
         assertEquals("子类型文档。", child.documentation)
         assertEquals(LsiLanguage.KOTLIN, child.origin.source?.language)
         assertTrue(child.origin.source?.path?.endsWith("src/main/kotlin/demo/Models.kt") == true)
@@ -1488,7 +1488,7 @@ class KspLsiWorkspaceTest {
         )
 
         val externalBaseId = LsiSymbolId.type("external.ExternalBase")
-        val externalSnapshot = assertIs<LsiTypeDeclaration>(workspace[externalBaseId])
+        val externalSnapshot = assertIs<LsiClass>(workspace[externalBaseId])
         assertTrue(externalSnapshot.annotations.any { annotation ->
             annotation.type == LsiSymbolId.type(MAPPED_SUPERCLASS_ANNOTATION)
         })
@@ -1496,26 +1496,26 @@ class KspLsiWorkspaceTest {
             externalSnapshot.typeParameters.single().id,
             assertIs<LsiTypeParameterRef>(workspace.requireProperty(externalBaseId, "value").type).parameterId,
         )
-        val validationSnapshot = assertIs<LsiTypeDeclaration>(
+        val validationSnapshot = assertIs<LsiClass>(
             workspace[LsiSymbolId.type("external.ValidationRule")],
         )
         assertTrue(validationSnapshot.annotations.any { annotation ->
             annotation.type == LsiSymbolId.type("external.SemanticMarker")
         })
-        assertIs<LsiTypeDeclaration>(workspace[LsiSymbolId.type("external.SemanticMarker")])
+        assertIs<LsiClass>(workspace[LsiSymbolId.type("external.SemanticMarker")])
         val externalMiddleId = LsiSymbolId.type("external.ExternalMiddle")
-        assertTrue(assertIs<LsiTypeDeclaration>(workspace[externalMiddleId]).memberIds.isEmpty())
+        assertTrue(assertIs<LsiClass>(workspace[externalMiddleId]).memberIds.isEmpty())
         assertTrue(workspace.declarationsOfType<LsiProperty>().none { property ->
             property.ownerId == externalMiddleId
         })
         val externalEmbeddableId = LsiSymbolId.type("external.ExternalValue")
-        val externalEmbeddableSnapshot = assertIs<LsiTypeDeclaration>(workspace[externalEmbeddableId])
+        val externalEmbeddableSnapshot = assertIs<LsiClass>(workspace[externalEmbeddableId])
         assertTrue(externalEmbeddableSnapshot.annotations.any { annotation ->
             annotation.type == LsiSymbolId.type(EMBEDDABLE_ANNOTATION)
         })
         assertEquals("label", workspace.requireProperty(externalEmbeddableId, "label").name)
         val instantId = LsiSymbolId.type("java.time.Instant")
-        val instantSnapshot = assertIs<LsiTypeDeclaration>(workspace[instantId])
+        val instantSnapshot = assertIs<LsiClass>(workspace[instantId])
         assertTrue(instantSnapshot.memberIds.isEmpty())
         assertEquals(null, instantSnapshot.origin.source)
         assertTrue(workspace.declarationsOfType<LsiProperty>().none { property ->
@@ -1523,7 +1523,7 @@ class KspLsiWorkspaceTest {
         })
         assertNotNull(workspace.typeHierarchyEntry(instantId))
         val objectId = LsiSymbolId.type("java.lang.Object")
-        val objectSnapshot = assertIs<LsiTypeDeclaration>(workspace[objectId])
+        val objectSnapshot = assertIs<LsiClass>(workspace[objectId])
         assertTrue(objectSnapshot.memberIds.isEmpty())
         assertTrue(objectSnapshot.superTypes.isEmpty())
         assertTrue(workspace.declarationsOfType<LsiProperty>().none { property ->

@@ -15,7 +15,7 @@ import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.type.LsiType
@@ -421,9 +421,9 @@ class ImmutableSemanticDependenciesTest {
         source: LsiSource,
         typeParameters: List<LsiTypeParameter> = emptyList(),
         superTypes: List<LsiType> = emptyList(),
-    ): LsiTypeDeclaration {
+    ): LsiClass {
         val qualifiedName = id.requireTypeQualifiedName()
-        return LsiTypeDeclaration(
+        return LsiClass(
             id = id,
             name = qualifiedName.substringAfterLast('.'),
             qualifiedName = qualifiedName,

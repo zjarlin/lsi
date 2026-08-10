@@ -20,7 +20,7 @@ import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
@@ -190,14 +190,14 @@ class DtoAnnotationValueContractTest {
     }
 
     private fun resolve(
-        declaration: LsiTypeDeclaration,
+        declaration: LsiClass,
         annotation: DtoAnnotation,
     ): DtoAnnotationContract {
         return resolve(listOf(declaration), listOf(annotation))
     }
 
     private fun resolve(
-        declarations: List<LsiTypeDeclaration>,
+        declarations: List<LsiClass>,
         annotations: List<DtoAnnotation>,
     ): DtoAnnotationContract {
         val source = LsiSource.of("demo/Typed.dto")
@@ -230,14 +230,14 @@ class DtoAnnotationValueContractTest {
         type: LsiSymbolId,
         members: List<LsiAnnotationMember>,
         language: LsiLanguage = LsiLanguage.JAVA,
-    ): LsiTypeDeclaration {
+    ): LsiClass {
         val qualifiedName = type.requireTypeQualifiedName()
         val extension = if (language == LsiLanguage.KOTLIN) "kt" else "java"
         val source = LsiSource.of(
             path = qualifiedName.replace('.', '/') + ".$extension",
             language = language,
         )
-        return LsiTypeDeclaration(
+        return LsiClass(
             id = type,
             name = qualifiedName.substringAfterLast('.'),
             qualifiedName = qualifiedName,

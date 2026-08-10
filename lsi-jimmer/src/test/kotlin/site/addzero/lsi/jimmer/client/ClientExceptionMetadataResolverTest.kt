@@ -19,7 +19,7 @@ import site.addzero.lsi.model.LsiFunction
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiWorkspace
 
@@ -180,7 +180,7 @@ class ClientExceptionMetadataResolverTest {
 
     private fun compileOperation(
         thrownTypeIds: List<LsiSymbolId>,
-        exceptionTypes: List<LsiTypeDeclaration>,
+        exceptionTypes: List<LsiClass>,
     ): ClientOperation {
         val operationId = LsiSymbolId.function(SERVICE_ID, "execute")
         val operation = LsiFunction(
@@ -192,7 +192,7 @@ class ClientExceptionMetadataResolverTest {
             annotations = listOf(annotation(API_ANNOTATION)),
             origin = SYNTHETIC_ORIGIN,
         )
-        val service = LsiTypeDeclaration(
+        val service = LsiClass(
             id = SERVICE_ID,
             name = "Service",
             qualifiedName = SERVICE_ID.requireTypeQualifiedName(),
@@ -211,7 +211,7 @@ class ClientExceptionMetadataResolverTest {
         return schema.services.single().operations.single()
     }
 
-    private fun validManualHierarchy(): List<LsiTypeDeclaration> {
+    private fun validManualHierarchy(): List<LsiClass> {
         return listOf(
             exceptionType(
                 typeId = ROOT_EXCEPTION,
@@ -240,8 +240,8 @@ class ClientExceptionMetadataResolverTest {
         superTypeId: LsiSymbolId,
         annotation: LsiAnnotation,
         modality: LsiModality = LsiModality.FINAL,
-    ): LsiTypeDeclaration {
-        return LsiTypeDeclaration(
+    ): LsiClass {
+        return LsiClass(
             id = typeId,
             name = typeId.requireTypeQualifiedName().substringAfterLast('.'),
             qualifiedName = typeId.requireTypeQualifiedName(),

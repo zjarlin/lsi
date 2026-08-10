@@ -15,7 +15,7 @@ import site.addzero.lsi.type.LsiFunctionType
 import site.addzero.lsi.type.LsiNullability
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.type.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
@@ -99,7 +99,7 @@ private class DtoConfigContractResolver(
         typeRef: DtoConfigTypeRef,
         expectedTargetTypeId: LsiSymbolId,
     ): ContractResult {
-        val implementation = workspace[typeRef.typeId] as? LsiTypeDeclaration
+        val implementation = workspace[typeRef.typeId] as? LsiClass
             ?: return ContractResult.unresolved(typeRef.typeId)
         if (implementation.typeParameters.isNotEmpty()) {
             return ContractResult.failure(
@@ -381,7 +381,7 @@ private class DtoConfigContractResolver(
         val targetType = requireNotNull(immutableSchema.typesById[targetEntityTypeId]) {
             "No immutable target type '${targetEntityTypeId.value}' for DTO filter contract"
         }
-        val targetDeclaration = workspace[targetEntityTypeId] as? LsiTypeDeclaration
+        val targetDeclaration = workspace[targetEntityTypeId] as? LsiClass
         val packageName = targetDeclaration?.packageName()
             ?: targetType.qualifiedName.substringBeforeLast('.', "")
         val simpleName = targetDeclaration?.name ?: targetType.qualifiedName.substringAfterLast('.')
@@ -517,7 +517,7 @@ private class DtoConfigContractResolver(
                     matches += GenericMatch(current, path)
                     return
                 }
-                val declaration = workspace[current.declarationId] as? LsiTypeDeclaration
+                val declaration = workspace[current.declarationId] as? LsiClass
                 val hierarchy = workspace.typeHierarchyEntry(current.declarationId)
                 if (hierarchy == null && declaration == null) {
                     if (current.declarationId !in TERMINAL_TYPE_IDS) {
@@ -555,7 +555,7 @@ private class DtoConfigContractResolver(
     }
 
     private fun constructionFailure(
-        implementation: LsiTypeDeclaration,
+        implementation: LsiClass,
         targetPackageName: String,
     ): ConstructionFailure? {
         val supportedKind = when (targetLanguage) {
@@ -610,7 +610,7 @@ private class DtoConfigContractResolver(
                     "its enclosing type chain is cyclic",
                 )
             }
-            val enclosingType = workspace[enclosingTypeId] as? LsiTypeDeclaration
+            val enclosingType = workspace[enclosingTypeId] as? LsiClass
                 ?: return ConstructionFailure(
                     NOT_INSTANTIABLE_CODE,
                     "enclosing-declaration-missing:${enclosingTypeId.value}",
@@ -791,12 +791,12 @@ private class DtoConfigContractResolver(
         }
     }
 
-    private fun LsiTypeDeclaration.packageName(): String {
+    private fun LsiClass.packageName(): String {
         var topLevelType = this
         val visited = mutableSetOf<LsiSymbolId>()
         while (topLevelType.enclosingTypeId != null && visited.add(topLevelType.id)) {
             val enclosingId = topLevelType.enclosingTypeId ?: break
-            val enclosingType = workspace[enclosingId] as? LsiTypeDeclaration ?: break
+            val enclosingType = workspace[enclosingId] as? LsiClass ?: break
             topLevelType = enclosingType
         }
         if (topLevelType !== this || topLevelType.enclosingTypeId == null) {

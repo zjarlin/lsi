@@ -19,7 +19,7 @@ import site.addzero.lsi.model.LsiPackageAnnotationScope
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeHierarchyEntry
 import site.addzero.lsi.model.LsiTypeSeed
@@ -87,13 +87,13 @@ fun Collection<TypeElement>.toLsiWorkspace(
 fun TypeElement.toLsiTypeDeclaration(
     processingEnvironment: ProcessingEnvironment,
     frontendOptions: LsiFrontendOptions,
-): LsiTypeDeclaration {
+): LsiClass {
     val workspace = listOf(this).toLsiWorkspace(
         processingEnvironment = processingEnvironment,
         frontendOptions = frontendOptions,
         packageElements = listOf(processingEnvironment.elementUtils.getPackageOf(this)),
     )
-    return requireNotNull(workspace[LsiSymbolId.type(qualifiedName.toString())] as? LsiTypeDeclaration)
+    return requireNotNull(workspace[LsiSymbolId.type(qualifiedName.toString())] as? LsiClass)
 }
 
 /**
@@ -311,7 +311,7 @@ class AptLsiWorkspaceBuilder(
         }
     }
 
-    private fun toLsiTypeHeader(typeElement: TypeElement): LsiTypeDeclaration {
+    private fun toLsiTypeHeader(typeElement: TypeElement): LsiClass {
         return toLsiTypeDeclaration(
             typeElement = typeElement,
             memberIds = emptyList(),
@@ -323,7 +323,7 @@ class AptLsiWorkspaceBuilder(
         typeElement: TypeElement,
         memberIds: List<LsiSymbolId>,
         enumEntries: List<LsiEnumEntry>,
-    ): LsiTypeDeclaration {
+    ): LsiClass {
         val typeId = LsiSymbolId.type(typeElement.qualifiedName.toString())
         val inheritedTypeParameterIds = context.typeParameterIdsInScope(typeElement)
         val (typeParameters, typeParameterIds) = context.toLsiTypeParameters(
@@ -340,7 +340,7 @@ class AptLsiWorkspaceBuilder(
                 context.toLsiType(interfaceType, typeParameterIds)
             }
         }
-        return LsiTypeDeclaration(
+        return LsiClass(
             id = typeId,
             name = typeElement.simpleName.toString(),
             qualifiedName = typeElement.qualifiedName.toString(),
@@ -686,7 +686,7 @@ private data class KotlinAnnotationMetadata(
     val declarationIndicesByName: Map<String, Int>,
 )
 
-private fun LsiTypeDeclaration.requiresFullExternalDeclaration(
+private fun LsiClass.requiresFullExternalDeclaration(
     frontendOptions: LsiFrontendOptions,
 ): Boolean {
     return kind == LsiTypeDeclarationKind.ANNOTATION ||

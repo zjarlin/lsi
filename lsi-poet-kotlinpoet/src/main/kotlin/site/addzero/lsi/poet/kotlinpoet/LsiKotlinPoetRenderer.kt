@@ -33,7 +33,7 @@ import site.addzero.lsi.model.LsiModifier
 import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.poet.LsiPoetRenderer
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeName
 import site.addzero.lsi.model.LsiTypeReferenceStyle
 
@@ -69,7 +69,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
 
     /** 将单个 LSI 类型渲染为可嵌入现有 KotlinPoet 声明的结构。 */
     fun renderType(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         typeNames: List<LsiTypeName>,
     ): TypeSpec {
         return type.toKotlinTypeSpec(typeNames)
@@ -133,14 +133,14 @@ private fun FileSpec.Builder.addKotlinTopLevelMember(
     when (member) {
         is LsiFunction -> addFunction(member.toKotlinFunction(typeNames))
         is LsiProperty -> addProperty(member.toKotlinProperty(typeNames))
-        is LsiTypeDeclaration -> addType(member.toKotlinTypeSpec(typeNames))
+        is LsiClass -> addType(member.toKotlinTypeSpec(typeNames))
         is LsiConstructor -> error("KotlinPoet renderer cannot emit a top-level constructor")
         is LsiField -> error("KotlinPoet renderer cannot emit a field: ${member.name}")
         is LsiInitializerBlock -> error("KotlinPoet renderer cannot emit a top-level initializer block")
     }
 }
 
-private fun LsiTypeDeclaration.toKotlinTypeSpec(typeNames: List<LsiTypeName>): TypeSpec {
+private fun LsiClass.toKotlinTypeSpec(typeNames: List<LsiTypeName>): TypeSpec {
     val builder = when (kind) {
         LsiTypeDeclarationKind.CLASS -> TypeSpec.classBuilder(name)
         LsiTypeDeclarationKind.INTERFACE -> TypeSpec.interfaceBuilder(name)
@@ -208,7 +208,7 @@ private fun TypeSpec.Builder.addKotlinMember(
         is LsiFunction -> addFunction(member.toKotlinFunction(typeNames))
         is LsiInitializerBlock -> addKotlinInitializer(member, typeNames)
         is LsiProperty -> addProperty(member.toKotlinProperty(typeNames))
-        is LsiTypeDeclaration -> addType(member.toKotlinTypeSpec(typeNames))
+        is LsiClass -> addType(member.toKotlinTypeSpec(typeNames))
     }
 }
 

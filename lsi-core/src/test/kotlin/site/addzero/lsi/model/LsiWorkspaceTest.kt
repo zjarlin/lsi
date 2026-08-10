@@ -1,5 +1,8 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.copy
+
 import site.addzero.lsi.type.*
 
 import kotlin.test.Test
@@ -21,7 +24,7 @@ class LsiWorkspaceTest {
         val firstSource = LsiSource.of("demo/First.kt", LsiLanguage.KOTLIN)
         val secondSource = LsiSource.of("demo/Second.kt", LsiLanguage.KOTLIN)
         val typeId = LsiSymbolId.type("demo.Model")
-        val first = LsiTypeDeclaration(
+        val first = LsiClass(
             id = typeId,
             name = "Model",
             qualifiedName = "demo.Model",
@@ -42,7 +45,7 @@ class LsiWorkspaceTest {
         )
 
         assertEquals(listOf(firstSource, secondSource), merged.sources)
-        assertEquals("second", (merged[typeId] as LsiTypeDeclaration).documentation)
+        assertEquals("second", (merged[typeId] as LsiClass).documentation)
         assertEquals("source-second", merged[typeId]?.sourceDocumentation)
     }
 
@@ -68,7 +71,7 @@ class LsiWorkspaceTest {
             id = newFunctionId,
             returnType = LsiDeclaredType(LsiSymbolId.type("demo.Value")),
         )
-        val oldType = LsiTypeDeclaration(
+        val oldType = LsiClass(
             id = typeId,
             name = "Model",
             qualifiedName = "demo.Model",
@@ -91,7 +94,7 @@ class LsiWorkspaceTest {
 
         assertFalse(merged.contains(oldFunctionId))
         assertEquals(newFunction, merged[newFunctionId])
-        assertEquals(listOf(newFunctionId), (merged[typeId] as LsiTypeDeclaration).memberIds)
+        assertEquals(listOf(newFunctionId), (merged[typeId] as LsiClass).memberIds)
     }
 
     @Test
@@ -101,14 +104,14 @@ class LsiWorkspaceTest {
         val outerTypeId = LsiSymbolId.type("demo.Outer")
         val nestedTypeId = LsiSymbolId.type("demo.Outer.Inner")
         val nestedPropId = LsiSymbolId.property(nestedTypeId, "value")
-        val oldOuter = LsiTypeDeclaration(
+        val oldOuter = LsiClass(
             id = outerTypeId,
             name = "Outer",
             qualifiedName = "demo.Outer",
             kind = LsiTypeDeclarationKind.CLASS,
             origin = origin,
         )
-        val oldNested = LsiTypeDeclaration(
+        val oldNested = LsiClass(
             id = nestedTypeId,
             name = "Inner",
             qualifiedName = "demo.Outer.Inner",
@@ -168,7 +171,7 @@ class LsiWorkspaceTest {
             directSuperTypes = listOf(LsiDeclaredType(LsiSymbolId.type("demo.StaleBase"))),
             source = externalSource,
         )
-        val declaration = LsiTypeDeclaration(
+        val declaration = LsiClass(
             id = typeId,
             name = "Model",
             qualifiedName = "demo.Model",

@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
+
 import site.addzero.lsi.type.*
 
 import kotlin.test.Test
@@ -34,7 +36,7 @@ class LsiAnnotationMemberTest {
     fun `includes annotation member semantics in snapshot`() {
         val typeId = LsiSymbolId.type("demo.Tags")
         val stringType = LsiDeclaredType(LsiSymbolId.type("kotlin.String"))
-        val declaration = LsiTypeDeclaration(
+        val declaration = LsiClass(
             id = typeId,
             name = "Tags",
             qualifiedName = "demo.Tags",
@@ -57,7 +59,7 @@ class LsiAnnotationMemberTest {
     @Test
     fun `rejects annotation members on ordinary types`() {
         assertFailsWith<IllegalArgumentException> {
-            LsiTypeDeclaration(
+            LsiClass(
                 id = LsiSymbolId.type("demo.Model"),
                 name = "Model",
                 qualifiedName = "demo.Model",

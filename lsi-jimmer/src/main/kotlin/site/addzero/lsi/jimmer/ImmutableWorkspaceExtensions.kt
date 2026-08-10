@@ -17,7 +17,7 @@ import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiResolvedProperty
 import site.addzero.lsi.type.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.type.LsiTypeParameterRef
@@ -51,8 +51,8 @@ private class ImmutableSchemaBuilder {
         workspace: LsiWorkspace,
         targetTypeIds: Set<LsiSymbolId>,
     ): ImmutableSchema {
-        val typeDeclarations = workspace.declarationsOfType<LsiTypeDeclaration>()
-            .sortedBy(LsiTypeDeclaration::qualifiedName)
+        val typeDeclarations = workspace.declarationsOfType<LsiClass>()
+            .sortedBy(LsiClass::qualifiedName)
         val kindByTypeId = typeDeclarations.mapNotNull { type ->
             type.immutableTypeKind()?.let { kind -> type.id to kind }
         }.toMap()
@@ -78,7 +78,7 @@ private class ImmutableSchemaBuilder {
             typeSystem = typeSystem,
         )
         val hierarchyResolver = ImmutableHierarchyResolver(
-            typeDeclarations.associateBy(LsiTypeDeclaration::id),
+            typeDeclarations.associateBy(LsiClass::id),
             kindByTypeId,
         )
         val preliminaryTypes = typeDeclarations
@@ -606,7 +606,7 @@ private class ImmutableSchemaBuilder {
     }
 
     private fun validateType(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         kind: ImmutableTypeKind,
         microServiceMetadata: MicroServiceMetadata,
         workspace: LsiWorkspace,
@@ -650,7 +650,7 @@ private class ImmutableSchemaBuilder {
     }
 
     private fun validateDeclaredFunctions(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         workspace: LsiWorkspace,
     ) {
         type.memberIds
@@ -681,7 +681,7 @@ private class ImmutableSchemaBuilder {
     }
 
     private fun compileType(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         kind: ImmutableTypeKind,
         kindByTypeId: Map<LsiSymbolId, ImmutableTypeKind>,
         microServiceMetadataByTypeId: Map<LsiSymbolId, MicroServiceMetadata>,
@@ -765,7 +765,7 @@ private class ImmutableSchemaBuilder {
     }
 
     private fun identity(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         kind: ImmutableTypeKind,
         hierarchy: ImmutableHierarchy,
         props: List<ImmutableProp>,
@@ -815,7 +815,7 @@ private class ImmutableSchemaBuilder {
     }
 
     private fun identityProp(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         props: List<ImmutableProp>,
         mapping: PrimaryMapping,
     ): ImmutableProp? {
@@ -893,7 +893,7 @@ private class ImmutableSchemaBuilder {
         if (typeId == BOXED_LONG_TYPE_ID || typeId == UUID_TYPE_ID) {
             return
         }
-        val declaration = typeId?.let { candidateTypeId -> workspace[candidateTypeId] as? LsiTypeDeclaration }
+        val declaration = typeId?.let { candidateTypeId -> workspace[candidateTypeId] as? LsiClass }
         if (declaration?.kind == LsiTypeDeclarationKind.ENUM) {
             return
         }
@@ -923,7 +923,7 @@ private class ImmutableSchemaBuilder {
     }
 
     private fun validateMicroServiceInheritance(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         hierarchy: ImmutableHierarchy,
         microServiceMetadata: MicroServiceMetadata,
         microServiceMetadataByTypeId: Map<LsiSymbolId, MicroServiceMetadata>,
@@ -945,7 +945,7 @@ private class ImmutableSchemaBuilder {
     }
 
     private fun discriminatorPropId(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         kind: ImmutableTypeKind,
         hierarchy: ImmutableHierarchy,
         props: List<ImmutableProp>,
@@ -1051,7 +1051,7 @@ private class ImmutableSchemaBuilder {
         val declaredType = prop.type as? LsiDeclaredType
         val validType = declaredType != null && (
             declaredType.arguments.isEmpty() && declaredType.declarationId in STRING_TYPE_IDS ||
-                (workspace[declaredType.declarationId] as? LsiTypeDeclaration)?.kind == LsiTypeDeclarationKind.ENUM
+                (workspace[declaredType.declarationId] as? LsiClass)?.kind == LsiTypeDeclarationKind.ENUM
         )
         val conflictingPrimaryAnnotation = prop.annotations.firstOrNull { annotation ->
             annotation.type in PRIMARY_PROP_ANNOTATIONS && annotation.type != DISCRIMINATOR_ANNOTATION
@@ -1066,7 +1066,7 @@ private class ImmutableSchemaBuilder {
     }
 
     private fun validateOverride(
-        ownerType: LsiTypeDeclaration,
+        ownerType: LsiClass,
         ownerKind: ImmutableTypeKind,
         property: LsiResolvedProperty,
         kindByTypeId: Map<LsiSymbolId, ImmutableTypeKind>,
@@ -1103,7 +1103,7 @@ private class ImmutableSchemaBuilder {
         )
         for (overriddenDeclaration in overriddenDeclarations) {
             val inheritedOwnerId = overriddenDeclaration.ownerId
-            val inheritedOwner = workspace[inheritedOwnerId] as? LsiTypeDeclaration
+            val inheritedOwner = workspace[inheritedOwnerId] as? LsiClass
                 ?: throw ImmutablePrecompileException(
                     declarationId = property.declaration.id,
                     recoverable = true,
@@ -1178,7 +1178,7 @@ private class ImmutableSchemaBuilder {
 
     private fun resolveInheritedPropertyType(
         ownerTypeId: LsiSymbolId,
-        inheritedOwner: LsiTypeDeclaration,
+        inheritedOwner: LsiClass,
         inheritedType: LsiType,
         typeSystem: LsiTypeSystem,
         sourceId: LsiSymbolId,
@@ -1218,7 +1218,7 @@ private data class MicroServiceMetadata(
 )
 
 private class ImmutableHierarchyResolver(
-    private val declarationsById: Map<LsiSymbolId, LsiTypeDeclaration>,
+    private val declarationsById: Map<LsiSymbolId, LsiClass>,
     private val kindByTypeId: Map<LsiSymbolId, ImmutableTypeKind>,
 ) {
 
@@ -1251,7 +1251,7 @@ private class ImmutableHierarchyResolver(
     }
 
     private fun resolve(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         kind: ImmutableTypeKind,
     ): ImmutableHierarchy {
         val directSuperTypeIds = type.superTypes
@@ -1324,7 +1324,7 @@ private class ImmutableHierarchyResolver(
     }
 
     private fun validateSuperTypeKinds(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         kind: ImmutableTypeKind,
         directSuperTypeIds: List<LsiSymbolId>,
     ) {
@@ -1382,7 +1382,7 @@ private class ImmutableHierarchyResolver(
     }
 
     private fun invalidSuperTypeKind(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         superTypeId: LsiSymbolId,
         expected: String,
     ): ImmutablePrecompileException {
@@ -1395,7 +1395,7 @@ private class ImmutableHierarchyResolver(
     }
 
     private fun validateNonEntityAnnotations(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         inheritance: LsiAnnotation?,
         discriminatorValue: LsiAnnotation?,
     ) {
@@ -1414,7 +1414,7 @@ private class ImmutableHierarchyResolver(
     }
 
     private fun derivedEntityHierarchy(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         directSuperTypeIds: List<LsiSymbolId>,
         primarySuperTypeId: LsiSymbolId,
         primaryEntitySuperTypeId: LsiSymbolId,
@@ -1447,7 +1447,7 @@ private class ImmutableHierarchyResolver(
     }
 
     private fun rootEntityHierarchy(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         directSuperTypeIds: List<LsiSymbolId>,
         primarySuperTypeId: LsiSymbolId?,
         inheritance: LsiAnnotation,
@@ -1505,7 +1505,7 @@ private class ImmutableHierarchyResolver(
     }
 
     private fun determineInstantiable(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         inheritanceRootTypeId: LsiSymbolId?,
     ): Boolean {
         val entity = requireNotNull(type.annotations.annotation(ENTITY_ANNOTATION)) {
@@ -1537,7 +1537,7 @@ private class ImmutableHierarchyResolver(
     }
 
     private fun validateDiscriminatorValue(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         discriminatorValue: LsiAnnotation?,
         instantiable: Boolean,
     ) {
@@ -1551,7 +1551,7 @@ private class ImmutableHierarchyResolver(
     }
 
     private fun discriminatorValue(
-        type: LsiTypeDeclaration,
+        type: LsiClass,
         annotation: LsiAnnotation?,
         instantiable: Boolean,
     ): String? {
@@ -1570,7 +1570,7 @@ private class ImmutableHierarchyResolver(
 }
 
 private fun orderResolvedProperties(
-    type: LsiTypeDeclaration,
+    type: LsiClass,
     resolvedProps: List<LsiResolvedProperty>,
     workspace: LsiWorkspace,
 ): List<LsiResolvedProperty> {
@@ -1578,13 +1578,13 @@ private fun orderResolvedProperties(
     val orderedNames = linkedSetOf<String>()
     val visitedTypeIds = mutableSetOf<LsiSymbolId>()
 
-    fun collectSlots(typeDeclaration: LsiTypeDeclaration) {
+    fun collectSlots(typeDeclaration: LsiClass) {
         if (!visitedTypeIds.add(typeDeclaration.id)) {
             return
         }
         typeDeclaration.superTypes
             .filterIsInstance<LsiDeclaredType>()
-            .mapNotNull { superType -> workspace[superType.declarationId] as? LsiTypeDeclaration }
+            .mapNotNull { superType -> workspace[superType.declarationId] as? LsiClass }
             .forEach(::collectSlots)
         typeDeclaration.memberIds
             .mapNotNull { memberId -> workspace[memberId] as? LsiProperty }
@@ -1599,7 +1599,7 @@ private fun orderResolvedProperties(
     return orderedProps
 }
 
-fun LsiTypeDeclaration.immutableTypeKind(): ImmutableTypeKind? {
+fun LsiClass.immutableTypeKind(): ImmutableTypeKind? {
     val markers = IMMUTABLE_TYPE_ANNOTATIONS.mapNotNull { (annotationType, kind) ->
         kind.takeIf { annotations.hasAnnotation(annotationType) }
     }
@@ -1612,7 +1612,7 @@ fun LsiTypeDeclaration.immutableTypeKind(): ImmutableTypeKind? {
     return markers.singleOrNull()
 }
 
-private fun LsiTypeDeclaration.microServiceMetadata(
+private fun LsiClass.microServiceMetadata(
     kind: ImmutableTypeKind,
 ): MicroServiceMetadata {
     val marker = when (kind) {
@@ -1629,24 +1629,24 @@ private fun LsiTypeDeclaration.microServiceMetadata(
     )
 }
 
-fun LsiTypeDeclaration.isJimmerImmutableType(): Boolean {
+fun LsiClass.isJimmerImmutableType(): Boolean {
     return annotations.any { annotation -> annotation.type in IMMUTABLE_TYPE_ANNOTATION_IDS }
 }
 
 fun LsiWorkspace.jimmerImmutableTypeIds(): Set<LsiSymbolId> {
-    return declarationsOfType<LsiTypeDeclaration>()
-        .filter(LsiTypeDeclaration::isJimmerImmutableType)
-        .mapTo(sortedSetOf(), LsiTypeDeclaration::id)
+    return declarationsOfType<LsiClass>()
+        .filter(LsiClass::isJimmerImmutableType)
+        .mapTo(sortedSetOf(), LsiClass::id)
 }
 
 private fun managedTypeClosure(
     targetTypeIds: Set<LsiSymbolId>,
-    typeDeclarations: List<LsiTypeDeclaration>,
+    typeDeclarations: List<LsiClass>,
     kindByTypeId: Map<LsiSymbolId, ImmutableTypeKind>,
     workspace: LsiWorkspace,
     typeSystem: LsiTypeSystem,
 ): Set<LsiSymbolId> {
-    val declarationsById = typeDeclarations.associateBy(LsiTypeDeclaration::id)
+    val declarationsById = typeDeclarations.associateBy(LsiClass::id)
     val result = sortedSetOf<LsiSymbolId>()
     val pending = ArrayDeque(targetTypeIds.sorted())
     while (pending.isNotEmpty()) {
@@ -1713,7 +1713,7 @@ private fun LsiWorkspace.hasUnresolvedImmutableType(targetTypeId: LsiSymbolId): 
         if (!visited.add(typeId)) {
             continue
         }
-        val type = this[typeId] as? LsiTypeDeclaration ?: return true
+        val type = this[typeId] as? LsiClass ?: return true
         if (
             type.superTypes.any { typeRef -> typeRef.containsUnresolvedType(this) } ||
             type.typeParameters.any { typeParameter -> typeParameter.containsUnresolvedType(this) } ||
@@ -1734,9 +1734,9 @@ private fun LsiWorkspace.hasUnresolvedImmutableType(targetTypeId: LsiSymbolId): 
         type.superTypes
             .filterIsInstance<LsiDeclaredType>()
             .map(LsiDeclaredType::declarationId)
-            .mapNotNull { superTypeId -> this[superTypeId] as? LsiTypeDeclaration }
-            .filter(LsiTypeDeclaration::isJimmerImmutableType)
-            .map(LsiTypeDeclaration::id)
+            .mapNotNull { superTypeId -> this[superTypeId] as? LsiClass }
+            .filter(LsiClass::isJimmerImmutableType)
+            .map(LsiClass::id)
             .sorted()
             .forEach(pending::addLast)
     }
@@ -2056,7 +2056,7 @@ private fun LsiType.acceptsLogicalDeletedDefault(workspace: LsiWorkspace): Boole
         return true
     }
     val declaredType = this as? LsiDeclaredType ?: return false
-    return (workspace[declaredType.declarationId] as? LsiTypeDeclaration)?.kind == LsiTypeDeclarationKind.ENUM
+    return (workspace[declaredType.declarationId] as? LsiClass)?.kind == LsiTypeDeclarationKind.ENUM
 }
 
 private fun LsiResolvedProperty.invalidDefault(message: String): ImmutablePrecompileException {
@@ -2413,7 +2413,7 @@ private fun LsiResolvedProperty.validateMicroServiceAssociation(
 
 private fun LsiResolvedProperty.validations(workspace: LsiWorkspace): List<ImmutableValidation> {
     return annotations.mapNotNull { annotation ->
-        val annotationType = workspace[annotation.type] as? LsiTypeDeclaration ?: return@mapNotNull null
+        val annotationType = workspace[annotation.type] as? LsiClass ?: return@mapNotNull null
         val constraint = annotationType.annotations.annotation(CONSTRAINT_ANNOTATIONS) ?: return@mapNotNull null
         val validatorTypeIds = constraint.classTypeIds("validatedBy")
         if (validatorTypeIds.isEmpty()) {
@@ -2479,7 +2479,7 @@ private fun LsiAnnotation.findAnnotation(
     if (!visited.add(type)) {
         return null
     }
-    val annotationType = workspace[type] as? LsiTypeDeclaration ?: return null
+    val annotationType = workspace[type] as? LsiClass ?: return null
     return annotationType.annotations.firstNotNullOfOrNull { annotation ->
         annotation.findAnnotation(targetTypes, workspace, visited)
     }

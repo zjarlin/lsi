@@ -23,7 +23,7 @@ import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.type.LsiFunctionType
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
@@ -79,7 +79,7 @@ private class LsiDtoCompiler(
 
     override fun isImmutableType(qualifiedName: String): Boolean {
         val typeId = LsiSymbolId.type(qualifiedName)
-        return (workspace[typeId] as? LsiTypeDeclaration)?.isJimmerImmutableType() == true
+        return (workspace[typeId] as? LsiClass)?.isJimmerImmutableType() == true
     }
 
     override fun getDirectSubTypes(baseType: ImmutableType): Collection<ImmutableType> {
@@ -174,7 +174,7 @@ private class LsiDtoCompiler(
             return null
         }
         val typeId = (baseProp.type as? LsiDeclaredType)?.declarationId ?: return null
-        val declaration = workspace[typeId] as? LsiTypeDeclaration ?: return null
+        val declaration = workspace[typeId] as? LsiClass ?: return null
         if (declaration.kind != LsiTypeDeclarationKind.ENUM) {
             return null
         }
@@ -205,7 +205,7 @@ private class LsiDtoCompiler(
 
     override fun getGenericTypeCount(qualifiedName: String): Int? {
         val typeId = LsiSymbolId.type(qualifiedName)
-        val declaration = workspace[typeId] as? LsiTypeDeclaration
+        val declaration = workspace[typeId] as? LsiClass
         if (declaration != null) {
             return declaration.typeParameters.size
         }

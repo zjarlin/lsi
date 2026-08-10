@@ -6,7 +6,7 @@ import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.type.LsiDeclaredType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeSystem
 import site.addzero.lsi.model.LsiWorkspace
 
@@ -18,7 +18,7 @@ fun LsiWorkspace.resolveDtoTypeInfo(
 ): DtoTypeInfo? {
     val specificationTypeId = targetLanguage.specificationTypeId()
     val typeId = LsiSymbolId.type(qualifiedName)
-    val declaration = this[typeId] as? LsiTypeDeclaration ?: return null
+    val declaration = this[typeId] as? LsiClass ?: return null
     require(declaration.typeParameters.isEmpty()) {
         "Reusable DTO type \"$qualifiedName\" cannot declare type parameters"
     }

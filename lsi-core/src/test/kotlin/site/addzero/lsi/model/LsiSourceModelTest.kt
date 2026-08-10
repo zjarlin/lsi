@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -26,7 +28,7 @@ class LsiSourceModelTest {
     @Test
     fun `rejects unsupported type alias declaration`() {
         val exception = assertFailsWith<IllegalArgumentException> {
-            LsiTypeDeclaration(
+            LsiClass(
                 name = "BookAlias",
                 kind = LsiTypeDeclarationKind.TYPE_ALIAS,
             )
@@ -52,7 +54,7 @@ class LsiSourceModelTest {
             packageName = "demo.generated",
             fileName = "BookView",
             members = listOf(
-                LsiTypeDeclaration(
+                LsiClass(
                     name = "BookView",
                     kind = LsiTypeDeclarationKind.CLASS,
                     members = listOf(
@@ -106,7 +108,7 @@ class LsiSourceModelTest {
             language = LsiLanguage.JAVA,
             packageName = "demo",
             fileName = "Book",
-            members = listOf(LsiTypeDeclaration("Book", LsiTypeDeclarationKind.CLASS)),
+            members = listOf(LsiClass("Book", LsiTypeDeclarationKind.CLASS)),
         )
         val exception = assertFailsWith<IllegalArgumentException> {
             LsiSourceArtifact(
@@ -185,7 +187,7 @@ class LsiSourceModelTest {
                 language = LsiLanguage.JAVA,
                 packageName = "demo",
                 fileName = "Book.java",
-                members = listOf(LsiTypeDeclaration("Book", LsiTypeDeclarationKind.CLASS)),
+                members = listOf(LsiClass("Book", LsiTypeDeclarationKind.CLASS)),
             )
         }
         assertFailsWith<IllegalArgumentException> {
@@ -208,7 +210,7 @@ class LsiSourceModelTest {
 
     @Test
     fun `models escaped Kotlin declarations and explicit imports`() {
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "Order-ItemFetcherDsl",
             kind = LsiTypeDeclarationKind.CLASS,
             nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
@@ -242,7 +244,7 @@ class LsiSourceModelTest {
         assertEquals(LsiNameStyle.KOTLIN_ESCAPED, setter.setterParameterNameStyle)
         assertEquals("demo.child", sourceImport.packageName)
         assertFailsWith<IllegalArgumentException> {
-            LsiTypeDeclaration(
+            LsiClass(
                 name = "broken`name",
                 kind = LsiTypeDeclarationKind.CLASS,
                 nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
@@ -344,7 +346,7 @@ class LsiSourceModelTest {
             packageName = "demo",
             fileName = "order-itemFetcher",
             fileNameStyle = LsiFileNameStyle.KOTLIN_SOURCE_STEM,
-            members = listOf(LsiTypeDeclaration("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
+            members = listOf(LsiClass("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
         )
 
         assertEquals("order-itemFetcher", kotlinFile.fileName)
@@ -354,7 +356,7 @@ class LsiSourceModelTest {
                 packageName = "demo",
                 fileName = "order-itemFetcher",
                 fileNameStyle = LsiFileNameStyle.KOTLIN_SOURCE_STEM,
-                members = listOf(LsiTypeDeclaration("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
+                members = listOf(LsiClass("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
             )
         }
         assertFailsWith<IllegalArgumentException> {
@@ -363,7 +365,7 @@ class LsiSourceModelTest {
                 packageName = "demo",
                 fileName = " order-itemFetcher",
                 fileNameStyle = LsiFileNameStyle.KOTLIN_SOURCE_STEM,
-                members = listOf(LsiTypeDeclaration("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
+                members = listOf(LsiClass("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
             )
         }
     }

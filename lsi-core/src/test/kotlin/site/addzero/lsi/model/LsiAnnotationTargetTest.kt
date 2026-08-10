@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
+
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -44,8 +46,8 @@ class LsiAnnotationTargetTest {
         assertFalse(policy.allows(LsiAnnotationTarget.GETTER))
     }
 
-    private fun annotationDeclaration(annotations: List<LsiAnnotation>): LsiTypeDeclaration {
-        return LsiTypeDeclaration(
+    private fun annotationDeclaration(annotations: List<LsiAnnotation>): LsiClass {
+        return LsiClass(
             id = LsiSymbolId.type("demo.Marker"),
             name = "Marker",
             qualifiedName = "demo.Marker",

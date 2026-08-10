@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
+
 import site.addzero.lsi.type.*
 
 import kotlin.test.Test
@@ -765,8 +767,8 @@ class LsiTypeSystemTest {
         parameters: List<LsiTypeParameter> = emptyList(),
         superTypes: List<LsiType> = emptyList(),
         memberIds: List<LsiSymbolId> = emptyList(),
-    ): LsiTypeDeclaration {
-        return LsiTypeDeclaration(
+    ): LsiClass {
+        return LsiClass(
             id = id,
             name = id.value.substringAfterLast('.'),
             qualifiedName = id.value.removePrefix("type:"),

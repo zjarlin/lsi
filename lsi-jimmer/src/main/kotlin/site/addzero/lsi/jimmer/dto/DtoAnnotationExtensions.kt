@@ -20,7 +20,7 @@ import site.addzero.lsi.type.LsiNullability
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.type.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeHierarchyEntry
 import site.addzero.lsi.type.LsiTypeParameter
@@ -560,7 +560,7 @@ private class DtoAnnotationContractResolver(
             )
             return null
         }
-        if (declaration !is LsiTypeDeclaration || declaration.kind != LsiTypeDeclarationKind.ANNOTATION) {
+        if (declaration !is LsiClass || declaration.kind != LsiTypeDeclarationKind.ANNOTATION) {
             diagnostics += declarationDiagnostic(
                 code = "jimmer.dto.annotation.declaration-kind",
                 message = "DTO 注解类型 ${typeId.value} 的 LSI 声明不是 annotation",
@@ -1086,7 +1086,7 @@ private sealed interface CandidateAnnotation {
     }
 }
 
-private fun LsiTypeDeclaration.annotationDeclarationLanguage(): LsiLanguage {
+private fun LsiClass.annotationDeclarationLanguage(): LsiLanguage {
     if (
         annotations.any { annotation -> annotation.type == KOTLIN_METADATA } ||
             annotationMembers.any { member -> member.vararg } ||
@@ -1097,7 +1097,7 @@ private fun LsiTypeDeclaration.annotationDeclarationLanguage(): LsiLanguage {
     return LsiLanguage.JAVA
 }
 
-private fun LsiTypeDeclaration.dtoAnnotationTargetPolicy(): DtoAnnotationTargetPolicy {
+private fun LsiClass.dtoAnnotationTargetPolicy(): DtoAnnotationTargetPolicy {
     val policy = annotationTargetPolicy()
     return DtoAnnotationTargetPolicy(
         declared = policy.declared,
@@ -1276,7 +1276,7 @@ private fun LsiType.acceptsEnumValue(
     if (this !is LsiDeclaredType || declarationId != enumTypeId) {
         return false
     }
-    val declaration = workspace[enumTypeId] as? LsiTypeDeclaration ?: return false
+    val declaration = workspace[enumTypeId] as? LsiClass ?: return false
     return declaration.kind == LsiTypeDeclarationKind.ENUM &&
         declaration.enumEntries.any { entry -> entry.name == entryName }
 }
@@ -1288,7 +1288,7 @@ private fun LsiType.acceptsNestedAnnotation(
     if (this !is LsiDeclaredType || declarationId != annotationTypeId) {
         return false
     }
-    val declaration = workspace[annotationTypeId] as? LsiTypeDeclaration ?: return false
+    val declaration = workspace[annotationTypeId] as? LsiClass ?: return false
     return declaration.kind == LsiTypeDeclarationKind.ANNOTATION
 }
 

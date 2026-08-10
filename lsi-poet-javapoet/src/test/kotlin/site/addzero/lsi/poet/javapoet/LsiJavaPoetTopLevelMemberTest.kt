@@ -10,14 +10,14 @@ import site.addzero.lsi.codegen.LsiSourceArtifact
 import site.addzero.lsi.model.LsiCodeBlock
 import site.addzero.lsi.model.LsiFile
 import site.addzero.lsi.model.LsiFunction
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 
 class LsiJavaPoetTopLevelMemberTest {
 
     @Test
     fun `rejects Kotlin top-level member references`() {
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "References",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(

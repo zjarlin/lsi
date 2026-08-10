@@ -43,7 +43,7 @@ import site.addzero.lsi.model.LsiModifier
 import site.addzero.lsi.model.LsiNameStyle
 import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeName
 import site.addzero.lsi.model.LsiTypeReferenceStyle
@@ -156,7 +156,7 @@ class LsiKotlinPoetRendererTest {
 
     @Test
     fun `renders an embeddable Kotlin type structure exactly`() {
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "Marker",
             kind = LsiTypeDeclarationKind.INTERFACE,
             modifiers = setOf(LsiModifier.PUBLIC),
@@ -167,7 +167,7 @@ class LsiKotlinPoetRendererTest {
         assertEquals(
             TypeSpec::class.java,
             LsiKotlinPoetRenderer::class.java
-                .getDeclaredMethod("renderType", LsiTypeDeclaration::class.java, List::class.java)
+                .getDeclaredMethod("renderType", LsiClass::class.java, List::class.java)
                 .returnType,
         )
         assertEquals("public interface Marker\n", rendered.toString())
@@ -175,7 +175,7 @@ class LsiKotlinPoetRendererTest {
 
     @Test
     fun `renders a Kotlin class through a GeneratedArtifact boundary`() {
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "Greeting",
             kind = LsiTypeDeclarationKind.CLASS,
             modifiers = setOf(LsiModifier.PUBLIC),
@@ -232,7 +232,7 @@ class LsiKotlinPoetRendererTest {
 
     @Test
     fun `rejects Java fields and unresolved types`() {
-        val fieldType = LsiTypeDeclaration(
+        val fieldType = LsiClass(
             name = "FieldHolder",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
@@ -243,7 +243,7 @@ class LsiKotlinPoetRendererTest {
             LsiKotlinPoetRenderer().render(artifact(fieldType, "FieldHolder"))
         }
 
-        val unresolvedType = LsiTypeDeclaration(
+        val unresolvedType = LsiClass(
             name = "Broken",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
@@ -261,7 +261,7 @@ class LsiKotlinPoetRendererTest {
 
     @Test
     fun `renders positional file suppression without a member name`() {
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "Suppressed",
             kind = LsiTypeDeclarationKind.CLASS,
         )
@@ -305,7 +305,7 @@ class LsiKotlinPoetRendererTest {
         val annotatedType = stringType.copy(
             annotations = listOf(LsiAnnotation(LsiSymbolId.type("demo.annotation.TypeMarker")))
         )
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "NestedAnnotation",
             kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(
@@ -332,7 +332,7 @@ class LsiKotlinPoetRendererTest {
     @Test
     fun `renders constructor throws vararg override and structural control flow`() {
         val exceptionType = LsiDeclaredType(LsiSymbolId.type("java.io.IOException"))
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "Service",
             kind = LsiTypeDeclarationKind.CLASS,
             modifiers = setOf(LsiModifier.PUBLIC),
@@ -370,7 +370,7 @@ class LsiKotlinPoetRendererTest {
 
     @Test
     fun `renders structural return as a Kotlin expression body`() {
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "Returns",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
@@ -391,7 +391,7 @@ class LsiKotlinPoetRendererTest {
 
     @Test
     fun `renders a returned braced expression as a Kotlin expression body`() {
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "ReturnsBlock",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
@@ -422,7 +422,7 @@ class LsiKotlinPoetRendererTest {
                 fileName = "FetcherDsl",
                 imports = listOf(LsiImport("demo.child", "by")),
                 members = listOf(
-                    LsiTypeDeclaration(
+                    LsiClass(
                         name = "Order-ItemFetcherDsl",
                         kind = LsiTypeDeclarationKind.CLASS,
                         nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
@@ -469,7 +469,7 @@ class LsiKotlinPoetRendererTest {
 
     @Test
     fun `renders escaped parameters named setters and annotation array factory calls`() {
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "EscapedParameters",
             kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(
@@ -540,7 +540,7 @@ class LsiKotlinPoetRendererTest {
                 packageName = "demo.generated",
                 fileName = "order-item.partFetcher",
                 fileNameStyle = LsiFileNameStyle.KOTLIN_SOURCE_STEM,
-                members = listOf(LsiTypeDeclaration("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
+                members = listOf(LsiClass("OrderFetcher", LsiTypeDeclarationKind.CLASS)),
             ),
             typeNames = typeNames,
             aggregationMode = ArtifactAggregationMode.ISOLATING,
@@ -624,7 +624,7 @@ class LsiKotlinPoetRendererTest {
 
     @Test
     fun `renders explicit expression and single line layout`() {
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "Layout",
             kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(
@@ -676,7 +676,7 @@ class LsiKotlinPoetRendererTest {
         assertContains(content, "public fun pick(): String = when (value) { else -> value }")
     }
 
-    private fun artifact(type: LsiTypeDeclaration, fileName: String): LsiSourceArtifact {
+    private fun artifact(type: LsiClass, fileName: String): LsiSourceArtifact {
         return LsiSourceArtifact(
             file = LsiFile(
                 language = LsiLanguage.KOTLIN,
@@ -692,7 +692,7 @@ class LsiKotlinPoetRendererTest {
 
     @Test
     fun `renders typed values in multiline annotation arrays`() {
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "MultilineAnnotation",
             kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(
@@ -796,7 +796,7 @@ class LsiKotlinPoetRendererTest {
                 )
             ),
         )
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             name = "KeywordAnnotation",
             kind = LsiTypeDeclarationKind.CLASS,
             annotations = listOf(

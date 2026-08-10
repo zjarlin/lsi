@@ -21,7 +21,7 @@ import site.addzero.lsi.model.LsiPackageAnnotationScope
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
@@ -262,9 +262,9 @@ class ExportDocWorkspaceExtensionsTest {
         documentation: String? = null,
         sourceDocumentation: String? = null,
         originKind: LsiOriginKind = LsiOriginKind.SOURCE,
-    ): LsiTypeDeclaration {
+    ): LsiClass {
         val language = LsiLanguage.KOTLIN
-        return LsiTypeDeclaration(
+        return LsiClass(
             id = LsiSymbolId.type(qualifiedName),
             name = qualifiedName.substringAfterLast('.'),
             qualifiedName = qualifiedName,

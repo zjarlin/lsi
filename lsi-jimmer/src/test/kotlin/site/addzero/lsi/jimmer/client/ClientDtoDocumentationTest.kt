@@ -25,7 +25,7 @@ import site.addzero.lsi.jimmer.toImmutableSchema
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiWorkspace
 
@@ -147,7 +147,7 @@ class ClientDtoDocumentationTest {
             documentation = "Immutable title.",
             origin = ORIGIN,
         )
-        val type = LsiTypeDeclaration(
+        val type = LsiClass(
             id = IMMUTABLE_TYPE_ID,
             name = "Book",
             qualifiedName = IMMUTABLE_TYPE_ID.requireTypeQualifiedName(),

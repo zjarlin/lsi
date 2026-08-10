@@ -10,7 +10,7 @@ import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiOriginKind
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiDeclaredType
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiWorkspace
 
@@ -219,8 +219,8 @@ class LsiTypeNameTest {
         id: LsiSymbolId,
         name: String,
         enclosingTypeId: LsiSymbolId? = null,
-    ): LsiTypeDeclaration {
-        return LsiTypeDeclaration(
+    ): LsiClass {
+        return LsiClass(
             id = id,
             name = name,
             qualifiedName = id.requireTypeQualifiedName(),

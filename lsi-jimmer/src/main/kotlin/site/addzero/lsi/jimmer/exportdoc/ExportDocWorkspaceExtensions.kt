@@ -11,19 +11,19 @@ import site.addzero.lsi.model.LsiField
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiWorkspace
 
 /** 将冻结的 LSI 工作区解析为 ExportDoc 领域语义。 */
 fun LsiWorkspace.toExportDocSchema(): ExportDocSchema {
     val packageConfigurations = exportDocPackageConfigurations()
-    val typesById = declarationsOfType<LsiTypeDeclaration>().associateBy(LsiTypeDeclaration::id)
+    val typesById = declarationsOfType<LsiClass>().associateBy(LsiClass::id)
     val decisions = mutableMapOf<LsiSymbolId, ExportDocDecision?>()
     val effectiveConfigurationIds = sortedSetOf<LsiSymbolId>()
-    val exportedTypes = mutableListOf<LsiTypeDeclaration>()
+    val exportedTypes = mutableListOf<LsiClass>()
 
-    fun decision(type: LsiTypeDeclaration): ExportDocDecision? {
+    fun decision(type: LsiClass): ExportDocDecision? {
         if (type.id in decisions) {
             return decisions[type.id]
         }
@@ -46,7 +46,7 @@ fun LsiWorkspace.toExportDocSchema(): ExportDocSchema {
     typesById.values
         .asSequence()
         .filter { type -> type.isExportDocCandidate(typesById) }
-        .sortedBy(LsiTypeDeclaration::id)
+        .sortedBy(LsiClass::id)
         .forEach { type ->
             val typeDecision = decision(type) ?: return@forEach
             effectiveConfigurationIds += typeDecision.configurationId
@@ -68,7 +68,7 @@ fun LsiWorkspace.toExportDocSchema(): ExportDocSchema {
     }
     return ExportDocSchema(
         effectiveConfigurationIds = effectiveConfigurationIds.toList(),
-        exportedTypeIds = exportedTypes.map(LsiTypeDeclaration::id).sorted(),
+        exportedTypeIds = exportedTypes.map(LsiClass::id).sorted(),
         entries = entriesByKey.values.toList(),
     )
 }
@@ -118,8 +118,8 @@ private fun LsiWorkspace.exportDocPackageConfigurations(): Map<String, ExportDoc
         }
 }
 
-private fun LsiTypeDeclaration.nearestPackageConfiguration(
-    typesById: Map<LsiSymbolId, LsiTypeDeclaration>,
+private fun LsiClass.nearestPackageConfiguration(
+    typesById: Map<LsiSymbolId, LsiClass>,
     configurations: Map<String, ExportDocPackageConfiguration>,
 ): ExportDocDecision? {
     var topLevelType = this
@@ -141,7 +141,7 @@ private fun LsiTypeDeclaration.nearestPackageConfiguration(
     }
 }
 
-private fun LsiTypeDeclaration.exportMemberDocs(
+private fun LsiClass.exportMemberDocs(
     workspace: LsiWorkspace,
     destination: MutableMap<String, ExportDocEntry>,
 ) {
@@ -200,8 +200,8 @@ private fun String.javaIdentifier(): String {
     return characters.concatToString()
 }
 
-private fun LsiTypeDeclaration.isExportDocCandidate(
-    typesById: Map<LsiSymbolId, LsiTypeDeclaration>,
+private fun LsiClass.isExportDocCandidate(
+    typesById: Map<LsiSymbolId, LsiClass>,
 ): Boolean {
     if (origin.kind !in EXPORTABLE_ORIGIN_KINDS || kind !in EXPORTABLE_TYPE_KINDS) {
         return false
@@ -221,7 +221,7 @@ private fun LsiTypeDeclaration.isExportDocCandidate(
     return true
 }
 
-private fun LsiTypeDeclaration.exportDocConfiguration(): Boolean? =
+private fun LsiClass.exportDocConfiguration(): Boolean? =
     annotations.exportDocConfiguration()
 
 private fun LsiAnnotationScope.exportDocConfiguration(): Boolean? =

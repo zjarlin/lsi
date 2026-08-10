@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.type.LsiFunctionType
@@ -60,7 +61,7 @@ private fun LsiAnnotationScope.toSemanticSnapshotLine(options: LsiSemanticSnapsh
 
 private fun LsiDeclaration.toSemanticSnapshotLine(options: LsiSemanticSnapshotOptions): String {
     return when (this) {
-        is LsiTypeDeclaration -> listOf(
+        is LsiClass -> listOf(
             "type",
             id.value,
             name,
@@ -147,6 +148,7 @@ private fun LsiDeclaration.toSemanticSnapshotLine(options: LsiSemanticSnapshotOp
             ownerId.value,
             annotations.toSemanticSnapshot(options),
         ).joinToString("|")
+        else -> error("Unsupported LSI declaration for semantic snapshot: ${this::class.qualifiedName}")
     }
 }
 

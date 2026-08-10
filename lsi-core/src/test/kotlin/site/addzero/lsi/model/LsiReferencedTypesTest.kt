@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
+
 import site.addzero.lsi.type.*
 
 import kotlin.test.Test
@@ -13,7 +15,7 @@ class LsiReferencedTypesTest {
     @Test
     fun `collects enclosing declaration as referenced type`() {
         val outerId = LsiSymbolId.type("sample.Outer")
-        val nested = LsiTypeDeclaration(
+        val nested = LsiClass(
             id = LsiSymbolId.type("sample.Outer.Nested"),
             name = "Nested",
             qualifiedName = "sample.Outer.Nested",
@@ -28,7 +30,7 @@ class LsiReferencedTypesTest {
     @Test
     fun `collects annotation member types`() {
         val memberTypeId = LsiSymbolId.type("sample.Payload")
-        val annotation = LsiTypeDeclaration(
+        val annotation = LsiClass(
             id = LsiSymbolId.type("sample.Marker"),
             name = "Marker",
             qualifiedName = "sample.Marker",

@@ -32,7 +32,7 @@ import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.type.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeDeclaration
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.type.LsiTypeParameterRef
@@ -542,7 +542,7 @@ class DtoCompilerExtensionsTest {
     }
 
     private fun schemaAndWorkspace(
-        declarations: List<LsiTypeDeclaration>,
+        declarations: List<LsiClass>,
     ): Pair<ImmutableSchema, LsiWorkspace> {
         val workspace = LsiWorkspace(declarations = declarations)
         val book = immutableEntity(BOOK_TYPE_ID, listOf(idProp(BOOK_TYPE_ID)))
@@ -553,8 +553,8 @@ class DtoCompilerExtensionsTest {
         id: LsiSymbolId,
         typeParameters: List<LsiTypeParameter> = emptyList(),
         superTypes: List<LsiDeclaredType> = emptyList(),
-    ): LsiTypeDeclaration {
-        return LsiTypeDeclaration(
+    ): LsiClass {
+        return LsiClass(
             id = id,
             name = id.requireTypeQualifiedName().substringAfterLast('.'),
             qualifiedName = id.requireTypeQualifiedName(),
