@@ -22,7 +22,7 @@ import site.addzero.lsi.diagnostic.LsiDiagnostic
 import site.addzero.lsi.diagnostic.LsiDiagnosticSeverity
 import site.addzero.lsi.frontend.resolveLsiTypeSeedFixedPoint
 import site.addzero.lsi.type.LsiArrayType
-import site.addzero.lsi.model.LsiConstructor
+import site.addzero.lsi.method.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.field.LsiField

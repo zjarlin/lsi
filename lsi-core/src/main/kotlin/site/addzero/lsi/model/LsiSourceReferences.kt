@@ -6,6 +6,7 @@ import site.addzero.lsi.anno.toSourceAnnotation
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.file.LsiFile
+import site.addzero.lsi.method.LsiConstructor
 import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.method.LsiParameter
 

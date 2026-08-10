@@ -3,6 +3,7 @@ package site.addzero.lsi.model
 import site.addzero.lsi.anno.*
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.method.LsiConstructor
 import site.addzero.lsi.method.LsiParameter
 
 import site.addzero.lsi.clazz.LsiClass

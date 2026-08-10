@@ -24,7 +24,7 @@ import site.addzero.lsi.anno.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.anno.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.anno.LsiAnnotationValue
 import site.addzero.lsi.type.LsiDeclaredType
-import site.addzero.lsi.model.LsiEnumEntry
+import site.addzero.lsi.clazz.LsiEnumEntry
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.type.LsiNullability

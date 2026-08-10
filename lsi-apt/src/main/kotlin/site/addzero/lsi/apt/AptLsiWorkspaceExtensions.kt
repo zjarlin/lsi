@@ -10,9 +10,9 @@ import site.addzero.lsi.model.LsiFrontendOptions
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.anno.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationMember
-import site.addzero.lsi.model.LsiConstructor
+import site.addzero.lsi.method.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
-import site.addzero.lsi.model.LsiEnumEntry
+import site.addzero.lsi.clazz.LsiEnumEntry
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiOverride

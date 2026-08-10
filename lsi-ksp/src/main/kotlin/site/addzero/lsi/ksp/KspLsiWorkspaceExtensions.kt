@@ -29,10 +29,10 @@ import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationMember
 import site.addzero.lsi.anno.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.type.LsiArrayType
-import site.addzero.lsi.model.LsiConstructor
+import site.addzero.lsi.method.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
 import site.addzero.lsi.type.LsiDeclaredType
-import site.addzero.lsi.model.LsiEnumEntry
+import site.addzero.lsi.clazz.LsiEnumEntry
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.model.LsiFileAnnotationScope
 import site.addzero.lsi.method.LsiMethod

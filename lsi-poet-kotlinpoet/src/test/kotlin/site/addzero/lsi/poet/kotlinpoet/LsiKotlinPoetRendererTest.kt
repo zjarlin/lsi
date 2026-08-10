@@ -32,7 +32,7 @@ import site.addzero.lsi.anno.LsiSourceAnnotationArgument
 import site.addzero.lsi.anno.LsiAnnotationArgumentLayout
 import site.addzero.lsi.anno.LsiAnnotationArrayStyle
 import site.addzero.lsi.model.LsiCodeBlock
-import site.addzero.lsi.model.LsiConstructor
+import site.addzero.lsi.method.LsiConstructor
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.file.LsiFile
 import site.addzero.lsi.file.LsiFileNameStyle

@@ -4,10 +4,12 @@ import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.anno.LsiAnnotationValue
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.method.LsiConstructor
 import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.method.LsiParameter
 
 import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.LsiEnumEntry
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.type.LsiDeclaredType

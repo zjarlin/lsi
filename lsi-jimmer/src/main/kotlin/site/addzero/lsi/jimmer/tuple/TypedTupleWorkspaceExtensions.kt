@@ -3,7 +3,7 @@ package site.addzero.lsi.jimmer.tuple
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiArrayType
-import site.addzero.lsi.model.LsiConstructor
+import site.addzero.lsi.method.LsiConstructor
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiDeclaration
 import site.addzero.lsi.field.LsiField

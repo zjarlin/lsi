@@ -8,9 +8,9 @@ import site.addzero.lsi.model.FrozenLsiClass
 import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationMember
 import site.addzero.lsi.model.LsiCodeBlock
-import site.addzero.lsi.model.LsiConstructor
+import site.addzero.lsi.method.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
-import site.addzero.lsi.model.LsiEnumEntry
+import site.addzero.lsi.clazz.LsiEnumEntry
 import site.addzero.lsi.model.LsiMember
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.model.LsiModifier

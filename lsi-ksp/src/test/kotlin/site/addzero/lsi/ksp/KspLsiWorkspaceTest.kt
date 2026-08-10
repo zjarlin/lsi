@@ -42,7 +42,7 @@ import site.addzero.lsi.anno.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.anno.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.anno.LsiAnnotationValue
 import site.addzero.lsi.type.LsiArrayType
-import site.addzero.lsi.model.LsiConstructor
+import site.addzero.lsi.method.LsiConstructor
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.model.LsiFileAnnotationScope

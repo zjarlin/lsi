@@ -22,9 +22,9 @@ import site.addzero.lsi.model.LsiBracedExpressionCompletion
 import site.addzero.lsi.model.LsiCodeBlock
 import site.addzero.lsi.model.LsiCodeBlockIndentation
 import site.addzero.lsi.model.LsiCodePart
-import site.addzero.lsi.model.LsiConstructor
+import site.addzero.lsi.method.LsiConstructor
 import site.addzero.lsi.model.LsiDelegationTarget
-import site.addzero.lsi.model.LsiEnumEntry
+import site.addzero.lsi.clazz.LsiEnumEntry
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiInitializerBlock
