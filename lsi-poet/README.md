@@ -6,4 +6,4 @@
 
 Java 和 Kotlin 的源码落地分别由 `lsi-poet-javapoet` 与 `lsi-poet-kotlinpoet` 完成。中立 `LsiPoetRenderer` 接收 `LsiSourceArtifact` 并返回 `GeneratedArtifact`；JavaPoet/KotlinPoet 依赖只允许存在于对应适配器模块。
 
-每个 `LsiSourceArtifact` 必须携带文件全部类型引用对应的 `LsiTypeName`。该模型显式保存包名和嵌套类型名，不按字符大小写猜测边界；已冻结声明由 `LsiWorkspace.toLsiTypeNames` 精确解析，尚未进入 workspace 的生成类型由调用方作为 `additional` 显式提供。
+每个 `LsiSourceArtifact` 必须携带文件全部类型引用对应的 `LsiClass`。包名和嵌套简单名链属于统一的类接口，不再维护独立名称模型；已冻结声明由 `LsiWorkspace.toLsiClasses` 精确规范化，尚未进入 workspace 的生成类型由调用方作为 `additional` 显式提供。

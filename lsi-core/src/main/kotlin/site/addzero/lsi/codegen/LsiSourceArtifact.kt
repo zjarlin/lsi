@@ -4,13 +4,13 @@ import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiFile
-import site.addzero.lsi.model.LsiTypeName
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.referencedTypeIds
 
 /** 描述尚未绑定具体渲染实现的源码产物。 */
 data class LsiSourceArtifact(
     val file: LsiFile,
-    val typeNames: List<LsiTypeName>,
+    val typeNames: List<LsiClass>,
     val aggregationMode: ArtifactAggregationMode,
     val emissionMode: ArtifactEmissionMode = ArtifactEmissionMode.IMMEDIATE,
     val originatingSymbols: Set<LsiSymbolId> = emptySet(),
@@ -47,7 +47,7 @@ data class LsiSourceArtifact(
 
     init {
         val duplicateTypeIds = typeNames
-            .groupingBy(LsiTypeName::typeId)
+            .groupingBy(LsiClass::id)
             .eachCount()
             .filterValues { count -> count > 1 }
             .keys
@@ -55,7 +55,7 @@ data class LsiSourceArtifact(
         require(duplicateTypeIds.isEmpty()) {
             "Duplicate LSI source type ids: ${duplicateTypeIds.joinToString { id -> id.value }}"
         }
-        val missingTypeIds = file.referencedTypeIds - typeNames.mapTo(hashSetOf(), LsiTypeName::typeId)
+        val missingTypeIds = file.referencedTypeIds - typeNames.mapTo(hashSetOf(), LsiClass::id)
         require(missingTypeIds.isEmpty()) {
             "Missing LSI source type names for $qualifiedFileName: " +
                 missingTypeIds.joinToString { id -> id.value }

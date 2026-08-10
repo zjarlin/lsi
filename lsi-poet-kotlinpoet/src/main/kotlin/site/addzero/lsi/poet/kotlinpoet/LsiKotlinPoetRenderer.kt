@@ -34,7 +34,6 @@ import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.poet.LsiPoetRenderer
 import site.addzero.lsi.clazz.LsiClass
-import site.addzero.lsi.model.LsiTypeName
 import site.addzero.lsi.model.LsiTypeReferenceStyle
 
 /**
@@ -45,7 +44,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
     /** 将单个 LSI 类型引用渲染为可嵌入现有 KotlinPoet 声明的类型。 */
     fun renderTypeName(
         type: LsiType,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): TypeName {
         return type.toKotlinTypeName(typeNames)
     }
@@ -53,7 +52,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
     /** 将任意 LSI Poet 代码块渲染为可嵌入现有 KotlinPoet 声明的代码块。 */
     fun renderCodeBlock(
         codeBlock: LsiCodeBlock,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): CodeBlock {
         return codeBlock.toKotlinCodeBlock(typeNames)
     }
@@ -62,7 +61,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
     fun appendCodeBlock(
         builder: CodeBlock.Builder,
         codeBlock: LsiCodeBlock,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ) {
         codeBlock.appendToKotlinCodeBlock(builder, typeNames)
     }
@@ -70,7 +69,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
     /** 将单个 LSI 类型渲染为可嵌入现有 KotlinPoet 声明的结构。 */
     fun renderType(
         type: LsiClass,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): TypeSpec {
         return type.toKotlinTypeSpec(typeNames)
     }
@@ -78,7 +77,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
     /** 将单个 LSI 函数渲染为可嵌入现有 KotlinPoet 类型的结构。 */
     fun renderFunction(
         function: LsiFunction,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): FunSpec {
         return function.toKotlinFunction(typeNames)
     }
@@ -86,7 +85,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
     /** 将单个 LSI 属性渲染为可嵌入现有 KotlinPoet 类型的结构。 */
     fun renderProperty(
         property: LsiProperty,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): PropertySpec {
         return property.toKotlinProperty(typeNames)
     }
@@ -94,7 +93,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
     /** 将单个 LSI Poet 注解渲染为可嵌入现有 KotlinPoet 声明的结构。 */
     fun renderAnnotation(
         annotation: LsiAnnotation,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): AnnotationSpec {
         return annotation.toKotlinSourceAnnotationSpec(typeNames)
     }
@@ -102,7 +101,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
     /** 按声明顺序将 LSI Poet 注解列表渲染为 KotlinPoet 结构。 */
     fun renderAnnotations(
         annotations: List<LsiAnnotation>,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): List<AnnotationSpec> {
         return annotations.map { annotation -> renderAnnotation(annotation, typeNames) }
     }
@@ -128,7 +127,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
 
 private fun FileSpec.Builder.addKotlinTopLevelMember(
     member: LsiMember,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ) {
     when (member) {
         is LsiFunction -> addFunction(member.toKotlinFunction(typeNames))
@@ -140,7 +139,7 @@ private fun FileSpec.Builder.addKotlinTopLevelMember(
     }
 }
 
-private fun LsiClass.toKotlinTypeSpec(typeNames: List<LsiTypeName>): TypeSpec {
+private fun LsiClass.toKotlinTypeSpec(typeNames: List<LsiClass>): TypeSpec {
     val builder = when (kind) {
         LsiTypeDeclarationKind.CLASS -> TypeSpec.classBuilder(name)
         LsiTypeDeclarationKind.INTERFACE -> TypeSpec.interfaceBuilder(name)
@@ -173,7 +172,7 @@ private fun LsiClass.toKotlinTypeSpec(typeNames: List<LsiTypeName>): TypeSpec {
 
 private fun TypeSpec.Builder.addKotlinEnumConstant(
     constant: LsiEnumEntry,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ) {
     if (constant.constructorArguments.isEmpty() && constant.anonymousType == null) {
         addEnumConstant(constant.name)
@@ -200,7 +199,7 @@ private fun TypeSpec.Builder.addKotlinEnumConstant(
 
 private fun TypeSpec.Builder.addKotlinMember(
     member: LsiMember,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ) {
     when (member) {
         is LsiConstructor -> addFunction(member.toKotlinConstructor(typeNames, primary = false))
@@ -214,7 +213,7 @@ private fun TypeSpec.Builder.addKotlinMember(
 
 private fun TypeSpec.Builder.addKotlinInitializer(
     initializer: LsiInitializerBlock,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ) {
     require(!initializer.static) {
         "KotlinPoet renderer cannot emit a static initializer block"
@@ -226,7 +225,7 @@ private fun TypeSpec.Builder.addKotlinInitializer(
 }
 
 private fun LsiConstructor.toKotlinConstructor(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
     primary: Boolean,
 ): FunSpec {
     if (primary) {
@@ -254,7 +253,7 @@ private fun LsiConstructor.toKotlinConstructor(
     return builder.build()
 }
 
-private fun LsiFunction.toKotlinFunction(typeNames: List<LsiTypeName>): FunSpec {
+private fun LsiFunction.toKotlinFunction(typeNames: List<LsiClass>): FunSpec {
     val builder = FunSpec.builder(name)
         .addModifiers(*modifiers.toKotlinModifiers(KotlinModifierContext.FUNCTION))
     annotations.forEach { annotation -> builder.addAnnotation(annotation.toKotlinSourceAnnotationSpec(typeNames)) }
@@ -278,7 +277,7 @@ private fun LsiFunction.toKotlinFunction(typeNames: List<LsiTypeName>): FunSpec 
     return builder.build()
 }
 
-private fun LsiParameter.toKotlinParameter(typeNames: List<LsiTypeName>): ParameterSpec {
+private fun LsiParameter.toKotlinParameter(typeNames: List<LsiClass>): ParameterSpec {
     val builder = ParameterSpec.builder(name, type.toKotlinTypeName(typeNames))
         .addModifiers(*modifiers.toKotlinModifiers(KotlinModifierContext.PARAMETER))
     annotations.forEach { annotation -> builder.addAnnotation(annotation.toKotlinSourceAnnotationSpec(typeNames)) }
@@ -286,7 +285,7 @@ private fun LsiParameter.toKotlinParameter(typeNames: List<LsiTypeName>): Parame
     return builder.build()
 }
 
-private fun LsiProperty.toKotlinProperty(typeNames: List<LsiTypeName>): PropertySpec {
+private fun LsiProperty.toKotlinProperty(typeNames: List<LsiClass>): PropertySpec {
     val builder = PropertySpec.builder(name, type.toKotlinTypeName(typeNames))
         .mutable(mutable)
         .addModifiers(*modifiers.toKotlinModifiers(KotlinModifierContext.PROPERTY))
@@ -299,7 +298,7 @@ private fun LsiProperty.toKotlinProperty(typeNames: List<LsiTypeName>): Property
     return builder.build()
 }
 
-private fun LsiAccessor.toKotlinGetter(typeNames: List<LsiTypeName>): FunSpec {
+private fun LsiAccessor.toKotlinGetter(typeNames: List<LsiClass>): FunSpec {
     require(parameterAnnotations.isEmpty()) {
         "Kotlin getter cannot declare setter parameter annotations"
     }
@@ -315,7 +314,7 @@ private fun LsiAccessor.toKotlinGetter(typeNames: List<LsiTypeName>): FunSpec {
 
 private fun LsiAccessor.toKotlinSetter(
     type: LsiType,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): FunSpec {
     require(bodyStyle == LsiBodyStyle.BLOCK) {
         "KotlinPoet renderer cannot emit an expression setter body"
@@ -335,7 +334,7 @@ private fun LsiAccessor.toKotlinSetter(
     return builder.build()
 }
 
-private fun LsiCodeBlock.toKotlinCodeBlock(typeNames: List<LsiTypeName>): CodeBlock {
+private fun LsiCodeBlock.toKotlinCodeBlock(typeNames: List<LsiClass>): CodeBlock {
     val builder = CodeBlock.builder()
     appendToKotlinCodeBlock(builder, typeNames)
     return builder.build()
@@ -343,7 +342,7 @@ private fun LsiCodeBlock.toKotlinCodeBlock(typeNames: List<LsiTypeName>): CodeBl
 
 private fun LsiCodeBlock.appendToKotlinCodeBlock(
     builder: CodeBlock.Builder,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ) {
     if (indentation == LsiCodeBlockIndentation.EXPLICIT) {
         // 空语句标记只抑制外围声明的双倍续行缩进，不产生任何源码字符。
@@ -393,7 +392,7 @@ private fun LsiCodeBlock.appendToKotlinCodeBlock(
 
 private fun CodeBlock.Builder.addKotlinBracedExpression(
     expression: LsiCodePart.BracedExpression,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ) {
     if (expression.completion == LsiBracedExpressionCompletion.RETURN) {
         add("return ")
@@ -410,7 +409,7 @@ private fun CodeBlock.Builder.addKotlinBracedExpression(
 
 private fun FunSpec.Builder.addThrownTypes(
     thrownTypes: List<LsiType>,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ) {
     if (thrownTypes.isEmpty()) {
         return

@@ -44,22 +44,22 @@ import site.addzero.lsi.model.LsiAnnotationArgumentLayout
 import site.addzero.lsi.model.LsiAnnotationArgumentNameStyle
 import site.addzero.lsi.model.LsiAnnotationArrayStyle
 import site.addzero.lsi.model.LsiClassLiteralStyle
-import site.addzero.lsi.model.LsiTypeName
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.toSourceAnnotation
 
-internal fun LsiType.toKotlinTypeName(typeNames: List<LsiTypeName>): TypeName {
+internal fun LsiType.toKotlinTypeName(typeNames: List<LsiClass>): TypeName {
     return toKotlinTypeName(typeNames, referenceContext = false)
 }
 
 private fun LsiType.toKotlinTypeName(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
     referenceContext: Boolean,
 ): TypeName {
     val typeName = when (this) {
         is LsiPrimitiveType -> toKotlinPrimitiveTypeName(referenceContext)
         is LsiDeclaredType -> {
             val exactTypeName = typeNames.requireTypeName(declarationId)
-            val rawType = KOTLIN_TYPES[exactTypeName] ?: exactTypeName.toKotlinClassName()
+            val rawType = KOTLIN_TYPES[exactTypeName.sourceNameKey()] ?: exactTypeName.toKotlinClassName()
             if (arguments.isEmpty()) {
                 rawType
             } else {
@@ -105,7 +105,7 @@ private fun LsiType.toKotlinTypeName(
 }
 
 internal fun LsiTypeParameter.toKotlinTypeVariableName(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
     reified: Boolean = false,
 ): TypeVariableName {
     val varianceModifier = when (variance) {
@@ -120,7 +120,7 @@ internal fun LsiTypeParameter.toKotlinTypeVariableName(
 }
 
 internal fun LsiAnnotation.toKotlinCoreAnnotationSpec(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): AnnotationSpec {
     return AnnotationSpec.builder(typeNames.requireKotlinClassName(type))
         .apply {
@@ -139,7 +139,7 @@ internal fun LsiAnnotation.toKotlinCoreAnnotationSpec(
 }
 
 internal fun LsiAnnotation.toKotlinSourceAnnotationSpec(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): AnnotationSpec {
     val sourceAnnotation = toSourceAnnotation()
     val sourceArguments = sourceAnnotation.sourceArguments
@@ -172,7 +172,7 @@ internal fun LsiAnnotation.toKotlinSourceAnnotationSpec(
 }
 
 private fun List<LsiSourceAnnotationArgument>.toKotlinSingleLineSourceAnnotationArguments(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): CodeBlock {
     return CodeBlock.builder()
         .apply {
@@ -197,7 +197,7 @@ private fun List<LsiSourceAnnotationArgument>.toKotlinSingleLineSourceAnnotation
 }
 
 private fun List<LsiSourceAnnotationArgument>.toKotlinMultiLineSourceAnnotationArguments(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): CodeBlock {
     return CodeBlock.builder()
         .add("\n")
@@ -271,7 +271,7 @@ private fun LsiPrimitiveKind.toKotlinBoxedTypeName(): TypeName {
     }
 }
 
-private fun LsiType.toKotlinArrayTypeName(typeNames: List<LsiTypeName>): TypeName {
+private fun LsiType.toKotlinArrayTypeName(typeNames: List<LsiClass>): TypeName {
     val primitiveType = this as? LsiPrimitiveType
     if (
         primitiveType != null &&
@@ -303,7 +303,7 @@ private fun LsiPrimitiveKind.toKotlinPrimitiveArrayTypeName(): TypeName? {
 }
 
 private fun LsiAnnotationValue.toKotlinCoreAnnotationValue(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): CodeBlock {
     return when (this) {
         is LsiAnnotationValue.BooleanValue -> CodeBlock.of("%L", value)
@@ -338,7 +338,7 @@ private fun LsiAnnotationValue.toKotlinCoreAnnotationValue(
 }
 
 private fun LsiAnnotationValue.toKotlinSourceAnnotationValue(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): CodeBlock {
     return when (this) {
         is LsiAnnotationValue.BooleanValue -> CodeBlock.of("%L", value)
@@ -413,7 +413,7 @@ private fun LsiAnnotationValue.toKotlinSourceAnnotationValue(
 }
 
 private fun LsiAnnotationValue.ArrayValue.toKotlinInlineSourceAnnotationArray(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
     opening: String,
     closing: String,
 ): CodeBlock {
@@ -432,7 +432,7 @@ private fun LsiAnnotationValue.ArrayValue.toKotlinInlineSourceAnnotationArray(
 }
 
 private fun LsiAnnotation.toKotlinNestedCoreAnnotationValue(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): CodeBlock {
     require(useSiteTarget == null) {
         "Nested Kotlin annotation value cannot declare a use-site target: $type"
@@ -460,7 +460,7 @@ private fun LsiAnnotation.toKotlinNestedCoreAnnotationValue(
 }
 
 private fun LsiAnnotation.toKotlinNestedSourceAnnotationValue(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): CodeBlock {
     require(useSiteTarget == null) {
         "Nested Kotlin annotation value cannot declare a use-site target: $type"
@@ -513,7 +513,7 @@ private fun LsiSourceAnnotationArgument.Named.toKotlinAnnotationArgumentName(): 
 }
 
 private fun LsiType.toKotlinClassLiteral(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
     sourceStyle: LsiClassLiteralStyle = LsiClassLiteralStyle.PLATFORM_TYPE,
 ): CodeBlock {
     val primitive = this as? LsiPrimitiveType
@@ -573,19 +573,19 @@ private fun LsiAnnotationUseSiteTarget.toPoetUseSiteTarget(): AnnotationSpec.Use
     }
 }
 
-private fun List<LsiTypeName>.requireKotlinClassName(typeId: LsiSymbolId): ClassName {
+private fun List<LsiClass>.requireKotlinClassName(typeId: LsiSymbolId): ClassName {
     return requireTypeName(typeId).toKotlinClassName()
 }
 
-private fun List<LsiTypeName>.requireTypeName(typeId: LsiSymbolId): LsiTypeName {
-    val matches = filter { typeName -> typeName.typeId == typeId }
+private fun List<LsiClass>.requireTypeName(typeId: LsiSymbolId): LsiClass {
+    val matches = filter { typeName -> typeName.id == typeId }
     require(matches.size == 1) {
         "KotlinPoet renderer requires exactly one source type name for $typeId, found ${matches.size}"
     }
     return matches.single()
 }
 
-private fun LsiTypeName.toKotlinClassName(): ClassName = ClassName(packageName, simpleNames)
+private fun LsiClass.toKotlinClassName(): ClassName = ClassName(packageName, simpleNames)
 
 private fun Char.toCharacterLiteral(): String {
     val content = when (this) {
@@ -602,44 +602,43 @@ private fun Char.toCharacterLiteral(): String {
 }
 
 private val KOTLIN_TYPES = mapOf(
-    exactTypeName("java.lang", "Boolean") to BOOLEAN,
-    exactTypeName("java.lang", "Byte") to BYTE,
-    exactTypeName("java.lang", "Short") to SHORT,
-    exactTypeName("java.lang", "Integer") to INT,
-    exactTypeName("java.lang", "Long") to LONG,
-    exactTypeName("java.lang", "Character") to CHAR,
-    exactTypeName("java.lang", "Float") to FLOAT,
-    exactTypeName("java.lang", "Double") to DOUBLE,
-    exactTypeName("java.lang", "String") to STRING,
-    exactTypeName("java.lang", "Object") to ANY,
-    exactTypeName("java.lang", "Iterable") to ClassName("kotlin.collections", "Iterable"),
-    exactTypeName("java.util", "Collection") to ClassName("kotlin.collections", "Collection"),
-    exactTypeName("java.util", "Iterator") to ClassName("kotlin.collections", "Iterator"),
-    exactTypeName("java.util", "List") to ClassName("kotlin.collections", "List"),
-    exactTypeName("java.util", "ListIterator") to ClassName("kotlin.collections", "ListIterator"),
-    exactTypeName("java.util", "Map") to ClassName("kotlin.collections", "Map"),
-    exactTypeName("java.util", "Map", "Entry") to ClassName("kotlin.collections", "Map", "Entry"),
-    exactTypeName("java.util", "Set") to ClassName("kotlin.collections", "Set"),
-    exactTypeName("kotlin", "Boolean") to BOOLEAN,
-    exactTypeName("kotlin", "Byte") to BYTE,
-    exactTypeName("kotlin", "Short") to SHORT,
-    exactTypeName("kotlin", "Int") to INT,
-    exactTypeName("kotlin", "Long") to LONG,
-    exactTypeName("kotlin", "Char") to CHAR,
-    exactTypeName("kotlin", "Float") to FLOAT,
-    exactTypeName("kotlin", "Double") to DOUBLE,
-    exactTypeName("kotlin", "String") to STRING,
-    exactTypeName("kotlin", "Any") to ANY,
-    exactTypeName("kotlin", "Unit") to UNIT,
+    exactSourceNameKey("java.lang", "Boolean") to BOOLEAN,
+    exactSourceNameKey("java.lang", "Byte") to BYTE,
+    exactSourceNameKey("java.lang", "Short") to SHORT,
+    exactSourceNameKey("java.lang", "Integer") to INT,
+    exactSourceNameKey("java.lang", "Long") to LONG,
+    exactSourceNameKey("java.lang", "Character") to CHAR,
+    exactSourceNameKey("java.lang", "Float") to FLOAT,
+    exactSourceNameKey("java.lang", "Double") to DOUBLE,
+    exactSourceNameKey("java.lang", "String") to STRING,
+    exactSourceNameKey("java.lang", "Object") to ANY,
+    exactSourceNameKey("java.lang", "Iterable") to ClassName("kotlin.collections", "Iterable"),
+    exactSourceNameKey("java.util", "Collection") to ClassName("kotlin.collections", "Collection"),
+    exactSourceNameKey("java.util", "Iterator") to ClassName("kotlin.collections", "Iterator"),
+    exactSourceNameKey("java.util", "List") to ClassName("kotlin.collections", "List"),
+    exactSourceNameKey("java.util", "ListIterator") to ClassName("kotlin.collections", "ListIterator"),
+    exactSourceNameKey("java.util", "Map") to ClassName("kotlin.collections", "Map"),
+    exactSourceNameKey("java.util", "Map", "Entry") to ClassName("kotlin.collections", "Map", "Entry"),
+    exactSourceNameKey("java.util", "Set") to ClassName("kotlin.collections", "Set"),
+    exactSourceNameKey("kotlin", "Boolean") to BOOLEAN,
+    exactSourceNameKey("kotlin", "Byte") to BYTE,
+    exactSourceNameKey("kotlin", "Short") to SHORT,
+    exactSourceNameKey("kotlin", "Int") to INT,
+    exactSourceNameKey("kotlin", "Long") to LONG,
+    exactSourceNameKey("kotlin", "Char") to CHAR,
+    exactSourceNameKey("kotlin", "Float") to FLOAT,
+    exactSourceNameKey("kotlin", "Double") to DOUBLE,
+    exactSourceNameKey("kotlin", "String") to STRING,
+    exactSourceNameKey("kotlin", "Any") to ANY,
+    exactSourceNameKey("kotlin", "Unit") to UNIT,
 )
 
-private fun exactTypeName(packageName: String, vararg simpleNames: String): LsiTypeName {
-    val canonicalName = (listOf(packageName) + simpleNames).filter(String::isNotEmpty).joinToString(".")
-    return LsiTypeName(
-        typeId = LsiSymbolId.type(canonicalName),
-        packageName = packageName,
-        simpleNames = simpleNames.toList(),
-    )
-}
+private fun exactSourceNameKey(packageName: String, vararg simpleNames: String): String =
+    sourceNameKey(packageName, simpleNames.asList())
+
+private fun LsiClass.sourceNameKey(): String = sourceNameKey(packageName, simpleNames)
+
+private fun sourceNameKey(packageName: String, simpleNames: List<String>): String =
+    (listOf(packageName) + simpleNames).joinToString("\u0000")
 
 private val JAVA_LANG_VOID = ClassName("java.lang", "Void")

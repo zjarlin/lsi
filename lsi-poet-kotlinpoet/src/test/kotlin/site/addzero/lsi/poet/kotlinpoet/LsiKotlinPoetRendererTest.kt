@@ -45,7 +45,6 @@ import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeName
 import site.addzero.lsi.model.LsiTypeReferenceStyle
 import site.addzero.lsi.model.sourceLsiAnnotation
 
@@ -54,21 +53,21 @@ class LsiKotlinPoetRendererTest {
     private val stringType = LsiDeclaredType(LsiSymbolId.type("java.lang.String"))
 
     private val typeNames = listOf(
-        LsiTypeName(LsiSymbolId.type("java.lang.String"), "java.lang", listOf("String")),
-        LsiTypeName(LsiSymbolId.type("java.io.IOException"), "java.io", listOf("IOException")),
-        LsiTypeName(LsiSymbolId.type("kotlin.Suppress"), "kotlin", listOf("Suppress")),
-        LsiTypeName(LsiSymbolId.type("demo.annotation.Container"), "demo.annotation", listOf("Container")),
-        LsiTypeName(LsiSymbolId.type("demo.annotation.Nested"), "demo.annotation", listOf("Nested")),
-        LsiTypeName(LsiSymbolId.type("demo.annotation.Ordered"), "demo.annotation", listOf("Ordered")),
-        LsiTypeName(LsiSymbolId.type("demo.annotation.TypeMarker"), "demo.annotation", listOf("TypeMarker")),
-        LsiTypeName(LsiSymbolId.type("demo.external.External"), "demo.external", listOf("External")),
-        LsiTypeName(
+        LsiClass(LsiSymbolId.type("java.lang.String"), "java.lang", listOf("String")),
+        LsiClass(LsiSymbolId.type("java.io.IOException"), "java.io", listOf("IOException")),
+        LsiClass(LsiSymbolId.type("kotlin.Suppress"), "kotlin", listOf("Suppress")),
+        LsiClass(LsiSymbolId.type("demo.annotation.Container"), "demo.annotation", listOf("Container")),
+        LsiClass(LsiSymbolId.type("demo.annotation.Nested"), "demo.annotation", listOf("Nested")),
+        LsiClass(LsiSymbolId.type("demo.annotation.Ordered"), "demo.annotation", listOf("Ordered")),
+        LsiClass(LsiSymbolId.type("demo.annotation.TypeMarker"), "demo.annotation", listOf("TypeMarker")),
+        LsiClass(LsiSymbolId.type("demo.external.External"), "demo.external", listOf("External")),
+        LsiClass(
             LsiSymbolId.type("demo.generated.QueryExtensions"),
             "demo.generated",
             listOf("QueryExtensions"),
         ),
-        LsiTypeName(LsiSymbolId.type("demo.Order"), "demo", listOf("Order")),
-        LsiTypeName(LsiSymbolId.type("demo.Source"), "demo", listOf("Source")),
+        LsiClass(LsiSymbolId.type("demo.Order"), "demo", listOf("Order")),
+        LsiClass(LsiSymbolId.type("demo.Source"), "demo", listOf("Source")),
     )
 
     @Test
@@ -747,7 +746,7 @@ class LsiKotlinPoetRendererTest {
 
         val rendered = LsiKotlinPoetRenderer().renderAnnotation(
             annotation,
-            listOf(LsiTypeName(annotation.type, "demo.annotation", listOf("Container"))),
+            listOf(LsiClass(annotation.type, "demo.annotation", listOf("Container"))),
         )
 
         assertEquals("@demo.`annotation`.Container([\"first\",\n\"second\"])", rendered.toString())
@@ -772,7 +771,7 @@ class LsiKotlinPoetRendererTest {
 
         val rendered = LsiKotlinPoetRenderer().renderAnnotation(
             annotation,
-            listOf(LsiTypeName(annotation.type, "demo.annotation", listOf("Container"))),
+            listOf(LsiClass(annotation.type, "demo.annotation", listOf("Container"))),
         )
 
         assertEquals(

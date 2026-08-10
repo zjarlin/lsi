@@ -11,7 +11,7 @@ import site.addzero.lsi.model.LsiSourceAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentLayout
 import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.model.LsiClassLiteralStyle
-import site.addzero.lsi.model.LsiTypeName
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.sourceLsiAnnotation
 
 class LsiKotlinPoetAnnotationRendererTest {
@@ -21,8 +21,8 @@ class LsiKotlinPoetAnnotationRendererTest {
         val firstId = LsiSymbolId.type("sample.First")
         val secondId = LsiSymbolId.type("sample.Second")
         val typeNames = listOf(
-            LsiTypeName(firstId, "sample", listOf("First")),
-            LsiTypeName(secondId, "sample", listOf("Second")),
+            LsiClass(firstId, "sample", listOf("First")),
+            LsiClass(secondId, "sample", listOf("Second")),
         )
         val first = sourceLsiAnnotation(
             type = firstId,
@@ -73,7 +73,7 @@ class LsiKotlinPoetAnnotationRendererTest {
 
         val rendered = LsiKotlinPoetRenderer().renderAnnotation(
             annotation,
-            listOf(LsiTypeName(annotationId, "sample", listOf("Boxed"))),
+            listOf(LsiClass(annotationId, "sample", listOf("Boxed"))),
         )
 
         assertEquals(

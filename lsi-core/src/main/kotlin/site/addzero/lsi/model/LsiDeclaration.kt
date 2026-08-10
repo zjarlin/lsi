@@ -133,6 +133,8 @@ internal data class FrozenLsiClass(
     override val id: LsiSymbolId,
     override val name: String,
     override val qualifiedName: String,
+    override val packageName: String = qualifiedName.substringBeforeLast('.', missingDelimiterValue = ""),
+    override val simpleNames: List<String> = listOf(name),
     override val kind: LsiTypeDeclarationKind,
     override val enclosingTypeId: LsiSymbolId? = null,
     override val requiresEnclosingInstance: Boolean = false,
@@ -200,6 +202,23 @@ internal data class FrozenLsiClass(
     init {
         require(name.isNotBlank()) { "LSI type declaration name cannot be blank" }
         require(qualifiedName.isNotBlank()) { "LSI type declaration qualified name cannot be blank" }
+        require(qualifiedName == id.requireTypeQualifiedName()) {
+            "LSI type declaration qualified name '$qualifiedName' does not match '${id.value}'"
+        }
+        require(packageName == packageName.trim()) {
+            "LSI type package cannot have surrounding whitespace: '$packageName'"
+        }
+        require(packageName.isEmpty() || packageName.split('.').all(String::isNotEmpty)) {
+            "LSI type package must contain non-empty source-name segments: '$packageName'"
+        }
+        require(simpleNames.isNotEmpty() && simpleNames.all { simpleName ->
+            simpleName.isNotEmpty() && '.' !in simpleName
+        }) {
+            "LSI type requires non-empty source simple names without '.': ${simpleNames.joinToString(".")}"
+        }
+        require(canonicalName == qualifiedName) {
+            "LSI class source name '$canonicalName' does not match qualified name '$qualifiedName'"
+        }
         require(enclosingTypeId != id) { "LSI type declaration cannot enclose itself: ${id.value}" }
         require(!requiresEnclosingInstance || enclosingTypeId != null) {
             "LSI type requiring an enclosing instance must be nested: ${id.value}"

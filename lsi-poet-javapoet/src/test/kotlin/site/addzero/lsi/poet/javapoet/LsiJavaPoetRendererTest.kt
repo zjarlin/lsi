@@ -37,7 +37,6 @@ import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeName
 import site.addzero.lsi.model.LsiTypeReferenceStyle
 import site.addzero.lsi.model.LsiFile
 import site.addzero.lsi.model.sourceLsiAnnotation
@@ -587,7 +586,7 @@ class LsiJavaPoetRendererTest {
 
         val rendered = LsiJavaPoetRenderer().renderAnnotation(
             annotation,
-            listOf(LsiTypeName(annotation.type, "demo.annotation", listOf("Container"))),
+            listOf(LsiClass(annotation.type, "demo.annotation", listOf("Container"))),
         )
 
         assertEquals("@demo.annotation.Container({\"first\",\n    \"second\"})", rendered.toString())
@@ -612,7 +611,7 @@ class LsiJavaPoetRendererTest {
 
         val rendered = LsiJavaPoetRenderer().renderAnnotation(
             annotation,
-            listOf(LsiTypeName(annotation.type, "demo.annotation", listOf("Container"))),
+            listOf(LsiClass(annotation.type, "demo.annotation", listOf("Container"))),
         )
 
         assertEquals(
@@ -853,7 +852,7 @@ class LsiJavaPoetRendererTest {
         typeId: LsiSymbolId,
         packageName: String,
         vararg simpleNames: String,
-    ): LsiTypeName = LsiTypeName(typeId, packageName, simpleNames.toList())
+    ): LsiClass = LsiClass(typeId, packageName, simpleNames.toList())
 
     private val commonTypeNames = listOf(
         typeName(LsiSymbolId.type("Owner.Nested"), "", "Owner", "Nested"),

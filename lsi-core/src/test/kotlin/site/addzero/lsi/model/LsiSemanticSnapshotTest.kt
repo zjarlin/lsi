@@ -298,8 +298,8 @@ class LsiSemanticSnapshotTest {
             declarations = listOf(
                 LsiClass(
                     id = ownerId,
-                    name = "Switch",
-                    qualifiedName = "sample.Switch",
+                    name = ownerId.requireTypeQualifiedName().substringAfterLast('.'),
+                    qualifiedName = ownerId.requireTypeQualifiedName(),
                     kind = LsiTypeDeclarationKind.INTERFACE,
                     modality = LsiModality.ABSTRACT,
                     memberIds = listOf(property.id),

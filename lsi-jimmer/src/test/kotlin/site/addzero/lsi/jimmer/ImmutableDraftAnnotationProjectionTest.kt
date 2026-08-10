@@ -94,8 +94,8 @@ private fun marker(
 private fun annotationType(id: LsiSymbolId, target: String): LsiClass {
     return LsiClass(
         id = id,
-        name = id.value.substringAfterLast('.'),
-        qualifiedName = id.value,
+        name = id.requireTypeQualifiedName().substringAfterLast('.'),
+        qualifiedName = id.requireTypeQualifiedName(),
         kind = LsiTypeDeclarationKind.ANNOTATION,
         annotations = listOf(
             LsiAnnotation(

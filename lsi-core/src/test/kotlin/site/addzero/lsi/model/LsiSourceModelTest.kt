@@ -74,7 +74,7 @@ class LsiSourceModelTest {
         )
         val artifact = LsiSourceArtifact(
             file = file,
-            typeNames = listOf(LsiTypeName(bookTypeId, "demo", listOf("Book"))),
+            typeNames = listOf(LsiClass(bookTypeId, "demo", listOf("Book"))),
             aggregationMode = ArtifactAggregationMode.ISOLATING,
             originatingSymbols = setOf(bookTypeId),
             originatingSources = setOf(source),

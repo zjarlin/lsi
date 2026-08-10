@@ -27,11 +27,11 @@ import site.addzero.lsi.model.LsiSourceAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentLayout
 import site.addzero.lsi.model.LsiAnnotationArrayStyle
 import site.addzero.lsi.model.LsiClassLiteralStyle
-import site.addzero.lsi.model.LsiTypeName
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeReferenceStyle
 import site.addzero.lsi.model.toSourceAnnotation
 
-internal fun LsiType.toJavaTypeName(typeNames: List<LsiTypeName>): TypeName {
+internal fun LsiType.toJavaTypeName(typeNames: List<LsiClass>): TypeName {
     val typeName = when (this) {
         is LsiPrimitiveType -> {
             val primitiveTypeName = kind.toJavaTypeName()
@@ -88,7 +88,7 @@ internal fun LsiType.toJavaTypeName(typeNames: List<LsiTypeName>): TypeName {
  * 将声明类型的源码限定方式留在 JavaPoet 边界处理，语义类型本身保持不变。
  */
 internal fun LsiType.toJavaTypeName(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
     referenceStyle: LsiTypeReferenceStyle,
     currentPackageName: String?,
 ): TypeName {
@@ -156,7 +156,7 @@ internal fun LsiType.toJavaTypeName(
 }
 
 internal fun LsiTypeParameter.toJavaTypeVariableName(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): TypeVariableName {
     require(variance == LsiVariance.INVARIANT) {
         "JavaPoet renderer cannot emit declaration-site variance for type parameter: $name"
@@ -170,7 +170,7 @@ internal fun LsiTypeParameter.toJavaTypeVariableName(
 }
 
 internal fun LsiAnnotation.toJavaCoreAnnotationSpec(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): AnnotationSpec {
     return AnnotationSpec.builder(typeNames.requireJavaClassName(type))
         .apply {
@@ -184,7 +184,7 @@ internal fun LsiAnnotation.toJavaCoreAnnotationSpec(
 }
 
 internal fun LsiAnnotation.toJavaSourceAnnotationSpec(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): AnnotationSpec {
     require(argumentLayout == LsiAnnotationArgumentLayout.PLATFORM_DEFAULT) {
         "JavaPoet renderer cannot honor a forced annotation layout: $type"
@@ -234,7 +234,7 @@ private fun LsiPrimitiveKind.toJavaTypeName(): TypeName {
 }
 
 private fun LsiAnnotationValue.toJavaCoreAnnotationValue(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): CodeBlock {
     return when (this) {
         is LsiAnnotationValue.BooleanValue -> CodeBlock.of("\$L", value)
@@ -275,7 +275,7 @@ private fun LsiAnnotationValue.toJavaCoreAnnotationValue(
 }
 
 private fun LsiAnnotationValue.toJavaSourceAnnotationValue(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): CodeBlock {
     return when (this) {
         is LsiAnnotationValue.BooleanValue -> CodeBlock.of("\$L", value)
@@ -363,7 +363,7 @@ private fun LsiAnnotationValue.toJavaSourceAnnotationValue(
 }
 
 private fun LsiType.toJavaClassLiteralTypeName(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): TypeName {
     val primitive = this as? LsiPrimitiveType
     return if (primitive?.kind == LsiPrimitiveKind.UNIT) {
@@ -393,7 +393,7 @@ private fun LsiType.toJavaBoxedQualifiedName(): String {
     }
 }
 
-private fun List<LsiTypeName>.requireJavaClassName(typeId: LsiSymbolId): ClassName {
+private fun List<LsiClass>.requireJavaClassName(typeId: LsiSymbolId): ClassName {
     val typeName = requireTypeName(typeId)
     return ClassName.get(
         typeName.packageName,
@@ -402,10 +402,10 @@ private fun List<LsiTypeName>.requireJavaClassName(typeId: LsiSymbolId): ClassNa
     )
 }
 
-private fun List<LsiTypeName>.requireTypeName(
+private fun List<LsiClass>.requireTypeName(
     typeId: LsiSymbolId,
-): LsiTypeName {
-    val matches = filter { typeName -> typeName.typeId == typeId }
+): LsiClass {
+    val matches = filter { typeName -> typeName.id == typeId }
     require(matches.size == 1) {
         "JavaPoet renderer requires exactly one source type name for $typeId, found ${matches.size}"
     }

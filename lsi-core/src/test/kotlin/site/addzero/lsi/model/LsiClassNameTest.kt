@@ -11,34 +11,29 @@ import site.addzero.lsi.core.LsiOriginKind
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.generatedSiblingClass
+import site.addzero.lsi.clazz.generatedTopLevelClass
+import site.addzero.lsi.clazz.toLsiClasses
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiWorkspace
 
-class LsiTypeNameTest {
+class LsiClassNameTest {
 
     @Test
     fun `使用显式边界创建顶层生成类型名`() {
         assertEquals(
-            LsiTypeName(
-                typeId = LsiSymbolId.type("Demo.API.Result"),
-                packageName = "Demo.API",
-                simpleNames = listOf("Result"),
-            ),
-            generatedTopLevelTypeName("Demo.API", "Result"),
+            Triple(LsiSymbolId.type("Demo.API.Result"), "Demo.API", listOf("Result")),
+            generatedTopLevelClass("Demo.API", "Result").sourceNameTuple(),
         )
         assertEquals(
-            LsiTypeName(
-                typeId = LsiSymbolId.type("Result"),
-                packageName = "",
-                simpleNames = listOf("Result"),
-            ),
-            generatedTopLevelTypeName("", "Result"),
+            Triple(LsiSymbolId.type("Result"), "", listOf("Result")),
+            generatedTopLevelClass("", "Result").sourceNameTuple(),
         )
     }
 
     @Test
     fun `保留大写包和小写嵌套类型的精确边界`() {
-        val typeName = LsiTypeName(
+        val typeName = LsiClass(
             typeId = LsiSymbolId.type("Demo.API.order.item"),
             packageName = "Demo.API",
             simpleNames = listOf("order", "item"),
@@ -49,7 +44,7 @@ class LsiTypeNameTest {
 
     @Test
     fun `保留需要 Kotlin 转义的源码类型名`() {
-        val typeName = LsiTypeName(
+        val typeName = LsiClass(
             typeId = LsiSymbolId.type("demo.escaped.Order-Item.Draft Impl"),
             packageName = "demo.escaped",
             simpleNames = listOf("Order-Item", "Draft Impl"),
@@ -61,7 +56,7 @@ class LsiTypeNameTest {
     @Test
     fun `拒绝与稳定类型身份不一致的源码名`() {
         assertFailsWith<IllegalArgumentException> {
-            LsiTypeName(
+            LsiClass(
                 typeId = LsiSymbolId.type("demo.order.item"),
                 packageName = "demo.order",
                 simpleNames = listOf("Item"),
@@ -80,7 +75,7 @@ class LsiTypeNameTest {
                 typeDeclaration(nestedId, "item", outerId),
             ),
         )
-        val generated = LsiTypeName(
+        val generated = LsiClass(
             typeId = generatedId,
             packageName = "Generated.Package",
             simpleNames = listOf("result", "row"),
@@ -88,13 +83,13 @@ class LsiTypeNameTest {
 
         assertEquals(
             listOf(
-                LsiTypeName(nestedId, "Demo.API", listOf("order", "item")),
-                generated,
+                Triple(nestedId, "Demo.API", listOf("order", "item")),
+                generated.sourceNameTuple(),
             ),
-            workspace.toLsiTypeNames(
+            workspace.toLsiClasses(
                 typeIds = listOf(nestedId, generatedId),
                 additional = listOf(generated),
-            ),
+            ).map { type -> type.sourceNameTuple() },
         )
     }
 
@@ -111,20 +106,16 @@ class LsiTypeNameTest {
         )
 
         assertEquals(
-            LsiTypeName(
-                typeId = generatedId,
-                packageName = "Demo.API",
-                simpleNames = listOf("order", "itemTable", "Remote"),
-            ),
-            workspace.generatedSiblingTypeName(
+            Triple(generatedId, "Demo.API", listOf("order", "itemTable", "Remote")),
+            workspace.generatedSiblingClass(
                 sourceTypeId = nestedId,
                 generatedTypeId = generatedId,
                 simpleNameSuffix = "Table",
                 nestedSimpleNames = listOf("Remote"),
-            ),
+            ).sourceNameTuple(),
         )
         assertFailsWith<IllegalArgumentException> {
-            workspace.generatedSiblingTypeName(
+            workspace.generatedSiblingClass(
                 sourceTypeId = nestedId,
                 generatedTypeId = generatedId,
                 simpleNameSuffix = "Table.Remote",
@@ -138,30 +129,30 @@ class LsiTypeNameTest {
         val workspace = LsiWorkspace(
             declarations = listOf(typeDeclaration(typeId, "item")),
         )
-        val conflicting = LsiTypeName(
+        val conflicting = LsiClass(
             typeId = typeId,
             packageName = "demo",
             simpleNames = listOf("order", "item"),
         )
-        val unused = LsiTypeName(
+        val unused = LsiClass(
             typeId = LsiSymbolId.type("generated.value"),
             packageName = "generated",
             simpleNames = listOf("value"),
         )
 
-        assertEquals(emptyList(), LsiWorkspace.EMPTY.toLsiTypeNames(emptyList(), listOf(unused)))
+        assertEquals(emptyList(), LsiWorkspace.EMPTY.toLsiClasses(emptyList(), listOf(unused)))
         assertFailsWith<IllegalArgumentException> {
-            workspace.toLsiTypeNames(listOf(typeId), listOf(conflicting))
+            workspace.toLsiClasses(listOf(typeId), listOf(conflicting))
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiWorkspace.EMPTY.toLsiTypeNames(emptyList(), listOf(unused, unused))
+            LsiWorkspace.EMPTY.toLsiClasses(emptyList(), listOf(unused, unused))
         }
     }
 
     @Test
     fun `声明缺失时不回退到类型标识字符串拆分`() {
         assertFailsWith<IllegalArgumentException> {
-            LsiWorkspace.EMPTY.toLsiTypeNames(
+            LsiWorkspace.EMPTY.toLsiClasses(
                 listOf(LsiSymbolId.type("demo.missing.type")),
             )
         }
@@ -179,14 +170,14 @@ class LsiTypeNameTest {
         )
 
         assertFailsWith<IllegalArgumentException> {
-            workspace.toLsiTypeNames(listOf(nestedId))
+            workspace.toLsiClasses(listOf(nestedId))
         }
     }
 
     @Test
     fun `源码产物拒绝重复和缺失类型名`() {
         val referencedId = LsiSymbolId.type("demo.value")
-        val typeName = LsiTypeName(referencedId, "demo", listOf("value"))
+        val typeName = LsiClass(referencedId, "demo", listOf("value"))
         val file = LsiFile(
             language = LsiLanguage.KOTLIN,
             packageName = "demo.generated",
@@ -229,4 +220,7 @@ class LsiTypeNameTest {
             origin = LsiOrigin(LsiOriginKind.SYNTHETIC),
         )
     }
+
+    private fun LsiClass.sourceNameTuple(): Triple<LsiSymbolId, String, List<String>> =
+        Triple(id, packageName, simpleNames)
 }

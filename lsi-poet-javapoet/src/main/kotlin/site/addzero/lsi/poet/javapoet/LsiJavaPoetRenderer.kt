@@ -35,7 +35,6 @@ import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.poet.LsiPoetRenderer
 import site.addzero.lsi.clazz.LsiClass
-import site.addzero.lsi.model.LsiTypeName
 import site.addzero.lsi.model.LsiTypeReferenceStyle
 
 /**
@@ -46,7 +45,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
     /** 将单个 LSI 类型引用渲染为可嵌入现有 JavaPoet 声明的类型。 */
     fun renderTypeName(
         type: LsiType,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): TypeName {
         return type.toJavaTypeName(typeNames)
     }
@@ -54,7 +53,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
     /** 将任意 LSI Poet 代码块渲染为可嵌入现有 JavaPoet 声明的代码块。 */
     fun renderCodeBlock(
         codeBlock: LsiCodeBlock,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): CodeBlock {
         return codeBlock.toJavaCodeBlock(typeNames)
     }
@@ -62,7 +61,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
     /** 将单个 LSI 类型渲染为可嵌入现有 JavaPoet 声明的结构。 */
     fun renderType(
         type: LsiClass,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): TypeSpec {
         return type.toJavaTypeSpec(typeNames, currentPackageName = null)
     }
@@ -70,7 +69,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
     /** 将单个 LSI 函数渲染为可嵌入现有 JavaPoet 类型的结构。 */
     fun renderFunction(
         function: LsiFunction,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): MethodSpec {
         return function.toJavaMethod(typeNames)
     }
@@ -78,7 +77,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
     /** 将单个 LSI 字段渲染为可嵌入现有 JavaPoet 类型的结构。 */
     fun renderField(
         field: LsiField,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
         currentPackageName: String? = null,
     ): FieldSpec {
         return field.toJavaField(typeNames, currentPackageName)
@@ -87,7 +86,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
     /** 将单个 LSI Poet 注解渲染为可嵌入现有 JavaPoet 声明的结构。 */
     fun renderAnnotation(
         annotation: LsiAnnotation,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): AnnotationSpec {
         return annotation.toJavaSourceAnnotationSpec(typeNames)
     }
@@ -95,7 +94,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
     /** 按声明顺序将 LSI Poet 注解列表渲染为 JavaPoet 结构。 */
     fun renderAnnotations(
         annotations: List<LsiAnnotation>,
-        typeNames: List<LsiTypeName>,
+        typeNames: List<LsiClass>,
     ): List<AnnotationSpec> {
         return annotations.map { annotation -> renderAnnotation(annotation, typeNames) }
     }
@@ -130,7 +129,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
 }
 
 private fun LsiClass.toJavaTypeSpec(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
     currentPackageName: String?,
 ): TypeSpec {
     require(nameStyle == LsiNameStyle.IDENTIFIER) {
@@ -172,7 +171,7 @@ private fun LsiClass.toJavaTypeSpec(
 
 private fun TypeSpec.Builder.addJavaEnumConstant(
     constant: LsiEnumEntry,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
     currentPackageName: String?,
 ) {
     if (constant.constructorArguments.isEmpty() && constant.anonymousType == null) {
@@ -200,7 +199,7 @@ private fun TypeSpec.Builder.addJavaEnumConstant(
 
 private fun TypeSpec.Builder.addJavaMember(
     member: LsiMember,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
     currentPackageName: String?,
 ) {
     when (member) {
@@ -215,7 +214,7 @@ private fun TypeSpec.Builder.addJavaMember(
 
 private fun TypeSpec.Builder.addJavaInitializer(
     initializer: LsiInitializerBlock,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ) {
     require(initializer.annotations.isEmpty() && initializer.documentation == null) {
         "Java initializer block cannot declare annotations or documentation"
@@ -228,7 +227,7 @@ private fun TypeSpec.Builder.addJavaInitializer(
 }
 
 private fun LsiConstructor.toJavaConstructor(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): MethodSpec {
     val builder = MethodSpec.constructorBuilder()
         .addModifiers(*modifiers.toJavaModifiers(JavaModifierContext.CONSTRUCTOR))
@@ -256,7 +255,7 @@ private fun LsiConstructor.toJavaConstructor(
 }
 
 private fun LsiFunction.toJavaMethod(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): MethodSpec {
     require(nameStyle == LsiNameStyle.IDENTIFIER) {
         "JavaPoet renderer cannot emit an escaped Kotlin function name: $name"
@@ -296,7 +295,7 @@ private fun LsiFunction.toJavaMethod(
 }
 
 private fun LsiParameter.toJavaParameter(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): ParameterSpec {
     require(nameStyle == LsiNameStyle.IDENTIFIER) {
         "JavaPoet renderer cannot emit an escaped Kotlin parameter name: $name"
@@ -316,7 +315,7 @@ private fun LsiParameter.toJavaParameter(
 }
 
 private fun LsiField.toJavaField(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
     currentPackageName: String?,
 ): FieldSpec {
     val javaModifiers = modifiers.toJavaModifiers(JavaModifierContext.FIELD).toMutableSet()
@@ -338,7 +337,7 @@ private fun LsiField.toJavaField(
 }
 
 private fun LsiCodeBlock.toJavaCodeBlock(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): CodeBlock {
     require(indentation == LsiCodeBlockIndentation.PLATFORM_DEFAULT) {
         "JavaPoet renderer cannot honor explicit Kotlin code indentation"
@@ -395,7 +394,7 @@ private fun LsiCodeBlock.toJavaCodeBlock(
 
 private fun CodeBlock.Builder.addJavaBracedExpression(
     expression: LsiCodePart.BracedExpression,
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ) {
     if (expression.completion == LsiBracedExpressionCompletion.RETURN) {
         add("return ")
@@ -411,7 +410,7 @@ private fun CodeBlock.Builder.addJavaBracedExpression(
 }
 
 private fun List<LsiCodeBlock>.toJavaArgumentList(
-    typeNames: List<LsiTypeName>,
+    typeNames: List<LsiClass>,
 ): CodeBlock {
     val builder = CodeBlock.builder()
     forEachIndexed { index, argument ->

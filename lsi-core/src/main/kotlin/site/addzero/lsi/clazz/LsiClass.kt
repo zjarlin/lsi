@@ -2,6 +2,7 @@ package site.addzero.lsi.clazz
 
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiOrigin
+import site.addzero.lsi.core.LsiOriginKind
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.FrozenLsiClass
 import site.addzero.lsi.model.LsiAnnotation
@@ -30,6 +31,15 @@ interface LsiClass : LsiDeclaration, LsiMember {
     override val modifiers: Set<LsiModifier>
 
     val qualifiedName: String
+
+    /** 源码包名，不根据标识符大小写猜测包边界。 */
+    val packageName: String
+
+    /** 从顶层类型到当前类型的精确源码简单名链。 */
+    val simpleNames: List<String>
+
+    val canonicalName: String
+        get() = (listOf(packageName).filter(String::isNotEmpty) + simpleNames).joinToString(".")
 
     val kind: LsiTypeDeclarationKind
 
@@ -71,6 +81,8 @@ fun LsiClass(
     id: LsiSymbolId,
     name: String,
     qualifiedName: String,
+    packageName: String = qualifiedName.substringBeforeLast('.', missingDelimiterValue = ""),
+    simpleNames: List<String> = listOf(name),
     kind: LsiTypeDeclarationKind,
     enclosingTypeId: LsiSymbolId? = null,
     requiresEnclosingInstance: Boolean = false,
@@ -100,6 +112,8 @@ fun LsiClass(
         id = id,
         name = name,
         qualifiedName = qualifiedName,
+        packageName = packageName,
+        simpleNames = simpleNames,
         kind = kind,
         enclosingTypeId = enclosingTypeId,
         requiresEnclosingInstance = requiresEnclosingInstance,
@@ -124,6 +138,34 @@ fun LsiClass(
         superInterfaces = superInterfaces,
         primaryConstructor = primaryConstructor,
         members = members,
+    )
+}
+
+/** 创建只用于稳定类型引用解析的冻结类声明。 */
+fun LsiClass(
+    typeId: LsiSymbolId,
+    packageName: String,
+    simpleNames: List<String>,
+    origin: LsiOrigin = LsiOrigin(LsiOriginKind.BINARY),
+): LsiClass {
+    require(simpleNames.isNotEmpty()) { "LSI class name requires at least one simple name: ${typeId.value}" }
+    return LsiClass(
+        id = typeId,
+        name = simpleNames.last(),
+        qualifiedName = typeId.requireTypeQualifiedName(),
+        packageName = packageName,
+        simpleNames = simpleNames,
+        kind = LsiTypeDeclarationKind.CLASS,
+        enclosingTypeId = simpleNames
+            .takeIf { names -> names.size > 1 }
+            ?.dropLast(1)
+            ?.joinToString(".")
+            ?.let { enclosingNames ->
+                LsiSymbolId.type(
+                    if (packageName.isEmpty()) enclosingNames else "$packageName.$enclosingNames"
+                )
+            },
+        origin = origin,
     )
 }
 
@@ -165,6 +207,8 @@ fun LsiClass.copy(
     id: LsiSymbolId = this.id,
     name: String = this.name,
     qualifiedName: String = this.qualifiedName,
+    packageName: String = this.packageName,
+    simpleNames: List<String> = this.simpleNames,
     kind: LsiTypeDeclarationKind = this.kind,
     enclosingTypeId: LsiSymbolId? = this.enclosingTypeId,
     requiresEnclosingInstance: Boolean = this.requiresEnclosingInstance,
@@ -194,6 +238,8 @@ fun LsiClass.copy(
         id = id,
         name = name,
         qualifiedName = qualifiedName,
+        packageName = packageName,
+        simpleNames = simpleNames,
         kind = kind,
         enclosingTypeId = enclosingTypeId,
         requiresEnclosingInstance = requiresEnclosingInstance,
