@@ -21,10 +21,10 @@ import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.jimmer.ImmutableType
 import site.addzero.lsi.jimmer.ImmutableTypeKind
 import site.addzero.lsi.jimmer.PrimaryMapping
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiType
 
 class DtoSpecificationApplyExtensionsTest {
 
@@ -341,7 +341,7 @@ class DtoSpecificationApplyExtensionsTest {
     private fun immutableProp(
         ownerTypeId: LsiSymbolId,
         name: String,
-        type: LsiTypeRef = STRING_TYPE,
+        type: LsiType = STRING_TYPE,
         primaryMapping: PrimaryMapping = PrimaryMapping.SCALAR,
         associationKind: AssociationKind = AssociationKind.NONE,
         embedded: Boolean = false,

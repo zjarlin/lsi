@@ -1,6 +1,7 @@
 package site.addzero.lsi.model
 
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.type.LsiType
 
 enum class LsiAnnotationUseSiteTarget {
     PACKAGE,
@@ -109,7 +110,7 @@ sealed interface LsiAnnotationValue {
     }
 
     data class ClassValue(
-        val type: LsiTypeRef,
+        val type: LsiType,
         val sourceStyle: LsiClassLiteralStyle = LsiClassLiteralStyle.PLATFORM_TYPE,
     ) : LsiAnnotationValue
 

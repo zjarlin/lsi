@@ -5,7 +5,7 @@ import org.babyfish.jimmer.dto.compiler.DtoTypeKind
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.jimmer.ImmutableSchema
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeSystem
 import site.addzero.lsi.model.LsiWorkspace

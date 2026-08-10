@@ -1,8 +1,8 @@
 package site.addzero.lsi.jimmer
 
 import site.addzero.lsi.core.LsiLanguage
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiWorkspace
 

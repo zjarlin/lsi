@@ -12,13 +12,13 @@ import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
 
 class ImmutableSemanticDependenciesTest {
@@ -359,7 +359,7 @@ class ImmutableSemanticDependenciesTest {
     private fun prop(
         ownerTypeId: LsiSymbolId,
         name: String,
-        type: LsiTypeRef,
+        type: LsiType,
         declarationId: LsiSymbolId = LsiSymbolId.property(ownerTypeId, name),
         declaringTypeId: LsiSymbolId = ownerTypeId,
         annotations: List<LsiAnnotation> = emptyList(),
@@ -420,7 +420,7 @@ class ImmutableSemanticDependenciesTest {
         id: LsiSymbolId,
         source: LsiSource,
         typeParameters: List<LsiTypeParameter> = emptyList(),
-        superTypes: List<LsiTypeRef> = emptyList(),
+        superTypes: List<LsiType> = emptyList(),
     ): LsiTypeDeclaration {
         val qualifiedName = id.requireTypeQualifiedName()
         return LsiTypeDeclaration(

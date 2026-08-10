@@ -8,7 +8,7 @@ import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiField
 import site.addzero.lsi.model.LsiFunction
 import site.addzero.lsi.model.LsiModality
@@ -16,7 +16,7 @@ import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSystem
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
@@ -403,7 +403,7 @@ private fun LsiDeclaration.toCallable(): CallableModel? {
     }
 }
 
-private fun LsiTypeRef.isSubtypeOf(
+private fun LsiType.isSubtypeOf(
     targetTypeId: LsiSymbolId,
     typeSystem: LsiTypeSystem,
 ): Boolean {
@@ -432,7 +432,7 @@ private fun List<LsiAnnotation>.annotation(type: LsiSymbolId): LsiAnnotation? {
 private data class StorageMember(
     val id: LsiSymbolId,
     val name: String,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val static: Boolean,
     val visibility: LsiVisibility,
 )
@@ -442,12 +442,12 @@ private data class CallableModel(
     val sourceKind: TransactionalMethodSourceKind,
     val visibility: LsiVisibility,
     val modality: LsiModality,
-    val returnType: LsiTypeRef,
+    val returnType: LsiType,
     val parameters: List<LsiParameter>,
-    val receiverType: LsiTypeRef?,
+    val receiverType: LsiType?,
     val suspending: Boolean,
-    val typeParameters: List<site.addzero.lsi.model.LsiTypeParameter>,
-    val thrownTypes: List<LsiTypeRef>,
+    val typeParameters: List<site.addzero.lsi.type.LsiTypeParameter>,
+    val thrownTypes: List<LsiType>,
     val static: Boolean,
 )
 

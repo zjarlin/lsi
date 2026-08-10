@@ -1,6 +1,14 @@
 package site.addzero.lsi.model
 
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiUnresolvedType
 
 fun Iterable<LsiDeclaration>.referencedTypeIds(): Set<LsiSymbolId> {
     return buildSet {
@@ -45,7 +53,7 @@ private fun MutableSet<LsiSymbolId>.collect(parameter: LsiTypeParameter) {
     parameter.upperBounds.forEach(::collect)
 }
 
-private fun MutableSet<LsiSymbolId>.collect(type: LsiTypeRef) {
+private fun MutableSet<LsiSymbolId>.collect(type: LsiType) {
     type.annotations.forEach(::collect)
     when (type) {
         is LsiDeclaredType -> {

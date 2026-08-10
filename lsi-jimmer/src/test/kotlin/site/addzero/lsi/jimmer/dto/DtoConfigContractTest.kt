@@ -25,22 +25,22 @@ import site.addzero.lsi.core.LsiSourceKind
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.diagnostic.LsiDiagnostic
 import site.addzero.lsi.diagnostic.LsiDiagnosticSeverity
-import site.addzero.lsi.model.LsiArrayType
+import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiConstructor
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.model.LsiParameter
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeHierarchyEntry
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.model.stableSignature
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
@@ -854,7 +854,7 @@ class DtoConfigContractTest {
                 shape.parameterTypes.getOrNull(parameterIndex)
                     ?: declared(LsiSymbolId.type("demo.Constructor${constructorIndex}Arg$parameterIndex"))
             }
-            val parameterTypeSignatures = parameterTypes.map(LsiTypeRef::stableSignature)
+            val parameterTypeSignatures = parameterTypes.map(LsiType::stableSignature)
             val constructorId = LsiSymbolId.constructor(implementationTypeId, parameterTypeSignatures)
             val constructorParameters = List(shape.parameterCount) { parameterIndex ->
                 LsiParameter(
@@ -917,8 +917,8 @@ class DtoConfigContractTest {
         val parameterCount: Int = 0,
         val defaultParameterIndexes: Set<Int> = emptySet(),
         val varargParameterIndexes: Set<Int> = emptySet(),
-        val parameterTypes: List<LsiTypeRef> = emptyList(),
-        val thrownTypes: List<LsiTypeRef> = emptyList(),
+        val parameterTypes: List<LsiType> = emptyList(),
+        val thrownTypes: List<LsiType> = emptyList(),
     )
 
     private fun graph(
@@ -1054,7 +1054,7 @@ class DtoConfigContractTest {
 
         private fun declared(
             typeId: LsiSymbolId,
-            vararg arguments: site.addzero.lsi.model.LsiTypeRef,
+            vararg arguments: site.addzero.lsi.type.LsiType,
         ): LsiDeclaredType {
             return LsiDeclaredType(
                 declarationId = typeId,

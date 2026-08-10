@@ -10,7 +10,7 @@ import site.addzero.lsi.core.LsiOriginKind
 import site.addzero.lsi.core.LsiPosition
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 
 class DtoInterfaceContractExtensionsTest {
 

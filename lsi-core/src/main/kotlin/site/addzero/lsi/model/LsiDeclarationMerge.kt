@@ -1,6 +1,10 @@
 package site.addzero.lsi.model
 
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiType
 
 fun Iterable<LsiDeclaration>.mergeDeclarationsById(): List<LsiDeclaration> {
     val declarationsById = linkedMapOf<LsiSymbolId, MutableList<LsiDeclaration>>()
@@ -75,7 +79,7 @@ private fun LsiProperty.getterPreference(): Int {
     return 4
 }
 
-private fun LsiTypeRef.isCompatibleGetterType(other: LsiTypeRef): Boolean {
+private fun LsiType.isCompatibleGetterType(other: LsiType): Boolean {
     if (this == other) {
         return true
     }
@@ -83,7 +87,7 @@ private fun LsiTypeRef.isCompatibleGetterType(other: LsiTypeRef): Boolean {
     return primitiveKind == other.primitiveKind()
 }
 
-private fun LsiTypeRef.primitiveKind(): LsiPrimitiveKind? {
+private fun LsiType.primitiveKind(): LsiPrimitiveKind? {
     return when (this) {
         is LsiPrimitiveType -> kind
         is LsiDeclaredType -> BOXED_PRIMITIVE_KINDS[declarationId]

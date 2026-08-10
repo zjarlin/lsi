@@ -27,13 +27,13 @@ import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiVariance
 
 class DtoInputBuilderExtensionsTest {
 
@@ -765,7 +765,7 @@ class DtoInputBuilderExtensionsTest {
     private fun complexImmutableProp(
         ownerTypeId: LsiSymbolId,
         name: String,
-        type: site.addzero.lsi.model.LsiTypeRef,
+        type: site.addzero.lsi.type.LsiType,
         list: Boolean = false,
         primaryMapping: PrimaryMapping = PrimaryMapping.SCALAR,
         associationKind: AssociationKind = AssociationKind.NONE,
@@ -834,18 +834,18 @@ class DtoInputBuilderExtensionsTest {
         )
     }
 
-    private fun listType(elementType: site.addzero.lsi.model.LsiTypeRef): LsiDeclaredType {
+    private fun listType(elementType: site.addzero.lsi.type.LsiType): LsiDeclaredType {
         return LsiDeclaredType(
             declarationId = LsiSymbolId.type("java.util.List"),
             arguments = listOf(LsiTypeArgument.invariant(elementType)),
         )
     }
 
-    private fun site.addzero.lsi.model.LsiTypeRef.declaredTypeId(): LsiSymbolId {
+    private fun site.addzero.lsi.type.LsiType.declaredTypeId(): LsiSymbolId {
         return (this as LsiDeclaredType).declarationId
     }
 
-    private fun assertJavaStringList(type: site.addzero.lsi.model.LsiTypeRef) {
+    private fun assertJavaStringList(type: site.addzero.lsi.type.LsiType) {
         val listType = type as LsiDeclaredType
         assertEquals(LsiSymbolId.type("java.util.List"), listType.declarationId)
         val elementType = listType.arguments.single().type as LsiDeclaredType
@@ -924,7 +924,7 @@ class DtoInputBuilderExtensionsTest {
 
     private fun immutableProp(
         name: String,
-        type: site.addzero.lsi.model.LsiTypeRef,
+        type: site.addzero.lsi.type.LsiType,
     ): ImmutableProp {
         val id = LsiSymbolId.property(BASE_TYPE_ID, name)
         return ImmutableProp(

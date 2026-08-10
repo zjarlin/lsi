@@ -6,14 +6,14 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
 
 class ImmutableDraftRuntimeTest {
 
@@ -142,7 +142,7 @@ class ImmutableDraftRuntimeTest {
 
 private fun prop(
     name: String,
-    type: LsiTypeRef = STRING_TYPE,
+    type: LsiType = STRING_TYPE,
     annotations: List<LsiAnnotation> = emptyList(),
     list: Boolean = false,
     primaryMapping: PrimaryMapping = PrimaryMapping.SCALAR,
@@ -224,7 +224,7 @@ private fun schemaOf(props: List<ImmutableProp>): ImmutableSchema {
     )
 }
 
-private fun listType(elementType: LsiTypeRef): LsiDeclaredType {
+private fun listType(elementType: LsiType): LsiDeclaredType {
     return LsiDeclaredType(
         declarationId = LsiSymbolId.type("java.util.List"),
         arguments = listOf(LsiTypeArgument.invariant(elementType)),

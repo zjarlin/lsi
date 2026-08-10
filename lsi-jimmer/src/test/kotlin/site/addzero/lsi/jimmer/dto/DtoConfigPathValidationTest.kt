@@ -18,11 +18,11 @@ import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.jimmer.ImmutableType
 import site.addzero.lsi.jimmer.ImmutableTypeKind
 import site.addzero.lsi.jimmer.PrimaryMapping
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
 
 class DtoConfigPathValidationTest {
@@ -452,7 +452,7 @@ class DtoConfigPathValidationTest {
         private fun immutableProp(
             ownerTypeId: LsiSymbolId,
             name: String,
-            type: LsiTypeRef,
+            type: LsiType,
             targetTypeId: LsiSymbolId? = null,
             associationKind: AssociationKind = AssociationKind.NONE,
             associationStorage: AssociationStorageKind = AssociationStorageKind.NONE,

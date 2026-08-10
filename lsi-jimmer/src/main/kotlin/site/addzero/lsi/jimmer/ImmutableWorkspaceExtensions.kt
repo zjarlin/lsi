@@ -6,25 +6,25 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiFunction
-import site.addzero.lsi.model.LsiFunctionType
+import site.addzero.lsi.type.LsiFunctionType
 import site.addzero.lsi.model.LsiModality
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiResolvedProperty
-import site.addzero.lsi.model.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSystem
-import site.addzero.lsi.model.LsiUnresolvedType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
 
@@ -1179,10 +1179,10 @@ private class ImmutableSchemaBuilder {
     private fun resolveInheritedPropertyType(
         ownerTypeId: LsiSymbolId,
         inheritedOwner: LsiTypeDeclaration,
-        inheritedType: LsiTypeRef,
+        inheritedType: LsiType,
         typeSystem: LsiTypeSystem,
         sourceId: LsiSymbolId,
-    ): LsiTypeRef {
+    ): LsiType {
         val resolvedSuperType = typeSystem.resolveSuperType(ownerTypeId, inheritedOwner.id)
             ?: throw ImmutablePrecompileException(
                 declarationId = sourceId,
@@ -1677,7 +1677,7 @@ private fun managedTypeClosure(
     return result
 }
 
-private fun LsiTypeRef.managedTypeIds(
+private fun LsiType.managedTypeIds(
     kindByTypeId: Map<LsiSymbolId, ImmutableTypeKind>,
 ): List<LsiSymbolId> {
     return when (this) {
@@ -1747,7 +1747,7 @@ private fun LsiTypeParameter.containsUnresolvedType(workspace: LsiWorkspace): Bo
     return upperBounds.any { upperBound -> upperBound.containsUnresolvedType(workspace) }
 }
 
-private fun LsiTypeRef.containsUnresolvedType(workspace: LsiWorkspace): Boolean {
+private fun LsiType.containsUnresolvedType(workspace: LsiWorkspace): Boolean {
     return when (this) {
         is LsiUnresolvedType -> true
         is LsiDeclaredType ->
@@ -2051,7 +2051,7 @@ private fun LsiResolvedProperty.immutableDefault(
     }
 }
 
-private fun LsiTypeRef.acceptsLogicalDeletedDefault(workspace: LsiWorkspace): Boolean {
+private fun LsiType.acceptsLogicalDeletedDefault(workspace: LsiWorkspace): Boolean {
     if (this is LsiPrimitiveType && kind == LsiPrimitiveKind.INT && !boxed) {
         return true
     }
@@ -2531,7 +2531,7 @@ private fun ImmutableProp.defaultIdViewBasePropName(): String? {
     return name.dropLast(2)
 }
 
-private fun ImmutableProp.valueType(): LsiTypeRef {
+private fun ImmutableProp.valueType(): LsiType {
     if (!list) {
         return type
     }
@@ -2542,7 +2542,7 @@ private fun ImmutableProp.valueType(): LsiTypeRef {
         ?: type
 }
 
-private fun LsiTypeRef.boxedTypeSignature(
+private fun LsiType.boxedTypeSignature(
     ignoreRootNullability: Boolean,
     root: Boolean = true,
 ): String {
@@ -2602,12 +2602,12 @@ private fun LsiTypeRef.boxedTypeSignature(
 
 private fun LsiTypeArgument.boxedTypeSignature(): String {
     return when (variance) {
-        site.addzero.lsi.model.LsiVariance.STAR -> "*"
-        site.addzero.lsi.model.LsiVariance.INVARIANT ->
+        site.addzero.lsi.type.LsiVariance.STAR -> "*"
+        site.addzero.lsi.type.LsiVariance.INVARIANT ->
             requireNotNull(type).boxedTypeSignature(ignoreRootNullability = false, root = false)
-        site.addzero.lsi.model.LsiVariance.IN ->
+        site.addzero.lsi.type.LsiVariance.IN ->
             "in:${requireNotNull(type).boxedTypeSignature(ignoreRootNullability = false, root = false)}"
-        site.addzero.lsi.model.LsiVariance.OUT ->
+        site.addzero.lsi.type.LsiVariance.OUT ->
             "out:${requireNotNull(type).boxedTypeSignature(ignoreRootNullability = false, root = false)}"
     }
 }
@@ -2649,14 +2649,14 @@ private fun ImmutableConverter.forIdView(prop: ImmutableProp): ImmutableConverte
     )
 }
 
-private fun LsiTypeRef.toConverterListType(): LsiDeclaredType {
+private fun LsiType.toConverterListType(): LsiDeclaredType {
     return LsiDeclaredType(
         declarationId = CONVERTER_LIST_TYPE,
         arguments = listOf(LsiTypeArgument.invariant(this)),
     )
 }
 
-private fun LsiTypeRef.isCollectionType(typeSystem: LsiTypeSystem): Boolean {
+private fun LsiType.isCollectionType(typeSystem: LsiTypeSystem): Boolean {
     val declaredType = this as? LsiDeclaredType ?: return false
     return declaredType.declarationId == COLLECTION_TYPE_ID ||
         declaredType.declarationId == KOTLIN_MUTABLE_LIST_TYPE_ID ||
@@ -2664,16 +2664,16 @@ private fun LsiTypeRef.isCollectionType(typeSystem: LsiTypeSystem): Boolean {
         typeSystem.resolveSuperType(declaredType.declarationId, COLLECTION_TYPE_ID) != null
 }
 
-private fun LsiTypeRef.isImmutableListType(): Boolean {
+private fun LsiType.isImmutableListType(): Boolean {
     val declaredType = this as? LsiDeclaredType ?: return false
     return declaredType.declarationId in LIST_TYPE_IDS
 }
 
-private fun LsiTypeRef.targetTypeId(list: Boolean): LsiSymbolId? {
+private fun LsiType.targetTypeId(list: Boolean): LsiSymbolId? {
     return (targetType(list) as? LsiDeclaredType)?.declarationId
 }
 
-private fun LsiTypeRef.targetType(list: Boolean): LsiTypeRef? {
+private fun LsiType.targetType(list: Boolean): LsiType? {
     val declaredType = this as? LsiDeclaredType
     if (!list) {
         return this
@@ -2734,7 +2734,7 @@ internal fun LsiSymbolId.annotationNullability(): Boolean? {
     }
 }
 
-private fun LsiTypeRef.withRootNullability(nullable: Boolean): LsiTypeRef {
+private fun LsiType.withRootNullability(nullable: Boolean): LsiType {
     val nullability = if (nullable) LsiNullability.NULLABLE else LsiNullability.NON_NULL
     return when (this) {
         is LsiDeclaredType -> copy(nullability = nullability)
@@ -2939,13 +2939,13 @@ fun LsiAnnotation.classTypeIds(name: String): List<LsiSymbolId> {
     }
 }
 
-fun LsiTypeRef.jimmerTypeSignature(
+fun LsiType.jimmerTypeSignature(
     ignoreRootNullability: Boolean = false,
 ): String {
     return jimmerTypeSignature(ignoreNullability = ignoreRootNullability, root = true)
 }
 
-private fun LsiTypeRef.jimmerTypeSignature(
+private fun LsiType.jimmerTypeSignature(
     ignoreNullability: Boolean,
     root: Boolean,
 ): String {
@@ -2988,10 +2988,10 @@ private fun LsiTypeRef.jimmerTypeSignature(
 
 private fun LsiTypeArgument.jimmerTypeSignature(): String {
     return when (variance) {
-        site.addzero.lsi.model.LsiVariance.STAR -> "*"
-        site.addzero.lsi.model.LsiVariance.INVARIANT -> requireNotNull(type).jimmerTypeSignature()
-        site.addzero.lsi.model.LsiVariance.IN -> "in:${requireNotNull(type).jimmerTypeSignature()}"
-        site.addzero.lsi.model.LsiVariance.OUT -> "out:${requireNotNull(type).jimmerTypeSignature()}"
+        site.addzero.lsi.type.LsiVariance.STAR -> "*"
+        site.addzero.lsi.type.LsiVariance.INVARIANT -> requireNotNull(type).jimmerTypeSignature()
+        site.addzero.lsi.type.LsiVariance.IN -> "in:${requireNotNull(type).jimmerTypeSignature()}"
+        site.addzero.lsi.type.LsiVariance.OUT -> "out:${requireNotNull(type).jimmerTypeSignature()}"
     }
 }
 

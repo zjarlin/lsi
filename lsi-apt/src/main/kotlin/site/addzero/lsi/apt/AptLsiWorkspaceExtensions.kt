@@ -16,8 +16,8 @@ import site.addzero.lsi.model.LsiFunction
 import site.addzero.lsi.model.LsiOverride
 import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.model.LsiPackageAnnotationScope
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
@@ -26,7 +26,7 @@ import site.addzero.lsi.model.LsiTypeSeed
 import site.addzero.lsi.model.LsiTypeSeedMode
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.mergeLsiTypeSeeds
-import site.addzero.lsi.model.toAnnotationMemberType
+import site.addzero.lsi.type.toAnnotationMemberType
 import site.addzero.lsi.model.toJvmCallableParameterType
 import site.addzero.lsi.core.LsiSourceKind
 import site.addzero.lsi.core.LsiSource
@@ -240,7 +240,7 @@ class AptLsiWorkspaceBuilder(
             val directSuperTypes = context.types.directSupertypes(typeElement.asType())
                 .filterIsInstance<DeclaredType>()
                 .mapNotNull { superType ->
-                    context.toLsiType(superType, typeParameterIds) as? site.addzero.lsi.model.LsiDeclaredType
+                    context.toLsiType(superType, typeParameterIds) as? site.addzero.lsi.type.LsiDeclaredType
                 }
             entries[typeId] = LsiTypeHierarchyEntry(
                 id = typeId,

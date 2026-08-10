@@ -40,22 +40,22 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiArrayType
+import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiConstructor
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiField
 import site.addzero.lsi.model.LsiFileAnnotationScope
 import site.addzero.lsi.model.LsiFrontendDocumentationConvention
 import site.addzero.lsi.model.LsiFrontendOptions
 import site.addzero.lsi.model.LsiFunction
 import site.addzero.lsi.model.LsiGeneratedPeerDocumentationConvention
-import site.addzero.lsi.model.LsiNullability
+import site.addzero.lsi.type.LsiNullability
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiWorkspace
 
 class KspLsiWorkspaceTest {
@@ -1796,7 +1796,7 @@ class KspLsiWorkspaceTest {
         return annotations.single { annotation -> annotation.type == LsiSymbolId.type(qualifiedName) }
     }
 
-    private fun assertSourceTypeUseAnnotation(type: site.addzero.lsi.model.LsiTypeRef) {
+    private fun assertSourceTypeUseAnnotation(type: site.addzero.lsi.type.LsiType) {
         val annotation = type.annotations.single()
         assertEquals(LsiSymbolId.type("demo.TypeUse"), annotation.type)
         assertEquals(

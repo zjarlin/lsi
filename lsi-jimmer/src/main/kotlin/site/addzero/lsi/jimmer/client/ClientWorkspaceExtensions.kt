@@ -8,27 +8,27 @@ import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiArrayType
+import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiDeclaration
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiField
 import site.addzero.lsi.model.LsiFunction
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiNullability
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiNullability
 import site.addzero.lsi.model.LsiParameter
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSystem
 import site.addzero.lsi.model.LsiTypeSeed
 import site.addzero.lsi.model.LsiTypeSeedMode
-import site.addzero.lsi.model.LsiUnresolvedType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.stableSignature
@@ -321,7 +321,7 @@ private class ClientSchemaBuilder(
         }
     }
 
-    private fun LsiTypeRef.collectClientTypeIds(
+    private fun LsiType.collectClientTypeIds(
         definitionTypeIds: MutableCollection<LsiSymbolId>,
         seedIds: MutableSet<LsiSymbolId>,
         defaultFetcherOwnerId: LsiSymbolId?,
@@ -483,7 +483,7 @@ private class ClientSchemaBuilder(
         val operationGroups = declaration.annotations.apiGroups()
         validateOperationGroups(service, declaration, serviceGroups, operationGroups)
         val returnType = (function?.returnType ?: property?.type)
-            ?.takeUnless(LsiTypeRef::isVoidLike)
+            ?.takeUnless(LsiType::isVoidLike)
             ?.toClientTypeRef(
                 annotations = declaration.annotations,
                 serviceId = service.id,
@@ -508,7 +508,7 @@ private class ClientSchemaBuilder(
         )
         val declaredExceptionTypeIds = function?.thrownTypes
             .orEmpty()
-            .mapNotNull(LsiTypeRef::declaredTypeId)
+            .mapNotNull(LsiType::declaredTypeId)
             .distinct()
         val exceptionResolution = exceptionResolver.resolve(declaredExceptionTypeIds, operationId)
         return ClientOperation(
@@ -920,7 +920,7 @@ private class ClientSchemaBuilder(
         return options.explicitApi && SPRING_MAPPING_ANNOTATIONS.any(declaration.annotations::hasAnnotation)
     }
 
-    private fun LsiTypeRef.toClientTypeRef(
+    private fun LsiType.toClientTypeRef(
         annotations: List<LsiAnnotation>,
         serviceId: LsiSymbolId,
         defaultFetcherOwnerId: LsiSymbolId?,
@@ -1122,7 +1122,7 @@ private class ClientSchemaBuilder(
     }
 
     private fun LsiAnnotation.toClientFetchBy(
-        decoratedType: LsiTypeRef,
+        decoratedType: LsiType,
         serviceId: LsiSymbolId,
         defaultFetcherOwnerId: LsiSymbolId?,
         sourceId: LsiSymbolId,
@@ -1179,7 +1179,7 @@ private class ClientSchemaBuilder(
         )
     }
 
-    private fun LsiTypeRef.fetchTargetEntityTypeId(
+    private fun LsiType.fetchTargetEntityTypeId(
         workspace: LsiWorkspace,
         sourceId: LsiSymbolId,
     ): LsiSymbolId {
@@ -1384,12 +1384,12 @@ private fun String.clientDecapitalize(): String {
     return characters.concatToString()
 }
 
-private fun LsiTypeRef.isBooleanLike(): Boolean {
+private fun LsiType.isBooleanLike(): Boolean {
     return this is LsiPrimitiveType && kind == LsiPrimitiveKind.BOOLEAN ||
         this is LsiDeclaredType && declarationId.requireTypeQualifiedName() in BOOLEAN_TYPE_NAMES
 }
 
-private fun LsiWorkspace.jsonValueType(typeId: LsiSymbolId): LsiTypeRef? {
+private fun LsiWorkspace.jsonValueType(typeId: LsiSymbolId): LsiType? {
     val type = this[typeId] as? LsiTypeDeclaration ?: return null
     return type.memberIds
         .asSequence()
@@ -1544,7 +1544,7 @@ private fun LsiDeclaration.hasUnresolvedClientType(): Boolean {
                     parameter.type.hasUnresolvedClientType() ||
                         parameter.annotations.any(LsiAnnotation::hasUnresolvedClientType)
                 } ||
-                thrownTypes.any(LsiTypeRef::hasUnresolvedClientType)
+                thrownTypes.any(LsiType::hasUnresolvedClientType)
         }
         is LsiProperty -> type.hasUnresolvedClientType()
         else -> false
@@ -1555,14 +1555,14 @@ private fun LsiTypeDeclaration.hasUnresolvedAnnotations(): Boolean {
     return annotations.any(LsiAnnotation::hasUnresolvedClientType)
 }
 
-private fun LsiTypeRef.hasUnresolvedClientType(): Boolean {
+private fun LsiType.hasUnresolvedClientType(): Boolean {
     return when (this) {
         is LsiDeclaredType -> arguments
             .mapNotNull(LsiTypeArgument::type)
-            .any(LsiTypeRef::hasUnresolvedClientType)
+            .any(LsiType::hasUnresolvedClientType)
         is LsiArrayType -> elementType.hasUnresolvedClientType()
         is LsiFunctionType -> receiverType?.hasUnresolvedClientType() == true ||
-            parameterTypes.any(LsiTypeRef::hasUnresolvedClientType) ||
+            parameterTypes.any(LsiType::hasUnresolvedClientType) ||
             returnType.hasUnresolvedClientType()
         is LsiUnresolvedType -> true
         is LsiPrimitiveType,
@@ -1673,11 +1673,11 @@ private fun LsiAnnotation.classTypeId(name: String): LsiSymbolId? {
     return value.type.declaredTypeId()
 }
 
-private fun LsiTypeRef.declaredTypeId(): LsiSymbolId? {
+private fun LsiType.declaredTypeId(): LsiSymbolId? {
     return (this as? LsiDeclaredType)?.declarationId
 }
 
-private fun LsiTypeRef.isVoidLike(): Boolean {
+private fun LsiType.isVoidLike(): Boolean {
     return this is LsiPrimitiveType && (kind == LsiPrimitiveKind.UNIT || kind == LsiPrimitiveKind.VOID)
 }
 

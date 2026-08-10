@@ -14,16 +14,16 @@ import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiField
 import site.addzero.lsi.model.LsiFileAnnotationScope
 import site.addzero.lsi.model.LsiPackageAnnotationScope
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
 
 class ExportDocWorkspaceExtensionsTest {
@@ -303,7 +303,7 @@ class ExportDocWorkspaceExtensionsTest {
         name: String,
         getterName: String = name,
         language: LsiLanguage,
-        type: LsiTypeRef = LsiDeclaredType(STRING_TYPE),
+        type: LsiType = LsiDeclaredType(STRING_TYPE),
         documentation: String? = null,
         sourceDocumentation: String? = null,
         annotations: List<LsiAnnotation> = emptyList(),

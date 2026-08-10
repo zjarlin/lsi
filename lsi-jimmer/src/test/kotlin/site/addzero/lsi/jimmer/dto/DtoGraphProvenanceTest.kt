@@ -8,7 +8,7 @@ import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiPosition
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiVariance
 
 class DtoGraphProvenanceTest {
 

@@ -1,14 +1,14 @@
 package site.addzero.lsi.jimmer
 
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
 
 /**
  * 不可变属性注册到 Draft 运行时所需的语言无关语义。
@@ -19,7 +19,7 @@ data class ImmutableDraftRuntimeProp(
     val kind: ImmutableDraftRuntimePropKind,
     val valueCategory: ImmutablePropValueCategory,
     val associationAnnotationTypeId: LsiSymbolId?,
-    val metadataElementType: LsiTypeRef,
+    val metadataElementType: LsiType,
 ) {
     init {
         require(
@@ -68,7 +68,7 @@ fun ImmutableSchema.toDraftRuntimeProp(prop: ImmutableProp): ImmutableDraftRunti
 }
 
 private fun ImmutableProp.freezeDraftRuntimeProp(
-    elementType: LsiTypeRef,
+    elementType: LsiType,
     immutableReference: Boolean,
 ): ImmutableDraftRuntimeProp {
     val key = annotations.any { annotation ->
@@ -131,7 +131,7 @@ private fun AssociationKind.runtimeAnnotationTypeId(): LsiSymbolId {
     }
 }
 
-private fun LsiTypeRef.toErasedMetadataType(): LsiTypeRef {
+private fun LsiType.toErasedMetadataType(): LsiType {
     return when (this) {
         is LsiDeclaredType -> copy(
             arguments = emptyList(),
@@ -157,7 +157,7 @@ private fun LsiTypeRef.toErasedMetadataType(): LsiTypeRef {
     }
 }
 
-private fun LsiTypeRef.isErasedMetadataType(): Boolean {
+private fun LsiType.isErasedMetadataType(): Boolean {
     return when (this) {
         is LsiDeclaredType -> arguments.isEmpty() &&
             nullability == LsiNullability.NON_NULL &&

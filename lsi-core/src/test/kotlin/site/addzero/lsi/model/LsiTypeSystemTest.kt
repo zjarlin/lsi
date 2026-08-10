@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.type.*
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -761,7 +763,7 @@ class LsiTypeSystemTest {
     private fun type(
         id: LsiSymbolId,
         parameters: List<LsiTypeParameter> = emptyList(),
-        superTypes: List<LsiTypeRef> = emptyList(),
+        superTypes: List<LsiType> = emptyList(),
         memberIds: List<LsiSymbolId> = emptyList(),
     ): LsiTypeDeclaration {
         return LsiTypeDeclaration(
@@ -779,7 +781,7 @@ class LsiTypeSystemTest {
     private fun property(
         id: LsiSymbolId,
         ownerId: LsiSymbolId,
-        type: LsiTypeRef = LsiPrimitiveType(LsiPrimitiveKind.INT),
+        type: LsiType = LsiPrimitiveType(LsiPrimitiveKind.INT),
         annotations: List<LsiAnnotation> = emptyList(),
         overrides: List<LsiOverride> = emptyList(),
     ): LsiProperty {

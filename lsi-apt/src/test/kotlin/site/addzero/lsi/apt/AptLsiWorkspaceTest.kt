@@ -6,24 +6,24 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiArrayType
+import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiConstructor
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiField
 import site.addzero.lsi.model.LsiFrontendDocumentationConvention
 import site.addzero.lsi.model.LsiFrontendOptions
 import site.addzero.lsi.model.LsiGeneratedPeerDocumentationConvention
 import site.addzero.lsi.model.LsiFunction
-import site.addzero.lsi.model.LsiNullability
+import site.addzero.lsi.type.LsiNullability
 import site.addzero.lsi.model.LsiPackageAnnotationScope
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiTypeDeclaration
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
 import java.io.File
@@ -1096,12 +1096,12 @@ class AptLsiWorkspaceTest {
         val success: Boolean,
         val workspace: LsiWorkspace,
         val diagnostics: String,
-        val directType: LsiTypeRef?,
+        val directType: LsiType?,
     )
 
     private class CapturingProcessor : AbstractProcessor() {
         val workspaces = mutableListOf<LsiWorkspace>()
-        var directType: LsiTypeRef? = null
+        var directType: LsiType? = null
 
         override fun getSupportedAnnotationTypes(): Set<String> = setOf("*")
 

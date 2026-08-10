@@ -27,16 +27,16 @@ import site.addzero.lsi.jimmer.ImmutableView
 import site.addzero.lsi.jimmer.PrimaryMapping
 import site.addzero.lsi.jimmer.idViewBasePropOf
 import site.addzero.lsi.jimmer.manyToManyViewBasePropOf
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiModality
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
 
 class DtoCompilerExtensionsTest {
@@ -568,7 +568,7 @@ class DtoCompilerExtensionsTest {
 
     private fun declared(
         typeId: LsiSymbolId,
-        vararg arguments: LsiTypeRef,
+        vararg arguments: LsiType,
     ): LsiDeclaredType {
         return LsiDeclaredType(
             declarationId = typeId,
@@ -618,7 +618,7 @@ class DtoCompilerExtensionsTest {
     private fun prop(
         ownerTypeId: LsiSymbolId,
         name: String,
-        type: LsiTypeRef,
+        type: LsiType,
         documentation: String? = null,
         primaryMapping: PrimaryMapping = PrimaryMapping.SCALAR,
         list: Boolean = false,
@@ -689,8 +689,8 @@ class DtoCompilerExtensionsTest {
         val K_SPECIFICATION_TYPE_ID =
             LsiSymbolId.type("org.babyfish.jimmer.sql.kt.ast.query.specification.KSpecification")
         val LIST_TYPE_ID = LsiSymbolId.type("java.util.List")
-        val LONG_TYPE: LsiTypeRef = LsiPrimitiveType(LsiPrimitiveKind.LONG)
-        val STRING_TYPE: LsiTypeRef = LsiDeclaredType(LsiSymbolId.type("java.lang.String"))
+        val LONG_TYPE: LsiType = LsiPrimitiveType(LsiPrimitiveKind.LONG)
+        val STRING_TYPE: LsiType = LsiDeclaredType(LsiSymbolId.type("java.lang.String"))
         val BINARY_ORIGIN = LsiOrigin(
             kind = LsiOriginKind.BINARY,
             language = LsiLanguage.UNKNOWN,

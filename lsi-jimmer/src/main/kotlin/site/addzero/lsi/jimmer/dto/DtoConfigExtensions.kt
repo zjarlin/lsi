@@ -8,20 +8,20 @@ import site.addzero.lsi.core.LsiOriginKind
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.diagnostic.LsiDiagnostic
 import site.addzero.lsi.diagnostic.LsiDiagnosticSeverity
-import site.addzero.lsi.model.LsiArrayType
+import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiConstructor
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSystem
-import site.addzero.lsi.model.LsiUnresolvedType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.stableSignature
@@ -532,7 +532,7 @@ private class DtoConfigContractResolver(
                 val directSuperTypes = declaration?.superTypes ?: requireNotNull(hierarchy).directSuperTypes
                 directSuperTypes
                     .map { superType -> typeSystem.substitute(superType, substitutions) }
-                    .sortedBy(LsiTypeRef::stableSignature)
+                    .sortedBy(LsiType::stableSignature)
                     .forEach { superType ->
                         when (superType) {
                             is LsiDeclaredType ->
@@ -706,7 +706,7 @@ private class DtoConfigContractResolver(
             details = mapOf(
                 "constructorId" to id.value,
                 "checkedThrownTypes" to checkedThrownTypes
-                    .map(LsiTypeRef::stableSignature)
+                    .map(LsiType::stableSignature)
                     .sorted()
                     .joinToString(","),
             ),
@@ -732,7 +732,7 @@ private class DtoConfigContractResolver(
         omittedDefaultCount = parameters.count { parameter -> parameter.hasDefault },
     )
 
-    private fun LsiTypeRef.isStrictSubtypeOf(superType: LsiTypeRef): Boolean {
+    private fun LsiType.isStrictSubtypeOf(superType: LsiType): Boolean {
         if (stableSignature() == superType.stableSignature()) {
             return false
         }
@@ -746,10 +746,10 @@ private class DtoConfigContractResolver(
         }
     }
 
-    private fun LsiTypeRef.isSameOrSubtypeOf(superType: LsiTypeRef): Boolean =
+    private fun LsiType.isSameOrSubtypeOf(superType: LsiType): Boolean =
         stableSignature() == superType.stableSignature() || isStrictSubtypeOf(superType)
 
-    private fun LsiTypeRef.isSameOrSubtypeOf(superTypeId: LsiSymbolId): Boolean {
+    private fun LsiType.isSameOrSubtypeOf(superTypeId: LsiSymbolId): Boolean {
         val declaredType = this as? LsiDeclaredType ?: return false
         return declaredType.declarationId == superTypeId ||
             typeSystem.resolveSuperType(declaredType.declarationId, superTypeId) != null
@@ -759,7 +759,7 @@ private class DtoConfigContractResolver(
         parameters.any { parameter -> parameter.type.containsUnresolvedType() } ||
             thrownTypes.any { thrownType -> thrownType.containsUnresolvedType() }
 
-    private fun LsiTypeRef.containsUnresolvedType(): Boolean = when (this) {
+    private fun LsiType.containsUnresolvedType(): Boolean = when (this) {
         is LsiUnresolvedType -> true
         is LsiDeclaredType -> arguments.any { argument -> argument.type?.containsUnresolvedType() == true }
         is LsiArrayType -> elementType.containsUnresolvedType()

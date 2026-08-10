@@ -17,12 +17,12 @@ import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.jimmer.ImmutableType
 import site.addzero.lsi.jimmer.ImmutableTypeKind
 import site.addzero.lsi.jimmer.PrimaryMapping
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiType
 
 class DtoSpecificationConverterTypeExtensionsTest {
 
@@ -432,7 +432,7 @@ class DtoSpecificationConverterTypeExtensionsTest {
     private fun immutableProp(
         ownerTypeId: LsiSymbolId,
         name: String,
-        type: LsiTypeRef,
+        type: LsiType,
         primaryMapping: PrimaryMapping = PrimaryMapping.SCALAR,
         targetTypeId: LsiSymbolId? = null,
         associationKind: AssociationKind = AssociationKind.NONE,
@@ -477,7 +477,7 @@ class DtoSpecificationConverterTypeExtensionsTest {
         )
     }
 
-    private fun converter(sourceType: LsiTypeRef, targetType: LsiTypeRef): ImmutableConverter {
+    private fun converter(sourceType: LsiType, targetType: LsiType): ImmutableConverter {
         return ImmutableConverter(
             converterTypeId = CONVERTER_TYPE_ID,
             sourceType = sourceType,
@@ -493,11 +493,11 @@ class DtoSpecificationConverterTypeExtensionsTest {
         val schema: ImmutableSchema,
         val props: Map<String, DtoBaseProp>,
     ) {
-        fun input(name: String, language: LsiLanguage): LsiTypeRef {
+        fun input(name: String, language: LsiLanguage): LsiType {
             return props.getValue(name).specificationConverterInputType(graph, schema, language)
         }
 
-        fun output(name: String, language: LsiLanguage): LsiTypeRef {
+        fun output(name: String, language: LsiLanguage): LsiType {
             return props.getValue(name).specificationConverterOutputType(graph, schema, language)
         }
     }
@@ -538,7 +538,7 @@ class DtoSpecificationConverterTypeExtensionsTest {
 
         fun container(
             typeId: LsiSymbolId,
-            elementType: LsiTypeRef,
+            elementType: LsiType,
             nullable: Boolean = false,
         ): LsiDeclaredType {
             return LsiDeclaredType(

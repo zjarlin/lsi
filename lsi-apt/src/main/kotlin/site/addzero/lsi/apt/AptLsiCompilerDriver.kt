@@ -21,20 +21,20 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.diagnostic.LsiDiagnostic
 import site.addzero.lsi.diagnostic.LsiDiagnosticSeverity
 import site.addzero.lsi.frontend.resolveLsiTypeSeedFixedPoint
-import site.addzero.lsi.model.LsiArrayType
+import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiField
 import site.addzero.lsi.model.LsiFunction
-import site.addzero.lsi.model.LsiFunctionType
+import site.addzero.lsi.type.LsiFunctionType
 import site.addzero.lsi.model.LsiParameter
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiTypeDeclaration
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.model.LsiWorkspace
 
 /**
@@ -335,19 +335,19 @@ private fun LsiWorkspace.refreshedTypeIds(
 
 private fun LsiDeclaration.containsUnresolvedTypes(): Boolean {
     return when (this) {
-        is LsiTypeDeclaration -> superTypes.any(LsiTypeRef::containsUnresolvedType) ||
+        is LsiTypeDeclaration -> superTypes.any(LsiType::containsUnresolvedType) ||
             typeParameters.any { parameter ->
-                parameter.upperBounds.any(LsiTypeRef::containsUnresolvedType)
+                parameter.upperBounds.any(LsiType::containsUnresolvedType)
             }
         is LsiField -> type.containsUnresolvedType()
         is LsiProperty -> type.containsUnresolvedType()
         is LsiFunction -> returnType.containsUnresolvedType() ||
             receiverType?.containsUnresolvedType() == true ||
             parameters.any { parameter -> parameter.type.containsUnresolvedType() } ||
-            thrownTypes.any(LsiTypeRef::containsUnresolvedType)
+            thrownTypes.any(LsiType::containsUnresolvedType)
         is LsiConstructor -> parameters.any { parameter ->
             parameter.type.containsUnresolvedType()
-        } || thrownTypes.any(LsiTypeRef::containsUnresolvedType)
+        } || thrownTypes.any(LsiType::containsUnresolvedType)
         is LsiParameter -> type.containsUnresolvedType()
         else -> false
     }
@@ -375,7 +375,7 @@ private fun LsiSource.isCompilerGenerated(generatedSourcePaths: Set<String>): Bo
     }
 }
 
-private fun LsiTypeRef.containsUnresolvedType(): Boolean {
+private fun LsiType.containsUnresolvedType(): Boolean {
     return when (this) {
         is LsiUnresolvedType -> true
         is LsiDeclaredType -> arguments.any { argument ->
@@ -383,7 +383,7 @@ private fun LsiTypeRef.containsUnresolvedType(): Boolean {
         }
         is LsiArrayType -> elementType.containsUnresolvedType()
         is LsiFunctionType -> receiverType?.containsUnresolvedType() == true ||
-            parameterTypes.any(LsiTypeRef::containsUnresolvedType) ||
+            parameterTypes.any(LsiType::containsUnresolvedType) ||
             returnType.containsUnresolvedType()
         is LsiPrimitiveType,
         is LsiTypeParameterRef,

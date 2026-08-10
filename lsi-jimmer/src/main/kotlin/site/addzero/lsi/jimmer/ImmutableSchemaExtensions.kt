@@ -2,8 +2,8 @@ package site.addzero.lsi.jimmer
 
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiType
 
 /** 返回不可变类型限定名中的包名部分。 */
 val ImmutableType.packageName: String
@@ -175,7 +175,7 @@ fun ImmutableSchema.primaryLineageOwner(
 }
 
 /** 列表属性返回唯一元素类型，非列表属性返回自身类型。 */
-fun ImmutableProp.elementTypeOrSelf(): LsiTypeRef {
+fun ImmutableProp.elementTypeOrSelf(): LsiType {
     if (!list) {
         return type
     }

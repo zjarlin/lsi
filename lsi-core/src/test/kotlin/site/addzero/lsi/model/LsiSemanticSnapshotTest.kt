@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.type.*
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -309,7 +311,7 @@ class LsiSemanticSnapshotTest {
         id: LsiSymbolId,
         ownerId: LsiSymbolId,
         getterName: String,
-        type: LsiTypeRef,
+        type: LsiType,
         annotation: LsiAnnotation,
     ): LsiProperty {
         return LsiProperty(
@@ -348,7 +350,7 @@ class LsiSemanticSnapshotTest {
     private fun constructor(
         id: LsiSymbolId,
         ownerId: LsiSymbolId,
-        type: LsiTypeRef,
+        type: LsiType,
     ): LsiConstructor {
         return LsiConstructor(
             id = id,

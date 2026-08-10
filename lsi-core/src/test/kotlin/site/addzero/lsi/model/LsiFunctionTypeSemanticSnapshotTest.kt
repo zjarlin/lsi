@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.type.*
+
 import kotlin.test.Test
 import kotlin.test.assertContains
 import site.addzero.lsi.core.LsiOrigin

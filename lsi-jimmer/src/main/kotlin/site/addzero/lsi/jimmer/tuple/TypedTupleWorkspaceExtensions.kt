@@ -2,21 +2,21 @@ package site.addzero.lsi.jimmer.tuple
 
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiArrayType
+import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiConstructor
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiDeclaration
 import site.addzero.lsi.model.LsiField
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSystem
-import site.addzero.lsi.model.LsiUnresolvedType
+import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
 
@@ -164,7 +164,7 @@ private class TypedTupleSchemaBuilder(
         )
     }
 
-    private fun LsiTypeRef.scalarCategory(): TypedTupleScalarCategory {
+    private fun LsiType.scalarCategory(): TypedTupleScalarCategory {
         return when (this) {
             is LsiPrimitiveType -> when (kind) {
                 LsiPrimitiveKind.BYTE,
@@ -436,7 +436,7 @@ private data class PreparedTypedTupleType(
 private data class SourceProperty(
     val sourceMemberId: LsiSymbolId,
     val name: String,
-    val type: LsiTypeRef,
+    val type: LsiType,
 )
 
 private data class JavaConstructorMatch(
@@ -510,7 +510,7 @@ private fun LsiTypeDeclaration.hasAnnotation(annotationType: LsiSymbolId): Boole
     return annotations.any { annotation -> annotation.type == annotationType }
 }
 
-private fun LsiTypeRef.validateTuplePropertyType(
+private fun LsiType.validateTuplePropertyType(
     tupleId: LsiSymbolId,
     sourceMemberId: LsiSymbolId,
 ) {

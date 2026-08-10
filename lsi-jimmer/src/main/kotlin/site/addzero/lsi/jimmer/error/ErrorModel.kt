@@ -2,7 +2,7 @@ package site.addzero.lsi.jimmer.error
 
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.core.LsiSource
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 
 /** 描述工作区内可生成的错误族语义。 */
 data class ErrorSchema(
@@ -48,7 +48,7 @@ data class ErrorCode(
 /** 描述错误异常携带的领域字段。 */
 data class ErrorField(
     val name: String,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val list: Boolean,
     val nullable: Boolean,
     val documentation: String?,

@@ -1,6 +1,16 @@
 package site.addzero.lsi.model
 
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 
 sealed interface LsiJvmTypeParameterOwner {
 
@@ -22,7 +32,7 @@ data class LsiJvmTypeParameterDescriptor(
     val id: LsiSymbolId,
     val owner: LsiJvmTypeParameterOwner,
     val index: Int,
-    val upperBounds: List<LsiTypeRef> = emptyList(),
+    val upperBounds: List<LsiType> = emptyList(),
 ) {
 
     init {
@@ -47,7 +57,7 @@ data class LsiJvmTypeSignatureContext(
 /**
  * 将冻结类型渲染为前端无关的 JVM callable 签名，不把 nullability 和类型使用注解写入符号 ID。
  */
-fun LsiTypeRef.toJvmTypeSignature(
+fun LsiType.toJvmTypeSignature(
     eraseTypeArguments: Boolean = false,
     context: LsiJvmTypeSignatureContext = LsiJvmTypeSignatureContext(),
 ): String {
@@ -57,7 +67,7 @@ fun LsiTypeRef.toJvmTypeSignature(
 /**
  * JVM callable 参数中的 Unit 和 Void 都是引用类型，其余 primitive 保留原始表示。
  */
-fun LsiTypeRef.toJvmCallableParameterType(): LsiTypeRef {
+fun LsiType.toJvmCallableParameterType(): LsiType {
     val primitive = this as? LsiPrimitiveType ?: return this
     return if (primitive.kind == LsiPrimitiveKind.UNIT || primitive.kind == LsiPrimitiveKind.VOID) {
         primitive.copy(boxed = true)
@@ -69,7 +79,7 @@ fun LsiTypeRef.toJvmCallableParameterType(): LsiTypeRef {
 /**
  * 泛型实参和类型参数上界只能使用 JVM 引用类型。
  */
-fun LsiTypeRef.toJvmReferenceType(): LsiTypeRef {
+fun LsiType.toJvmReferenceType(): LsiType {
     return if (this is LsiPrimitiveType) copy(boxed = true) else this
 }
 
@@ -78,7 +88,7 @@ private class JvmTypeSignatureRenderer(
 ) {
 
     fun render(
-        type: LsiTypeRef,
+        type: LsiType,
         eraseTypeArguments: Boolean,
         erasurePath: Set<LsiSymbolId> = emptySet(),
     ): String {
@@ -109,7 +119,7 @@ private class JvmTypeSignatureRenderer(
     }
 
     private fun renderArrayElement(
-        elementType: LsiTypeRef,
+        elementType: LsiType,
         eraseTypeArguments: Boolean,
         erasurePath: Set<LsiSymbolId>,
     ): String {

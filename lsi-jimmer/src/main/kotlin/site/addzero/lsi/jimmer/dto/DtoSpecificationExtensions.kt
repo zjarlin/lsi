@@ -8,9 +8,9 @@ import site.addzero.lsi.jimmer.ImmutableProp
 import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.jimmer.isEntityAssociation
 import site.addzero.lsi.jimmer.targetIdPropOf
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiType
 
 /**
  * 返回 Specification 的 like/notLike 谓词需要追加的匹配参数。
@@ -59,7 +59,7 @@ fun DtoBaseProp.specificationConverterInputType(
     graph: DtoGraph,
     immutableSchema: ImmutableSchema,
     targetLanguage: LsiLanguage,
-): LsiTypeRef {
+): LsiType {
     val language = targetLanguage.requireDtoTargetLanguage()
     val tailProp = specificationTailProp(graph)
     require(requiresSpecificationConverter(graph, immutableSchema)) {
@@ -89,7 +89,7 @@ fun DtoBaseProp.specificationConverterOutputType(
     graph: DtoGraph,
     immutableSchema: ImmutableSchema,
     targetLanguage: LsiLanguage,
-): LsiTypeRef {
+): LsiType {
     val language = targetLanguage.requireDtoTargetLanguage()
     val tailProp = specificationTailProp(graph)
     require(requiresSpecificationConverter(graph, immutableSchema)) {

@@ -4,7 +4,7 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 
 data class ImmutableSchema(
     val types: List<ImmutableType>,
@@ -429,7 +429,7 @@ data class ImmutableProp(
     val declaringTypeId: LsiSymbolId,
     val name: String,
     val documentation: String?,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val annotations: List<LsiAnnotation>,
     val overrideChain: List<LsiSymbolId>,
     val inherited: Boolean,
@@ -658,8 +658,8 @@ data class ImmutableValidation(
 
 data class ImmutableConverter(
     val converterTypeId: LsiSymbolId,
-    val sourceType: LsiTypeRef?,
-    val targetType: LsiTypeRef?,
+    val sourceType: LsiType?,
+    val targetType: LsiType?,
     val sourceNullable: Boolean,
     val targetNullable: Boolean,
     val propertyNullable: Boolean,

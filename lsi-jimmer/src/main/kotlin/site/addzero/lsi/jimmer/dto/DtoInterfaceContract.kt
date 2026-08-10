@@ -3,7 +3,7 @@ package site.addzero.lsi.jimmer.dto
 import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.diagnostic.LsiDiagnostic
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 
 data class DtoInterfaceContractResolution(
     val contracts: List<DtoInterfaceContract>,
@@ -49,7 +49,7 @@ data class DtoInterfaceContract(
 data class DtoInterfacePropContract(
     val declaringTypeId: LsiSymbolId,
     val name: String,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val mutable: Boolean,
     val getter: DtoInterfaceAccessorContract?,
     val setter: DtoInterfaceAccessorContract?,

@@ -5,7 +5,7 @@ import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 
 /** 返回多态 DTO 分支供 Client schema 识别和排序的完整标记注解。 */
 fun DtoPolymorphicBranch.generatedPolymorphicDtoBranchAnnotation(

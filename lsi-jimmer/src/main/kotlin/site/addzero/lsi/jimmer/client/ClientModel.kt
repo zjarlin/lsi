@@ -1,8 +1,8 @@
 package site.addzero.lsi.jimmer.client
 
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiVariance
 
 /** 与语言前端无关的完整 Client 语义模型。 */
 data class ClientSchema(

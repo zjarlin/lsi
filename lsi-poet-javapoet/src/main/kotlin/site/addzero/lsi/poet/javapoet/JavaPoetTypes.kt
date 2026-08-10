@@ -13,16 +13,16 @@ import com.squareup.javapoet.WildcardTypeName
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiSourceAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentLayout
 import site.addzero.lsi.model.LsiAnnotationArrayStyle
@@ -31,7 +31,7 @@ import site.addzero.lsi.model.LsiTypeName
 import site.addzero.lsi.model.LsiTypeReferenceStyle
 import site.addzero.lsi.model.toSourceAnnotation
 
-internal fun LsiTypeRef.toJavaTypeName(typeNames: List<LsiTypeName>): TypeName {
+internal fun LsiType.toJavaTypeName(typeNames: List<LsiTypeName>): TypeName {
     val typeName = when (this) {
         is LsiPrimitiveType -> {
             val primitiveTypeName = kind.toJavaTypeName()
@@ -87,7 +87,7 @@ internal fun LsiTypeRef.toJavaTypeName(typeNames: List<LsiTypeName>): TypeName {
 /**
  * 将声明类型的源码限定方式留在 JavaPoet 边界处理，语义类型本身保持不变。
  */
-internal fun LsiTypeRef.toJavaTypeName(
+internal fun LsiType.toJavaTypeName(
     typeNames: List<LsiTypeName>,
     referenceStyle: LsiTypeReferenceStyle,
     currentPackageName: String?,
@@ -362,7 +362,7 @@ private fun LsiAnnotationValue.toJavaSourceAnnotationValue(
     }
 }
 
-private fun LsiTypeRef.toJavaClassLiteralTypeName(
+private fun LsiType.toJavaClassLiteralTypeName(
     typeNames: List<LsiTypeName>,
 ): TypeName {
     val primitive = this as? LsiPrimitiveType
@@ -373,7 +373,7 @@ private fun LsiTypeRef.toJavaClassLiteralTypeName(
     }
 }
 
-private fun LsiTypeRef.toJavaBoxedQualifiedName(): String {
+private fun LsiType.toJavaBoxedQualifiedName(): String {
     val primitive = this as? LsiPrimitiveType
     require(primitive?.boxed == true) {
         "Qualified Java boxed class literal requires a boxed primitive type: $this"

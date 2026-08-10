@@ -2,6 +2,8 @@ package site.addzero.lsi.model
 
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiTypeParameter
 
 /**
  * 不依赖完整声明即可参与继承解析的类型层级骨架。

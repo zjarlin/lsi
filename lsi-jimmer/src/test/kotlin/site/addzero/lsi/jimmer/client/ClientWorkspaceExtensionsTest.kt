@@ -23,20 +23,20 @@ import site.addzero.lsi.model.LsiAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiEnumEntry
 import site.addzero.lsi.model.LsiField
 import site.addzero.lsi.model.LsiFunction
-import site.addzero.lsi.model.LsiNullability
+import site.addzero.lsi.type.LsiNullability
 import site.addzero.lsi.model.LsiParameter
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSeedMode
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
@@ -1223,7 +1223,7 @@ class ClientWorkspaceExtensionsTest {
         annotations: List<LsiAnnotation> = emptyList(),
         memberIds: List<LsiSymbolId> = emptyList(),
         typeParameters: List<LsiTypeParameter> = emptyList(),
-        superTypes: List<LsiTypeRef> = emptyList(),
+        superTypes: List<LsiType> = emptyList(),
         kind: LsiTypeDeclarationKind = LsiTypeDeclarationKind.INTERFACE,
         enclosingTypeId: LsiSymbolId? = null,
         enumEntries: List<LsiEnumEntry> = emptyList(),
@@ -1246,7 +1246,7 @@ class ClientWorkspaceExtensionsTest {
         )
     }
 
-    private fun compileSingleOperation(returnType: LsiTypeRef): ClientSchema {
+    private fun compileSingleOperation(returnType: LsiType): ClientSchema {
         val serviceId = LsiSymbolId.type("demo.NullabilityService")
         val operation = function(
             ownerId = serviceId,
@@ -1272,9 +1272,9 @@ class ClientWorkspaceExtensionsTest {
         ownerId: LsiSymbolId,
         name: String,
         parameters: List<ParameterSpec> = emptyList(),
-        returnType: LsiTypeRef = LsiPrimitiveType(LsiPrimitiveKind.UNIT),
+        returnType: LsiType = LsiPrimitiveType(LsiPrimitiveKind.UNIT),
         annotations: List<LsiAnnotation> = emptyList(),
-        thrownTypes: List<LsiTypeRef> = emptyList(),
+        thrownTypes: List<LsiType> = emptyList(),
         documentation: String? = null,
         visibility: LsiVisibility = LsiVisibility.PUBLIC,
         static: Boolean = false,
@@ -1321,7 +1321,7 @@ class ClientWorkspaceExtensionsTest {
         ownerId: LsiSymbolId,
         name: String,
         getterName: String = name,
-        type: LsiTypeRef = LsiDeclaredType(LsiSymbolId.type("java.lang.String")),
+        type: LsiType = LsiDeclaredType(LsiSymbolId.type("java.lang.String")),
         annotations: List<LsiAnnotation> = emptyList(),
         documentation: String? = null,
         origin: LsiOrigin = SYNTHETIC_ORIGIN,
@@ -1408,7 +1408,7 @@ class ClientWorkspaceExtensionsTest {
 
     private data class ParameterSpec(
         val name: String,
-        val type: LsiTypeRef,
+        val type: LsiType,
         val annotations: List<LsiAnnotation> = emptyList(),
     )
 

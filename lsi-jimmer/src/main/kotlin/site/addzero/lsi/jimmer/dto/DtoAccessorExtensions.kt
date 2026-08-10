@@ -12,12 +12,12 @@ import site.addzero.lsi.jimmer.PrimaryMapping
 import site.addzero.lsi.jimmer.generatedTableType
 import site.addzero.lsi.jimmer.isEntityAssociation
 import site.addzero.lsi.jimmer.targetIdPropOf
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiType
 
 /** 按 DTO 声明顺序返回全部可见属性。 */
 fun DtoType.propsInDeclarationOrder(graph: DtoGraph): List<DtoProp> {
@@ -653,7 +653,7 @@ private fun String.hasKotlinIsPrefix(): Boolean {
     return startsWith("is") && length > 2 && this[2] !in 'a'..'z'
 }
 
-private fun LsiTypeRef.isPrimitiveBooleanValue(): Boolean {
+private fun LsiType.isPrimitiveBooleanValue(): Boolean {
     return this is LsiPrimitiveType &&
         kind == LsiPrimitiveKind.BOOLEAN &&
         !boxed &&

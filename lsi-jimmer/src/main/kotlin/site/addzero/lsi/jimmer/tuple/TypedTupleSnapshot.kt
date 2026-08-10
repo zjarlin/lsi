@@ -3,7 +3,7 @@ package site.addzero.lsi.jimmer.tuple
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.stableSignature
 
 /** 生成跨前端比较使用的 TypedTuple 规范化快照。 */
@@ -187,6 +187,6 @@ private fun String.escapeSnapshotField(): String {
     }
 }
 
-private fun LsiTypeRef.normalizedTupleTypeSignature(): String {
+private fun LsiType.normalizedTupleTypeSignature(): String {
     return stableSignature().replace("!platform", "!non-null")
 }

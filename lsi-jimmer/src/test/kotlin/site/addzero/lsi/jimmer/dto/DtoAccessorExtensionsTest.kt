@@ -25,13 +25,13 @@ import site.addzero.lsi.jimmer.ImmutableView
 import site.addzero.lsi.jimmer.InheritanceStrategy
 import site.addzero.lsi.jimmer.JoinedTableDissociateAction
 import site.addzero.lsi.jimmer.PrimaryMapping
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiType
 
 class DtoAccessorExtensionsTest {
 
@@ -374,7 +374,7 @@ class DtoAccessorExtensionsTest {
             )
         }
 
-        fun contract(typeName: String, vararg arguments: LsiTypeRef): LsiDeclaredType {
+        fun contract(typeName: String, vararg arguments: LsiType): LsiDeclaredType {
             return LsiDeclaredType(
                 declarationId = LsiSymbolId.type(typeName),
                 arguments = arguments.map(LsiTypeArgument::invariant),
@@ -2270,7 +2270,7 @@ class DtoAccessorExtensionsTest {
     private fun valueAccessorName(
         name: String,
         nullable: Boolean = false,
-        immutableType: LsiTypeRef = BOOLEAN_TYPE,
+        immutableType: LsiType = BOOLEAN_TYPE,
         immutableList: Boolean = false,
         converter: ImmutableConverter? = null,
     ): String {
@@ -2290,7 +2290,7 @@ class DtoAccessorExtensionsTest {
     private fun valueSetterName(
         name: String,
         nullable: Boolean = false,
-        immutableType: LsiTypeRef = BOOLEAN_TYPE,
+        immutableType: LsiType = BOOLEAN_TYPE,
         immutableList: Boolean = false,
         converter: ImmutableConverter? = null,
     ): String {
@@ -2434,7 +2434,7 @@ class DtoAccessorExtensionsTest {
 
     private fun immutableProp(
         name: String,
-        type: LsiTypeRef,
+        type: LsiType,
         ownerTypeId: LsiSymbolId = BASE_TYPE_ID,
         nullable: Boolean = false,
         list: Boolean = false,
@@ -2486,9 +2486,9 @@ class DtoAccessorExtensionsTest {
     }
 
     private fun converter(
-        targetType: LsiTypeRef,
+        targetType: LsiType,
         targetNullable: Boolean = false,
-        sourceType: LsiTypeRef = BOOLEAN_TYPE,
+        sourceType: LsiType = BOOLEAN_TYPE,
     ): ImmutableConverter {
         return ImmutableConverter(
             converterTypeId = LsiSymbolId.type("demo.Converter"),

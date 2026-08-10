@@ -7,17 +7,17 @@ import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.jimmer.ImmutableView
 import site.addzero.lsi.jimmer.jimmerTypeSignature
 import site.addzero.lsi.jimmer.targetIdPropOf
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
 
 /** 返回不可变属性暴露给 DTO 的冻结客户端类型。 */
-fun ImmutableProp.dtoClientType(immutableSchema: ImmutableSchema): LsiTypeRef {
+fun ImmutableProp.dtoClientType(immutableSchema: ImmutableSchema): LsiType {
     declaredConverterTargetTypeOrNull()?.let { targetType -> return targetType }
     val idView = view as? ImmutableView.Id ?: return type.withoutDtoTypeAnnotations()
     val targetIdProp = idView.targetIdPropId
@@ -64,7 +64,7 @@ fun DtoBaseProp.boundImmutableProp(
 fun DtoBaseProp.dtoConverterTargetTypeOrNull(
     graph: DtoGraph,
     immutableSchema: ImmutableSchema,
-): LsiTypeRef? {
+): LsiType? {
     require(graph.propsById[id] == this) {
         "DTO property does not belong to this graph: ${id.value}"
     }
@@ -91,7 +91,7 @@ fun DtoBaseProp.dtoConverterTargetTypeOrNull(
 fun DtoBaseProp.dtoClientType(
     graph: DtoGraph,
     immutableSchema: ImmutableSchema,
-): LsiTypeRef {
+): LsiType {
     val tailProp = tailProp(graph)
     return if (tailProp.functionName == "id") {
         tailProp.dtoAssociatedIdClientType(graph, immutableSchema)
@@ -104,7 +104,7 @@ fun DtoBaseProp.dtoClientType(
 fun DtoBaseProp.dtoAssociatedIdClientType(
     graph: DtoGraph,
     immutableSchema: ImmutableSchema,
-): LsiTypeRef {
+): LsiType {
     require(graph.propsById[id] == this) {
         "DTO property does not belong to this graph: ${id.value}"
     }
@@ -149,7 +149,7 @@ private fun ImmutableProp.dtoConverterTargetTypeOrNull(
     functionName: String?,
     specification: Boolean,
     immutableSchema: ImmutableSchema,
-): LsiTypeRef? {
+): LsiType? {
     if (functionName == "null" || functionName == "notNull") {
         return null
     }
@@ -179,21 +179,21 @@ private fun ImmutableProp.dtoConverterTargetTypeOrNull(
     return if (list) targetType.toDtoConverterListType() else targetType
 }
 
-private fun ImmutableProp.declaredConverterTargetTypeOrNull(): LsiTypeRef? {
+private fun ImmutableProp.declaredConverterTargetTypeOrNull(): LsiType? {
     val converter = converter ?: return null
     return requireNotNull(converter.targetType) {
         "Immutable converter has no target type: ${converter.converterTypeId.value}"
     }.withoutDtoTypeAnnotations()
 }
 
-private fun LsiTypeRef.toDtoConverterListType(): LsiDeclaredType {
+private fun LsiType.toDtoConverterListType(): LsiDeclaredType {
     return LsiDeclaredType(
         declarationId = JAVA_LIST_TYPE_ID,
         arguments = listOf(LsiTypeArgument.invariant(this)),
     )
 }
 
-private fun LsiTypeRef.withoutDtoTypeAnnotations(): LsiTypeRef {
+private fun LsiType.withoutDtoTypeAnnotations(): LsiType {
     return when (this) {
         is LsiDeclaredType -> copy(
             arguments = arguments.map { argument ->
@@ -210,7 +210,7 @@ private fun LsiTypeRef.withoutDtoTypeAnnotations(): LsiTypeRef {
         is LsiFunctionType -> copy(
             returnType = returnType.withoutDtoTypeAnnotations(),
             receiverType = receiverType?.withoutDtoTypeAnnotations(),
-            parameterTypes = parameterTypes.map(LsiTypeRef::withoutDtoTypeAnnotations),
+            parameterTypes = parameterTypes.map(LsiType::withoutDtoTypeAnnotations),
             annotations = emptyList(),
         )
         is LsiUnresolvedType -> copy(annotations = emptyList())

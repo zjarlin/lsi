@@ -28,17 +28,17 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiSourceAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentLayout
 import site.addzero.lsi.model.LsiAnnotationArgumentNameStyle
@@ -47,11 +47,11 @@ import site.addzero.lsi.model.LsiClassLiteralStyle
 import site.addzero.lsi.model.LsiTypeName
 import site.addzero.lsi.model.toSourceAnnotation
 
-internal fun LsiTypeRef.toKotlinTypeName(typeNames: List<LsiTypeName>): TypeName {
+internal fun LsiType.toKotlinTypeName(typeNames: List<LsiTypeName>): TypeName {
     return toKotlinTypeName(typeNames, referenceContext = false)
 }
 
-private fun LsiTypeRef.toKotlinTypeName(
+private fun LsiType.toKotlinTypeName(
     typeNames: List<LsiTypeName>,
     referenceContext: Boolean,
 ): TypeName {
@@ -271,7 +271,7 @@ private fun LsiPrimitiveKind.toKotlinBoxedTypeName(): TypeName {
     }
 }
 
-private fun LsiTypeRef.toKotlinArrayTypeName(typeNames: List<LsiTypeName>): TypeName {
+private fun LsiType.toKotlinArrayTypeName(typeNames: List<LsiTypeName>): TypeName {
     val primitiveType = this as? LsiPrimitiveType
     if (
         primitiveType != null &&
@@ -512,7 +512,7 @@ private fun LsiSourceAnnotationArgument.Named.toKotlinAnnotationArgumentName(): 
     }
 }
 
-private fun LsiTypeRef.toKotlinClassLiteral(
+private fun LsiType.toKotlinClassLiteral(
     typeNames: List<LsiTypeName>,
     sourceStyle: LsiClassLiteralStyle = LsiClassLiteralStyle.PLATFORM_TYPE,
 ): CodeBlock {

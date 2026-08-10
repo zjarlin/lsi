@@ -37,16 +37,16 @@ import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationMember
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiArrayType
+import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiDeclaration
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiModality
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.jimmer.dto.DtoAnnotation
 import site.addzero.lsi.jimmer.dto.DtoAnnotationArgument
@@ -775,8 +775,8 @@ class DtoAnnotationContractTest {
             assertIs<LsiDeclaredType>(listType.arguments.single().type).declarationId,
         )
         assertEquals(
-            site.addzero.lsi.model.LsiPrimitiveKind.INT,
-            assertIs<site.addzero.lsi.model.LsiPrimitiveType>(arrayType.elementType).kind,
+            site.addzero.lsi.type.LsiPrimitiveKind.INT,
+            assertIs<site.addzero.lsi.type.LsiPrimitiveType>(arrayType.elementType).kind,
         )
         assertTrue(contract.diagnostics.isEmpty(), contract.diagnostics.joinToString { diagnostic -> diagnostic.message })
     }
@@ -1219,7 +1219,7 @@ class DtoAnnotationContractTest {
         qualifiedName: String,
         targetNames: List<String>?,
         argumentNames: List<String>,
-        argumentTypes: Map<String, LsiTypeRef> = emptyMap(),
+        argumentTypes: Map<String, LsiType> = emptyMap(),
         defaultArgumentNames: Set<String> = emptySet(),
         kotlinTargetProjectionNames: List<String> = emptyList(),
     ): List<LsiDeclaration> {

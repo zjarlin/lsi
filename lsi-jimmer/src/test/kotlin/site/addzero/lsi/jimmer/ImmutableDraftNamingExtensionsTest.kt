@@ -7,9 +7,9 @@ import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiOriginKind
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiWorkspace
 
@@ -82,7 +82,7 @@ class ImmutableDraftNamingExtensionsTest {
 
     private fun prop(
         name: String,
-        type: site.addzero.lsi.model.LsiTypeRef = LsiDeclaredType(
+        type: site.addzero.lsi.type.LsiType = LsiDeclaredType(
             LsiSymbolId.type("java.lang.String"),
         ),
     ): ImmutableProp {

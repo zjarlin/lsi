@@ -19,19 +19,19 @@ import site.addzero.lsi.model.LsiAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationMember
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiEnumEntry
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiWorkspace
 
 class DtoAnnotationStructuredValueContractTest {
@@ -633,7 +633,7 @@ class DtoAnnotationStructuredValueContractTest {
         private fun typeDeclaration(
             id: LsiSymbolId,
             kind: LsiTypeDeclarationKind,
-            superTypes: List<LsiTypeRef> = emptyList(),
+            superTypes: List<LsiType> = emptyList(),
             enumEntries: List<LsiEnumEntry> = emptyList(),
             annotationMembers: List<LsiAnnotationMember> = emptyList(),
             typeParameters: List<LsiTypeParameter> = emptyList(),

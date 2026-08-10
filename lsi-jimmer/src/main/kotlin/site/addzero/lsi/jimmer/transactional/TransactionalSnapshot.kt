@@ -4,16 +4,16 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.stableSignature
 
 /** 生成跨前端比较使用的 Transactional 规范化快照。 */
@@ -45,7 +45,7 @@ fun TransactionalSchema.normalizedSnapshot(): String {
                     constructor.visibility.name,
                     constructor.parameters.map(TransactionalParameter::canonicalText).canonicalListText(),
                     constructor.typeParameters.map { parameter -> parameter.id.value }.canonicalListText(),
-                    constructor.thrownTypes.map(LsiTypeRef::canonicalText).canonicalListText(),
+                    constructor.thrownTypes.map(LsiType::canonicalText).canonicalListText(),
                 )
             }
             type.methods.sortedBy(TransactionalMethod::id).forEach { method ->
@@ -60,7 +60,7 @@ fun TransactionalSchema.normalizedSnapshot(): String {
                     method.returnType.canonicalText(),
                     method.parameters.map(TransactionalParameter::canonicalText).canonicalListText(),
                     method.typeParameters.map { parameter -> parameter.id.value }.canonicalListText(),
-                    method.thrownTypes.map(LsiTypeRef::canonicalText).canonicalListText(),
+                    method.thrownTypes.map(LsiType::canonicalText).canonicalListText(),
                     method.propagation,
                     method.classLevel.toString(),
                 )
@@ -109,7 +109,7 @@ private fun TransactionalSchema.renderSnapshot(): String {
                     constructor.visibility.name,
                     constructor.parameters.map(TransactionalParameter::renderSignature).canonicalListText(),
                     constructor.typeParameters.typeParameterSignatures(),
-                    constructor.thrownTypes.map(LsiTypeRef::stableSignature).canonicalListText(),
+                    constructor.thrownTypes.map(LsiType::stableSignature).canonicalListText(),
                     constructor.documentation.orEmpty(),
                     constructor.copiedAnnotations.annotationSignatures(),
                 )
@@ -126,7 +126,7 @@ private fun TransactionalSchema.renderSnapshot(): String {
                     method.returnType.stableSignature(),
                     method.parameters.map(TransactionalParameter::renderSignature).canonicalListText(),
                     method.typeParameters.typeParameterSignatures(),
-                    method.thrownTypes.map(LsiTypeRef::stableSignature).canonicalListText(),
+                    method.thrownTypes.map(LsiType::stableSignature).canonicalListText(),
                     method.documentation.orEmpty(),
                     method.copiedAnnotations.annotationSignatures(),
                     method.propagation,
@@ -171,7 +171,7 @@ private fun Iterable<LsiTypeParameter>.typeParameterSignatures(): String {
     return map(LsiTypeParameter::stableSignature).canonicalListText()
 }
 
-private fun LsiTypeRef.canonicalText(): String {
+private fun LsiType.canonicalText(): String {
     val base = when (this) {
         is LsiDeclaredType -> buildString {
             append(declarationId.value)
@@ -199,14 +199,14 @@ private fun LsiTypeRef.canonicalText(): String {
                 append('.')
             }
             append('(')
-            append(parameterTypes.map(LsiTypeRef::canonicalText).canonicalListText())
+            append(parameterTypes.map(LsiType::canonicalText).canonicalListText())
             append(")->")
             append(returnType.canonicalText())
         }
         is LsiTypeParameterRef -> "parameter:${parameterId.value}"
         is LsiUnresolvedType -> "unresolved:${displayName.filterNot(Char::isWhitespace)}"
     }
-    return base + if (nullability == site.addzero.lsi.model.LsiNullability.NULLABLE) "?" else "!"
+    return base + if (nullability == site.addzero.lsi.type.LsiNullability.NULLABLE) "?" else "!"
 }
 
 private fun LsiTypeArgument.canonicalText(): String {

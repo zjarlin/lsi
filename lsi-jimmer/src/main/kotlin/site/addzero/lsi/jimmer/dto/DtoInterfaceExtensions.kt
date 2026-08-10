@@ -6,24 +6,24 @@ import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.diagnostic.LsiDiagnostic
 import site.addzero.lsi.diagnostic.LsiDiagnosticSeverity
-import site.addzero.lsi.model.LsiArrayType
+import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiDeclaration
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiFunction
-import site.addzero.lsi.model.LsiFunctionType
+import site.addzero.lsi.type.LsiFunctionType
 import site.addzero.lsi.model.LsiModality
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
-import site.addzero.lsi.model.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSystem
-import site.addzero.lsi.model.LsiUnresolvedType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.stableSignature
@@ -545,7 +545,7 @@ private class DtoInterfaceContractResolver(
     private fun validateResolvedMemberType(
         dtoType: DtoType,
         declaration: LsiDeclaration,
-        type: LsiTypeRef,
+        type: LsiType,
         diagnostics: MutableList<LsiDiagnostic>,
         fallbackLocation: LsiLocation,
     ): Boolean {
@@ -566,7 +566,7 @@ private class DtoInterfaceContractResolver(
         typeRef: DtoTypeRef,
         diagnostics: MutableList<LsiDiagnostic>,
         validateDeclaredArity: Boolean = false,
-    ): LsiTypeRef? {
+    ): LsiType? {
         STANDARD_PRIMITIVE_TYPES[typeRef.typeName]?.let { kind ->
             if (typeRef.arguments.isNotEmpty()) {
                 diagnostics += invalidDtoTypeRefDiagnostic(
@@ -721,7 +721,7 @@ private data class PropCandidate(
     val declaringTypeId: LsiSymbolId,
     val declarationId: LsiSymbolId,
     val name: String,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val getter: DtoInterfaceAccessorContract?,
     val setter: DtoInterfaceAccessorContract?,
     val origin: LsiOrigin,
@@ -729,7 +729,7 @@ private data class PropCandidate(
     val distance: Int,
 )
 
-private fun LsiFunction.setterPropertyName(returnType: LsiTypeRef): String? {
+private fun LsiFunction.setterPropertyName(returnType: LsiType): String? {
     if (
         parameters.size != 1 ||
         !returnType.isVoidLike() ||
@@ -767,7 +767,7 @@ private fun LsiFunction.isObjectMethod(): Boolean {
     return parameters.single().type.isImplicitAnyType()
 }
 
-private fun LsiTypeRef.isVoidLike(): Boolean {
+private fun LsiType.isVoidLike(): Boolean {
     return when (this) {
         is LsiPrimitiveType -> kind == LsiPrimitiveKind.UNIT || kind == LsiPrimitiveKind.VOID
         is LsiDeclaredType -> declarationId in VOID_TYPE_IDS
@@ -775,11 +775,11 @@ private fun LsiTypeRef.isVoidLike(): Boolean {
     }
 }
 
-private fun LsiTypeRef.isImplicitAnyType(): Boolean {
+private fun LsiType.isImplicitAnyType(): Boolean {
     return this is LsiDeclaredType && declarationId in ANY_TYPE_IDS
 }
 
-private fun LsiTypeRef.firstUnresolvedType(): LsiTypeRef? {
+private fun LsiType.firstUnresolvedType(): LsiType? {
     return when (this) {
         is LsiUnresolvedType,
         is LsiTypeParameterRef,
@@ -789,7 +789,7 @@ private fun LsiTypeRef.firstUnresolvedType(): LsiTypeRef? {
         }
         is LsiArrayType -> elementType.firstUnresolvedType()
         is LsiFunctionType -> receiverType?.firstUnresolvedType()
-            ?: parameterTypes.firstNotNullOfOrNull(LsiTypeRef::firstUnresolvedType)
+            ?: parameterTypes.firstNotNullOfOrNull(LsiType::firstUnresolvedType)
             ?: returnType.firstUnresolvedType()
         is LsiPrimitiveType -> null
     }

@@ -4,8 +4,8 @@ import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiModality
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiVisibility
 
 /** Transactional 类型的完整共享语义模型。 */
@@ -34,7 +34,7 @@ data class TransactionalSqlClient(
     val logicalId: LsiSymbolId,
     val declarationId: LsiSymbolId,
     val name: String,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val language: LsiLanguage,
 ) {
     init {
@@ -51,7 +51,7 @@ data class TransactionalConstructor(
     val visibility: LsiVisibility,
     val parameters: List<TransactionalParameter>,
     val typeParameters: List<LsiTypeParameter>,
-    val thrownTypes: List<LsiTypeRef>,
+    val thrownTypes: List<LsiType>,
     val documentation: String?,
     val copiedAnnotations: List<LsiAnnotation>,
 )
@@ -63,10 +63,10 @@ data class TransactionalMethod(
     val sourceKind: TransactionalMethodSourceKind,
     val visibility: LsiVisibility,
     val modality: LsiModality,
-    val returnType: LsiTypeRef,
+    val returnType: LsiType,
     val parameters: List<TransactionalParameter>,
     val typeParameters: List<LsiTypeParameter>,
-    val thrownTypes: List<LsiTypeRef>,
+    val thrownTypes: List<LsiType>,
     val documentation: String?,
     val copiedAnnotations: List<LsiAnnotation>,
     val propagation: String,
@@ -78,7 +78,7 @@ data class TransactionalParameter(
     val id: LsiSymbolId,
     val name: String,
     val index: Int,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val vararg: Boolean,
     val hasDefault: Boolean,
     val annotations: List<LsiAnnotation>,

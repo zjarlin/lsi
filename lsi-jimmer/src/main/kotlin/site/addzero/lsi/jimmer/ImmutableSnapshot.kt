@@ -4,14 +4,14 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
 
 fun ImmutableSchema.normalizedSnapshot(): String {
     return buildString {
@@ -224,7 +224,7 @@ private fun LsiAnnotationValue.canonicalText(): String {
     }
 }
 
-private fun LsiTypeRef.canonicalTypeText(): String {
+private fun LsiType.canonicalTypeText(): String {
     return when (this) {
         is LsiDeclaredType -> buildString {
             append(declarationId.value)

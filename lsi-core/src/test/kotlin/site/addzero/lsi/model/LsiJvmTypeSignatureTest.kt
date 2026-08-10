@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.type.*
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -137,7 +139,7 @@ class LsiJvmTypeSignatureTest {
             parameterTypes = listOf(LsiPrimitiveType(LsiPrimitiveKind.INT)),
             suspending = true,
         )
-        val containingTypes = listOf<LsiTypeRef>(
+        val containingTypes = listOf<LsiType>(
             functionType,
             LsiArrayType(functionType),
             LsiDeclaredType(

@@ -18,16 +18,16 @@ import site.addzero.lsi.jimmer.isJimmerImmutableType
 import site.addzero.lsi.jimmer.jimmerTypeSignature
 import site.addzero.lsi.jimmer.manyToManyViewBasePropOf
 import site.addzero.lsi.jimmer.targetTypeOf
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.model.LsiWorkspace
 
 /** 基于共享不可变模型与工作区创建 DTO compiler。 */
@@ -221,7 +221,7 @@ private class LsiDtoCompiler(
     }
 }
 
-private fun LsiTypeRef.toSimplePropType(): SimplePropType {
+private fun LsiType.toSimplePropType(): SimplePropType {
     return when (this) {
         is LsiPrimitiveType -> when (kind) {
             LsiPrimitiveKind.BOOLEAN -> SimplePropType.BOOLEAN

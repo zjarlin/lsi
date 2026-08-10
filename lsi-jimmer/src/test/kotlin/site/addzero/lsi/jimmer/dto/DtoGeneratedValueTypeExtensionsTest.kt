@@ -18,12 +18,12 @@ import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.jimmer.ImmutableType
 import site.addzero.lsi.jimmer.ImmutableTypeKind
 import site.addzero.lsi.jimmer.PrimaryMapping
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiType
 
 class DtoGeneratedValueTypeExtensionsTest {
 
@@ -598,7 +598,7 @@ class DtoGeneratedValueTypeExtensionsTest {
     private fun immutableProp(
         ownerTypeId: LsiSymbolId,
         name: String,
-        type: LsiTypeRef,
+        type: LsiType,
         primaryMapping: PrimaryMapping = PrimaryMapping.SCALAR,
         targetTypeId: LsiSymbolId? = null,
         list: Boolean = false,
@@ -644,7 +644,7 @@ class DtoGeneratedValueTypeExtensionsTest {
         )
     }
 
-    private fun converter(sourceType: LsiTypeRef, targetType: LsiTypeRef): ImmutableConverter {
+    private fun converter(sourceType: LsiType, targetType: LsiType): ImmutableConverter {
         return ImmutableConverter(
             converterTypeId = CONVERTER_TYPE_ID,
             sourceType = sourceType,
@@ -661,7 +661,7 @@ class DtoGeneratedValueTypeExtensionsTest {
         val generatedTypeIds: Map<DtoPropId, LsiSymbolId>,
         val requestedGeneratedProps: MutableSet<String> = linkedSetOf(),
     ) {
-        fun value(ownerTypeId: DtoTypeId, name: String, language: LsiLanguage): LsiTypeRef {
+        fun value(ownerTypeId: DtoTypeId, name: String, language: LsiLanguage): LsiType {
             val prop = graph.propsById.getValue(propId(ownerTypeId, name))
             return prop.generatedValueType(graph, schema, language) { generatedProp ->
                 requestedGeneratedProps += generatedProp.name
@@ -669,7 +669,7 @@ class DtoGeneratedValueTypeExtensionsTest {
             }
         }
 
-        fun element(ownerTypeId: DtoTypeId, name: String, language: LsiLanguage): LsiTypeRef {
+        fun element(ownerTypeId: DtoTypeId, name: String, language: LsiLanguage): LsiType {
             val prop = graph.propsById.getValue(propId(ownerTypeId, name)) as DtoBaseProp
             return prop.generatedElementValueType(graph, schema, language) { generatedProp ->
                 requestedGeneratedProps += generatedProp.name
@@ -728,7 +728,7 @@ class DtoGeneratedValueTypeExtensionsTest {
 
         fun container(
             typeId: LsiSymbolId,
-            elementType: LsiTypeRef,
+            elementType: LsiType,
             nullable: Boolean = false,
         ): LsiDeclaredType {
             return LsiDeclaredType(

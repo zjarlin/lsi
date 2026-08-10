@@ -13,22 +13,22 @@ import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationMember
 import site.addzero.lsi.model.LsiAnnotationTarget
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiTypeHierarchyEntry
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSystem
-import site.addzero.lsi.model.LsiUnresolvedType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.annotationTargetPolicy
 import site.addzero.lsi.model.stableSignature
@@ -93,7 +93,7 @@ data class DtoAnnotationDeclaration(
     val language: LsiLanguage,
     val targetDeclared: Boolean,
     val allowedPlacements: List<DtoAnnotationPlacement>,
-    val argumentTypes: Map<String, LsiTypeRef>,
+    val argumentTypes: Map<String, LsiType>,
     val kotlinValueVararg: Boolean,
     val argumentNamesInDeclarationOrder: List<String> = argumentTypes.keys.toList(),
 ) {
@@ -765,7 +765,7 @@ private class DtoAnnotationContractResolver(
 
     private fun freezeLsiAnnotationValue(
         value: LsiAnnotationValue,
-        expectedType: LsiTypeRef,
+        expectedType: LsiType,
         annotationTypeId: LsiSymbolId,
         argumentName: String,
         candidate: AnnotationCandidate,
@@ -816,7 +816,7 @@ private class DtoAnnotationContractResolver(
 
     private fun freezeDtoAnnotationValue(
         value: DtoAnnotationValue,
-        expectedType: LsiTypeRef,
+        expectedType: LsiType,
         annotationTypeId: LsiSymbolId,
         argumentName: String,
         candidate: AnnotationCandidate,
@@ -902,7 +902,7 @@ private class DtoAnnotationContractResolver(
     private fun argumentTypeDiagnostic(
         annotationTypeId: LsiSymbolId,
         argumentName: String,
-        expectedType: LsiTypeRef,
+        expectedType: LsiType,
         actual: String,
         candidate: AnnotationCandidate,
     ): LsiDiagnostic {
@@ -1110,7 +1110,7 @@ private data class DtoAnnotationTargetPolicy(
     val allowedPlacements: List<DtoAnnotationPlacement>,
 )
 
-private fun DtoTypeRef.toLsiTypeOrNull(): LsiTypeRef? {
+private fun DtoTypeRef.toLsiTypeOrNull(): LsiType? {
     val primitiveKind = DTO_PRIMITIVE_KINDS[typeName]
     if (primitiveKind != null) {
         if (arguments.isNotEmpty()) {
@@ -1151,7 +1151,7 @@ private fun DtoTypeArgument.toLsiTypeArgumentOrNull(): LsiTypeArgument? {
     }
 }
 
-private fun LsiTypeRef.toDtoAnnotationMemberType(): LsiTypeRef {
+private fun LsiType.toDtoAnnotationMemberType(): LsiType {
     return when (this) {
         is LsiDeclaredType -> {
             val canonicalArguments = arguments.map { argument ->
@@ -1180,14 +1180,14 @@ private fun LsiTypeRef.toDtoAnnotationMemberType(): LsiTypeRef {
         is LsiFunctionType -> copy(
             returnType = returnType.toDtoAnnotationMemberType(),
             receiverType = receiverType?.toDtoAnnotationMemberType(),
-            parameterTypes = parameterTypes.map(LsiTypeRef::toDtoAnnotationMemberType),
+            parameterTypes = parameterTypes.map(LsiType::toDtoAnnotationMemberType),
         )
         is LsiUnresolvedType -> this
     }
 }
 
 private fun LsiAnnotationValue.matchesAnnotationMemberType(
-    expectedType: LsiTypeRef,
+    expectedType: LsiType,
     workspace: LsiWorkspace,
     typeSystem: LsiTypeSystem,
 ): Boolean {
@@ -1210,16 +1210,16 @@ private fun LsiAnnotationValue.matchesAnnotationMemberType(
     }
 }
 
-private fun LsiTypeRef.hasPrimitiveKind(kind: LsiPrimitiveKind): Boolean {
+private fun LsiType.hasPrimitiveKind(kind: LsiPrimitiveKind): Boolean {
     return this is LsiPrimitiveType && this.kind == kind
 }
 
-private fun LsiTypeRef.isStringType(): Boolean {
+private fun LsiType.isStringType(): Boolean {
     return this is LsiDeclaredType && declarationId in STRING_TYPE_IDS
 }
 
-private fun LsiTypeRef.acceptsClassLiteral(
-    payloadType: LsiTypeRef,
+private fun LsiType.acceptsClassLiteral(
+    payloadType: LsiType,
     typeSystem: LsiTypeSystem,
 ): Boolean {
     val classType = this as? LsiDeclaredType ?: return false
@@ -1247,7 +1247,7 @@ private fun LsiTypeRef.acceptsClassLiteral(
     }
 }
 
-private fun LsiTypeRef.toClassLiteralReferenceType(): LsiTypeRef {
+private fun LsiType.toClassLiteralReferenceType(): LsiType {
     return if (this is LsiPrimitiveType) {
         LsiDeclaredType(PRIMITIVE_WRAPPER_TYPE_IDS.getValue(kind))
     } else {
@@ -1256,8 +1256,8 @@ private fun LsiTypeRef.toClassLiteralReferenceType(): LsiTypeRef {
 }
 
 private fun isAnnotationTypeAssignable(
-    source: LsiTypeRef,
-    target: LsiTypeRef,
+    source: LsiType,
+    target: LsiType,
     typeSystem: LsiTypeSystem,
 ): Boolean {
     val sourceType = source.toClassLiteralReferenceType()
@@ -1268,7 +1268,7 @@ private fun isAnnotationTypeAssignable(
     return typeSystem.isAssignable(sourceType, targetType)
 }
 
-private fun LsiTypeRef.acceptsEnumValue(
+private fun LsiType.acceptsEnumValue(
     enumTypeId: LsiSymbolId,
     entryName: String,
     workspace: LsiWorkspace,
@@ -1281,7 +1281,7 @@ private fun LsiTypeRef.acceptsEnumValue(
         declaration.enumEntries.any { entry -> entry.name == entryName }
 }
 
-private fun LsiTypeRef.acceptsNestedAnnotation(
+private fun LsiType.acceptsNestedAnnotation(
     annotationTypeId: LsiSymbolId,
     workspace: LsiWorkspace,
 ): Boolean {
@@ -1294,7 +1294,7 @@ private fun LsiTypeRef.acceptsNestedAnnotation(
 
 private fun parseAnnotationLiteral(
     code: String,
-    expectedType: LsiTypeRef,
+    expectedType: LsiType,
 ): LsiAnnotationValue? {
     if (expectedType is LsiPrimitiveType) {
         return when (expectedType.kind) {

@@ -1,8 +1,8 @@
 package site.addzero.lsi.core
 
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiTypeArgument
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.model.stableSignature
 import kotlin.test.Test
 import kotlin.test.assertEquals

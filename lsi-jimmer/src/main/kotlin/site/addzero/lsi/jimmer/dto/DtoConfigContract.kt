@@ -4,7 +4,7 @@ import java.security.MessageDigest
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.diagnostic.LsiDiagnostic
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 
 data class DtoConfigContractResolution(
     val contracts: List<DtoConfigContract>,

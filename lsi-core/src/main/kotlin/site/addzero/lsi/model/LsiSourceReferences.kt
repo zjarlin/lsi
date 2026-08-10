@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.type.LsiTypeParameter
+
 import site.addzero.lsi.core.LsiSymbolId
 
 /** 收集单个源码注解中以结构化形式出现的全部稳定符号引用。 */

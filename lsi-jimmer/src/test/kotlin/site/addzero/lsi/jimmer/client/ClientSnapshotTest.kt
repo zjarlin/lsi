@@ -3,8 +3,8 @@ package site.addzero.lsi.jimmer.client
 import kotlin.test.Test
 import kotlin.test.assertNotEquals
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiVariance
 
 class ClientSnapshotTest {
 

@@ -3,10 +3,10 @@ package site.addzero.lsi.jimmer.dto
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.jimmer.ImmutableSchema
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiType
 
 /** 按 DTO 声明顺序返回枚举常量到映射值的索引。 */
 fun DtoEnumType.mappingsByConstant(): Map<String, String> {
@@ -23,7 +23,7 @@ fun DtoEnumType.mappingsByValue(): Map<String, String> {
 }
 
 /** 返回枚举映射在目标源码语言中暴露的标量类型。 */
-fun DtoEnumType.scalarType(targetLanguage: LsiLanguage): LsiTypeRef {
+fun DtoEnumType.scalarType(targetLanguage: LsiLanguage): LsiType {
     val language = targetLanguage.requireDtoTargetLanguage()
     if (numeric) {
         return LsiPrimitiveType(LsiPrimitiveKind.INT)

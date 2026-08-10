@@ -2,13 +2,13 @@ package site.addzero.lsi.jimmer.error
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
 
 /** 生成与前端无关且顺序稳定的 Error 语义快照。 */
 fun ErrorSchema.normalizedSnapshot(): String {
@@ -99,7 +99,7 @@ private fun String.escapeSnapshotField(): String {
     }
 }
 
-private fun LsiTypeRef.canonicalText(): String {
+private fun LsiType.canonicalText(): String {
     return when (this) {
         is LsiDeclaredType -> buildString {
             append(declarationId.value)
@@ -123,7 +123,7 @@ private fun LsiTypeRef.canonicalText(): String {
                 append('.')
             }
             append('(')
-            append(parameterTypes.joinToString(",", transform = LsiTypeRef::canonicalText))
+            append(parameterTypes.joinToString(",", transform = LsiType::canonicalText))
             append(")->")
             append(returnType.canonicalText())
         }

@@ -28,29 +28,29 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationMember
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
-import site.addzero.lsi.model.LsiArrayType
+import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiEnumEntry
 import site.addzero.lsi.model.LsiField
 import site.addzero.lsi.model.LsiFileAnnotationScope
 import site.addzero.lsi.model.LsiFunction
 import site.addzero.lsi.model.LsiOverride
 import site.addzero.lsi.model.LsiParameter
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeHierarchyEntry
 import site.addzero.lsi.model.LsiTypeSeed
 import site.addzero.lsi.model.LsiTypeSeedMode
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.toJvmCallableParameterType
 import site.addzero.lsi.model.mergeLsiTypeSeeds
-import site.addzero.lsi.model.toAnnotationMemberType
+import site.addzero.lsi.type.toAnnotationMemberType
 
 fun Resolver.toLsiWorkspace(
     frontendOptions: LsiFrontendOptions,
@@ -247,7 +247,7 @@ internal class KspLsiWorkspaceBuilder(
                     if (superType.resolve().isError) {
                         null
                     } else {
-                        typeContext.toLsiType(superType, typeParameterIds) as? site.addzero.lsi.model.LsiDeclaredType
+                        typeContext.toLsiType(superType, typeParameterIds) as? site.addzero.lsi.type.LsiDeclaredType
                     }
                 }
                 .filterNot { superType -> superType.declarationId == typeId }
@@ -419,7 +419,7 @@ internal class KspLsiWorkspaceBuilder(
         )
     }
 
-    private fun ClassKind.isImplicitObjectSuperType(type: LsiTypeRef): Boolean {
+    private fun ClassKind.isImplicitObjectSuperType(type: LsiType): Boolean {
         return this in setOf(ClassKind.INTERFACE, ClassKind.ANNOTATION_CLASS) &&
             type is LsiDeclaredType &&
             type.declarationId == JAVA_LANG_OBJECT_ID

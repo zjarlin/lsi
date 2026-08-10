@@ -5,11 +5,11 @@ import site.addzero.lsi.jimmer.error.ErrorSchema
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiDeclaredType
+import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
 
 internal class ClientExceptionMetadataResolver private constructor(
@@ -407,7 +407,7 @@ private fun LsiTypeDeclaration.checkedException(
 private fun LsiTypeDeclaration.directClassSuperTypeId(
     typesById: Map<LsiSymbolId, LsiTypeDeclaration>,
 ): LsiSymbolId? {
-    val superTypeIds = superTypes.mapNotNull(LsiTypeRef::declaredTypeId)
+    val superTypeIds = superTypes.mapNotNull(LsiType::declaredTypeId)
     return superTypeIds.firstOrNull { typeId ->
         typeId == CODE_BASED_EXCEPTION ||
             typeId == CODE_BASED_RUNTIME_EXCEPTION ||
@@ -438,7 +438,7 @@ private fun LsiAnnotation.classTypeIds(name: String): List<LsiSymbolId> {
     }
 }
 
-private fun LsiTypeRef.declaredTypeId(): LsiSymbolId? {
+private fun LsiType.declaredTypeId(): LsiSymbolId? {
     return (this as? LsiDeclaredType)?.declarationId
 }
 

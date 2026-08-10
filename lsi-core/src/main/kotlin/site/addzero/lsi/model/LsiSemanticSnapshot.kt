@@ -1,5 +1,18 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
+
 data class LsiSemanticSnapshotOptions(
     val platformNullability: LsiNullability = LsiNullability.NON_NULL,
     val normalizeUnitToVoid: Boolean = true,
@@ -172,7 +185,7 @@ private fun LsiTypeParameter.toSemanticSnapshot(options: LsiSemanticSnapshotOpti
     }
 }
 
-private fun LsiTypeRef.toSemanticSignature(options: LsiSemanticSnapshotOptions): String {
+private fun LsiType.toSemanticSignature(options: LsiSemanticSnapshotOptions): String {
     val base = when (this) {
         is LsiDeclaredType -> buildString {
             append(declarationId.value)

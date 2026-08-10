@@ -1,6 +1,6 @@
 package site.addzero.lsi.model
 
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 
 /**
  * 构成代码块的语言无关占位片段。
@@ -9,7 +9,7 @@ sealed interface LsiCodePart {
     data class Text(val value: String) : LsiCodePart
 
     data class Type(
-        val value: LsiTypeRef,
+        val value: LsiType,
         val referenceStyle: LsiTypeReferenceStyle = LsiTypeReferenceStyle.IMPORTED,
     ) : LsiCodePart
 
@@ -181,7 +181,7 @@ class LsiCodeBuilder internal constructor() {
     }
 
     fun type(
-        value: LsiTypeRef,
+        value: LsiType,
         referenceStyle: LsiTypeReferenceStyle = LsiTypeReferenceStyle.IMPORTED,
     ) {
         parts += LsiCodePart.Type(value, referenceStyle)

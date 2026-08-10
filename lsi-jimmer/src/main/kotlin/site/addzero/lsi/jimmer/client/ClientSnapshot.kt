@@ -2,7 +2,7 @@ package site.addzero.lsi.jimmer.client
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiVariance
 
 /** 生成可用于跨前端比较的稳定 Client 快照。 */
 fun ClientSchema.normalizedSnapshot(): String {

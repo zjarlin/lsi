@@ -4,10 +4,10 @@ import org.babyfish.jimmer.dto.compiler.DtoModifier
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.jimmer.isEntityAssociation
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiType
 
 /**
  * 返回 DTO 属性最终写入生成声明的值类型。
@@ -19,7 +19,7 @@ fun DtoProp.generatedValueType(
     immutableSchema: ImmutableSchema,
     targetLanguage: LsiLanguage,
     generatedTargetType: (DtoProp) -> LsiDeclaredType,
-): LsiTypeRef {
+): LsiType {
     require(graph.propsById[id] == this) {
         "DTO property does not belong to this graph: ${id.value}"
     }
@@ -52,7 +52,7 @@ fun DtoBaseProp.generatedElementValueType(
     immutableSchema: ImmutableSchema,
     targetLanguage: LsiLanguage,
     generatedTargetType: (DtoProp) -> LsiDeclaredType,
-): LsiTypeRef {
+): LsiType {
     require(graph.propsById[id] == this) {
         "DTO property does not belong to this graph: ${id.value}"
     }
@@ -73,7 +73,7 @@ private fun DtoBaseProp.generatedBaseValueType(
     immutableSchema: ImmutableSchema,
     targetLanguage: LsiLanguage,
     generatedTargetType: (DtoProp) -> LsiDeclaredType,
-): LsiTypeRef {
+): LsiType {
     val tailProp = tailProp(graph)
     val immutableProp = tailProp.boundImmutableProp(graph, immutableSchema)
     enumType?.let { enumType -> return enumType.scalarType(targetLanguage) }

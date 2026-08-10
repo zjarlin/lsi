@@ -6,16 +6,16 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.jimmer.targetIdPropOf
 import site.addzero.lsi.model.LsiAnnotation
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
 
 /** InputBuilder 将属性写入 DTO 时采用的稳定策略。 */
 enum class DtoInputBuilderBuildStrategy {
@@ -108,7 +108,7 @@ fun DtoProp.inputBuilderParameterType(
     immutableSchema: ImmutableSchema,
     targetLanguage: LsiLanguage,
     generatedDtoType: (DtoType) -> LsiDeclaredType,
-): LsiTypeRef {
+): LsiType {
     requireInputBuilderOwner(graph)
     val language = targetLanguage.requireDtoTargetLanguage()
     val valueType = when (this) {
@@ -128,7 +128,7 @@ fun DtoProp.inputBuilderBackingType(
     immutableSchema: ImmutableSchema,
     targetLanguage: LsiLanguage,
     generatedDtoType: (DtoType) -> LsiDeclaredType,
-): LsiTypeRef {
+): LsiType {
     val language = targetLanguage.requireDtoTargetLanguage()
     val parameterType = inputBuilderParameterType(
         graph = graph,
@@ -225,7 +225,7 @@ private fun DtoBaseProp.inputBuilderBaseValueType(
     immutableSchema: ImmutableSchema,
     targetLanguage: LsiLanguage,
     generatedDtoType: (DtoType) -> LsiDeclaredType,
-): LsiTypeRef {
+): LsiType {
     enumType?.let { enumType ->
         return if (enumType.numeric) {
             LsiPrimitiveType(LsiPrimitiveKind.INT)
@@ -292,12 +292,12 @@ private fun LsiLanguage.listTypeId(): LsiSymbolId = when (this) {
     LsiLanguage.UNKNOWN -> error("DTO target language must be Java or Kotlin")
 }
 
-private fun LsiTypeRef.isListType(): Boolean {
+private fun LsiType.isListType(): Boolean {
     val type = this as? LsiDeclaredType ?: return false
     return type.declarationId == JAVA_LIST_TYPE_ID || type.declarationId == KOTLIN_LIST_TYPE_ID
 }
 
-private fun LsiTypeRef.toInputBuilderTargetType(targetLanguage: LsiLanguage): LsiTypeRef {
+private fun LsiType.toInputBuilderTargetType(targetLanguage: LsiLanguage): LsiType {
     return when (this) {
         is LsiDeclaredType -> copy(
             declarationId = declarationId.toInputBuilderTargetTypeId(targetLanguage),
@@ -339,7 +339,7 @@ private fun LsiSymbolId.toInputBuilderTargetTypeId(targetLanguage: LsiLanguage):
     return targetName?.let { name -> LsiSymbolId.type(name) } ?: this
 }
 
-private fun LsiTypeRef.toNullableInputBuilderStorage(targetLanguage: LsiLanguage): LsiTypeRef {
+private fun LsiType.toNullableInputBuilderStorage(targetLanguage: LsiLanguage): LsiType {
     val nullableType = withRootNullability(true)
     return if (targetLanguage == LsiLanguage.JAVA && nullableType is LsiPrimitiveType) {
         nullableType.copy(boxed = true)
@@ -348,7 +348,7 @@ private fun LsiTypeRef.toNullableInputBuilderStorage(targetLanguage: LsiLanguage
     }
 }
 
-private fun LsiTypeRef.toInputBuilderParameterRepresentation(targetLanguage: LsiLanguage): LsiTypeRef {
+private fun LsiType.toInputBuilderParameterRepresentation(targetLanguage: LsiLanguage): LsiType {
     return if (
         targetLanguage == LsiLanguage.JAVA &&
         this is LsiPrimitiveType &&
@@ -360,7 +360,7 @@ private fun LsiTypeRef.toInputBuilderParameterRepresentation(targetLanguage: Lsi
     }
 }
 
-private fun LsiTypeRef.withRootNullability(nullable: Boolean): LsiTypeRef {
+private fun LsiType.withRootNullability(nullable: Boolean): LsiType {
     val nullability = if (nullable) LsiNullability.NULLABLE else LsiNullability.NON_NULL
     return when (this) {
         is LsiDeclaredType -> copy(nullability = nullability)

@@ -4,6 +4,13 @@ import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiOriginKind
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.toAnnotationMemberType
 
 enum class LsiVisibility {
     PUBLIC,
@@ -133,7 +140,7 @@ data class LsiTypeDeclaration(
     override val visibility: LsiVisibility = LsiVisibility.PUBLIC,
     val modality: LsiModality = LsiModality.FINAL,
     val typeParameters: List<LsiTypeParameter> = emptyList(),
-    val superTypes: List<LsiTypeRef> = emptyList(),
+    val superTypes: List<LsiType> = emptyList(),
     val memberIds: List<LsiSymbolId> = emptyList(),
     val enumEntries: List<LsiEnumEntry> = emptyList(),
     val annotationMembers: List<LsiAnnotationMember> = emptyList(),
@@ -144,9 +151,9 @@ data class LsiTypeDeclaration(
     override val origin: LsiOrigin,
     override val modifiers: Set<LsiModifier> = emptySet(),
     val nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
-    val superClass: LsiTypeRef? = null,
+    val superClass: LsiType? = null,
     val superClassConstructorArguments: List<LsiCodeBlock> = emptyList(),
-    val superInterfaces: List<LsiTypeRef> = emptyList(),
+    val superInterfaces: List<LsiType> = emptyList(),
     val primaryConstructor: LsiConstructor? = null,
     val members: List<LsiMember> = emptyList(),
 ) : LsiDeclaration, LsiMember {
@@ -159,9 +166,9 @@ data class LsiTypeDeclaration(
         modifiers: Set<LsiModifier> = emptySet(),
         documentation: String? = null,
         typeParameters: List<LsiTypeParameter> = emptyList(),
-        superClass: LsiTypeRef? = null,
+        superClass: LsiType? = null,
         superClassConstructorArguments: List<LsiCodeBlock> = emptyList(),
-        superInterfaces: List<LsiTypeRef> = emptyList(),
+        superInterfaces: List<LsiType> = emptyList(),
         primaryConstructor: LsiConstructor? = null,
         enumConstants: List<LsiEnumEntry> = emptyList(),
         members: List<LsiMember> = emptyList(),
@@ -243,7 +250,7 @@ data class LsiTypeDeclaration(
 
 data class LsiAnnotationMember(
     val name: String,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val vararg: Boolean = false,
     val hasDefault: Boolean = false,
     val declarationIndex: Int? = null,
@@ -304,7 +311,7 @@ data class LsiField(
     override val id: LsiSymbolId,
     override val name: String,
     val ownerId: LsiSymbolId,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val mutable: Boolean = false,
     val static: Boolean = false,
     override val visibility: LsiVisibility = LsiVisibility.PUBLIC,
@@ -320,7 +327,7 @@ data class LsiField(
 
     constructor(
         name: String,
-        type: LsiTypeRef,
+        type: LsiType,
         annotations: List<LsiAnnotation> = emptyList(),
         modifiers: Set<LsiModifier> = emptySet(),
         documentation: String? = null,
@@ -351,7 +358,7 @@ data class LsiProperty(
     override val id: LsiSymbolId,
     override val name: String,
     val ownerId: LsiSymbolId,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val getterName: String = name,
     val mutable: Boolean = false,
     val static: Boolean = false,
@@ -366,21 +373,21 @@ data class LsiProperty(
     override val modifiers: Set<LsiModifier> = emptySet(),
     val nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
     val initializer: LsiCodeBlock? = null,
-    val receiverType: LsiTypeRef? = null,
+    val receiverType: LsiType? = null,
     val getter: LsiAccessor? = null,
     val setter: LsiAccessor? = null,
 ) : LsiDeclaration, LsiMember {
 
     constructor(
         name: String,
-        type: LsiTypeRef,
+        type: LsiType,
         mutable: Boolean,
         nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
         annotations: List<LsiAnnotation> = emptyList(),
         modifiers: Set<LsiModifier> = emptySet(),
         documentation: String? = null,
         initializer: LsiCodeBlock? = null,
-        receiverType: LsiTypeRef? = null,
+        receiverType: LsiType? = null,
         getter: LsiAccessor? = null,
         setter: LsiAccessor? = null,
     ) : this(
@@ -422,12 +429,12 @@ data class LsiFunction(
     override val id: LsiSymbolId,
     override val name: String,
     val ownerId: LsiSymbolId?,
-    val returnType: LsiTypeRef,
+    val returnType: LsiType,
     val parameters: List<LsiParameter> = emptyList(),
-    val receiverType: LsiTypeRef? = null,
+    val receiverType: LsiType? = null,
     val suspending: Boolean = false,
     val typeParameters: List<LsiTypeParameter> = emptyList(),
-    val thrownTypes: List<LsiTypeRef> = emptyList(),
+    val thrownTypes: List<LsiType> = emptyList(),
     val static: Boolean = false,
     val modality: LsiModality = LsiModality.UNKNOWN,
     val overrides: List<LsiOverride> = emptyList(),
@@ -453,10 +460,10 @@ data class LsiFunction(
         documentation: String? = null,
         typeParameters: List<LsiTypeParameter> = emptyList(),
         reifiedTypeParameterIds: Set<LsiSymbolId> = emptySet(),
-        receiverType: LsiTypeRef? = null,
+        receiverType: LsiType? = null,
         parameters: List<LsiParameter> = emptyList(),
-        returnType: LsiTypeRef? = null,
-        thrownTypes: List<LsiTypeRef> = emptyList(),
+        returnType: LsiType? = null,
+        thrownTypes: List<LsiType> = emptyList(),
         body: LsiCodeBlock = LsiCodeBlock.EMPTY,
         bodyStyle: LsiBodyStyle = LsiBodyStyle.BLOCK,
     ) : this(
@@ -523,7 +530,7 @@ data class LsiConstructor(
     val primary: Boolean = false,
     val parameters: List<LsiParameter> = emptyList(),
     val typeParameters: List<LsiTypeParameter> = emptyList(),
-    val thrownTypes: List<LsiTypeRef> = emptyList(),
+    val thrownTypes: List<LsiType> = emptyList(),
     override val visibility: LsiVisibility = LsiVisibility.PUBLIC,
     override val documentation: String? = null,
     override val sourceDocumentation: String? = null,
@@ -541,7 +548,7 @@ data class LsiConstructor(
         documentation: String? = null,
         typeParameters: List<LsiTypeParameter> = emptyList(),
         parameters: List<LsiParameter> = emptyList(),
-        thrownTypes: List<LsiTypeRef> = emptyList(),
+        thrownTypes: List<LsiType> = emptyList(),
         body: LsiCodeBlock = LsiCodeBlock.EMPTY,
         delegationCall: LsiDelegationCall? = null,
     ) : this(
@@ -590,7 +597,7 @@ data class LsiParameter(
     override val name: String,
     val callableId: LsiSymbolId,
     val index: Int,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val vararg: Boolean = false,
     val hasDefault: Boolean = false,
     override val documentation: String? = null,
@@ -605,7 +612,7 @@ data class LsiParameter(
 
     constructor(
         name: String,
-        type: LsiTypeRef,
+        type: LsiType,
         nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
         annotations: List<LsiAnnotation> = emptyList(),
         modifiers: Set<LsiModifier> = emptySet(),

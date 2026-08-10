@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.type.*
+
 import site.addzero.lsi.core.LsiSymbolId
 import kotlin.test.Test
 import kotlin.test.assertEquals

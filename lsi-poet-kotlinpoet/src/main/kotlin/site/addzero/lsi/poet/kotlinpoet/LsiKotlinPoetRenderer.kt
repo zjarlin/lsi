@@ -13,7 +13,7 @@ import com.squareup.kotlinpoet.TypeSpec
 import site.addzero.lsi.codegen.GeneratedArtifact
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiAccessor
 import site.addzero.lsi.codegen.LsiSourceArtifact
 import site.addzero.lsi.model.LsiAnnotation
@@ -44,7 +44,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
 
     /** 将单个 LSI 类型引用渲染为可嵌入现有 KotlinPoet 声明的类型。 */
     fun renderTypeName(
-        type: LsiTypeRef,
+        type: LsiType,
         typeNames: List<LsiTypeName>,
     ): TypeName {
         return type.toKotlinTypeName(typeNames)
@@ -314,7 +314,7 @@ private fun LsiAccessor.toKotlinGetter(typeNames: List<LsiTypeName>): FunSpec {
 }
 
 private fun LsiAccessor.toKotlinSetter(
-    type: LsiTypeRef,
+    type: LsiType,
     typeNames: List<LsiTypeName>,
 ): FunSpec {
     require(bodyStyle == LsiBodyStyle.BLOCK) {
@@ -409,7 +409,7 @@ private fun CodeBlock.Builder.addKotlinBracedExpression(
 }
 
 private fun FunSpec.Builder.addThrownTypes(
-    thrownTypes: List<LsiTypeRef>,
+    thrownTypes: List<LsiType>,
     typeNames: List<LsiTypeName>,
 ) {
     if (thrownTypes.isEmpty()) {

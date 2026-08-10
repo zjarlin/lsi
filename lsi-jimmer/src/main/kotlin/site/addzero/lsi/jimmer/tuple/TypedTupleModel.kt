@@ -2,8 +2,8 @@ package site.addzero.lsi.jimmer.tuple
 
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.collectTypeRefDependencies
 
 /** 当前工作区内全部 TypedTuple 的共享语义。 */
@@ -74,7 +74,7 @@ data class TypedTupleProperty(
     val sourceMemberId: LsiSymbolId,
     val name: String,
     val index: Int,
-    val type: LsiTypeRef,
+    val type: LsiType,
 ) {
     val nullable: Boolean
         get() = type.nullability == LsiNullability.NULLABLE

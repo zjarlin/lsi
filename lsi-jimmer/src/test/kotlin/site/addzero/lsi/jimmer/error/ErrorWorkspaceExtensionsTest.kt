@@ -15,11 +15,11 @@ import site.addzero.lsi.model.LsiAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.model.LsiEnumEntry
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
 
 class ErrorWorkspaceExtensionsTest {
@@ -285,7 +285,7 @@ class ErrorWorkspaceExtensionsTest {
 
     private fun errorField(
         name: String,
-        type: LsiTypeRef,
+        type: LsiType,
         list: Boolean = false,
         nullable: Boolean = false,
         documentation: String = "",
@@ -325,8 +325,8 @@ class ErrorWorkspaceExtensionsTest {
         val ERROR_FAMILY = LsiSymbolId.type("org.babyfish.jimmer.error.ErrorFamily")
         val ERROR_FIELD = LsiSymbolId.type("org.babyfish.jimmer.error.ErrorField")
         val ERROR_FIELDS = LsiSymbolId.type("org.babyfish.jimmer.error.ErrorFields")
-        val STRING_TYPE = site.addzero.lsi.model.LsiDeclaredType(LsiSymbolId.type("java.lang.String"))
-        val DATE_TIME_TYPE = site.addzero.lsi.model.LsiDeclaredType(LsiSymbolId.type("java.time.LocalDateTime"))
+        val STRING_TYPE = site.addzero.lsi.type.LsiDeclaredType(LsiSymbolId.type("java.lang.String"))
+        val DATE_TIME_TYPE = site.addzero.lsi.type.LsiDeclaredType(LsiSymbolId.type("java.time.LocalDateTime"))
         val SYNTHETIC_ORIGIN = LsiOrigin(LsiOriginKind.SYNTHETIC)
         val BINARY_ORIGIN = LsiOrigin(LsiOriginKind.BINARY)
     }

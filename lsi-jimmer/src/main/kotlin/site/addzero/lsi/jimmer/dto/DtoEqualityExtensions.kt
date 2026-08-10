@@ -7,9 +7,9 @@ import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.jimmer.elementTypeOrSelf
 import site.addzero.lsi.jimmer.jimmerTypeSignature
 import site.addzero.lsi.jimmer.targetIdPropOf
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiType
 
 /** DTO 属性值参与相等性与哈希计算时采用的语义。 */
 enum class DtoValueEqualityKind {
@@ -100,7 +100,7 @@ private fun DtoBaseProp.associatedIdValueEqualityKind(
     return idClientTypes.first().toDtoValueEqualityKind()
 }
 
-private fun LsiTypeRef.toDtoValueEqualityKind(): DtoValueEqualityKind {
+private fun LsiType.toDtoValueEqualityKind(): DtoValueEqualityKind {
     return if (
         this is LsiArrayType ||
         this is LsiDeclaredType && declarationId == KOTLIN_ARRAY_TYPE_ID

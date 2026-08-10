@@ -4,10 +4,10 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.model.LsiEnumEntry
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeRef
+import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiWorkspace
 
 /** 控制 Error schema 的生成语义。 */
@@ -260,7 +260,7 @@ private fun LsiAnnotation.booleanValue(name: String): Boolean {
     return (arguments[name]?.value as? LsiAnnotationValue.BooleanValue)?.value ?: false
 }
 
-private fun LsiAnnotation.classValue(name: String): LsiTypeRef? {
+private fun LsiAnnotation.classValue(name: String): LsiType? {
     return (arguments[name]?.value as? LsiAnnotationValue.ClassValue)?.type
 }
 

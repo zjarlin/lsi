@@ -23,7 +23,7 @@ import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.jimmer.ImmutableProp
 import site.addzero.lsi.jimmer.ImmutableType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.parseLsiDocumentation
 
 /**

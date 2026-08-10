@@ -20,21 +20,21 @@ import com.google.devtools.ksp.symbol.Variance
 import site.addzero.lsi.model.LsiFrontendOptions
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiJvmTypeParameterDescriptor
 import site.addzero.lsi.model.LsiJvmTypeParameterOwner
 import site.addzero.lsi.model.LsiJvmTypeSignatureContext
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.mergeAnnotations
 import site.addzero.lsi.model.toJvmCallableParameterType
 import site.addzero.lsi.model.toJvmReferenceType
@@ -42,13 +42,13 @@ import site.addzero.lsi.model.toJvmTypeSignature
 
 fun KSTypeReference.toLsiType(
     resolver: Resolver,
-): LsiTypeRef {
+): LsiType {
     return KspLsiTypeContext(resolver).toLsiType(this)
 }
 
 fun KSType.toLsiType(
     resolver: Resolver,
-): LsiTypeRef {
+): LsiType {
     return KspLsiTypeContext(resolver).toLsiType(this)
 }
 
@@ -64,7 +64,7 @@ internal class KspLsiTypeContext(
         reference: KSTypeReference,
         typeParameterIds: Map<KSTypeParameter, LsiSymbolId> = emptyMap(),
         primitiveBoxed: Boolean? = null,
-    ): LsiTypeRef {
+    ): LsiType {
         val type = reference.resolve()
         val sourceArguments = reference.element
             ?.typeArguments
@@ -86,7 +86,7 @@ internal class KspLsiTypeContext(
     fun toLsiType(
         type: KSType,
         typeParameterIds: Map<KSTypeParameter, LsiSymbolId> = emptyMap(),
-    ): LsiTypeRef {
+    ): LsiType {
         return toLsiType(type, typeParameterIds, toLsiTypeAnnotations(type.annotations))
     }
 
@@ -96,7 +96,7 @@ internal class KspLsiTypeContext(
         annotations: List<LsiAnnotation>,
         primitiveBoxed: Boolean? = null,
         arguments: List<KSTypeArgument> = type.arguments,
-    ): LsiTypeRef {
+    ): LsiType {
         if (type.isError) {
             return LsiUnresolvedType(
                 displayName = type.toString().ifBlank { "<error>" },
@@ -342,7 +342,7 @@ internal class KspLsiTypeContext(
         parameter: KSTypeParameter,
         typeParameterIds: Map<KSTypeParameter, LsiSymbolId>,
         annotations: List<LsiAnnotation>,
-    ): LsiTypeRef {
+    ): LsiType {
         val parameterId = typeParameterIds[parameter] ?: parameter.toLsiTypeParameterId()
         return if (parameterId != null) {
             LsiTypeParameterRef(
@@ -401,9 +401,9 @@ internal class KspLsiTypeContext(
     }
 }
 
-private fun LsiTypeRef.withAdditionalAnnotations(
+private fun LsiType.withAdditionalAnnotations(
     additionalAnnotations: List<LsiAnnotation>,
-): LsiTypeRef {
+): LsiType {
     if (additionalAnnotations.isEmpty()) {
         return this
     }

@@ -2,20 +2,20 @@ package site.addzero.lsi.jimmer.dto
 
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
-import site.addzero.lsi.model.LsiVariance
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 
 /** 将冻结的 DTO 类型引用解析为目标源码语言的 LSI 类型。 */
-fun DtoTypeRef.toLsiType(targetLanguage: LsiLanguage): LsiTypeRef {
+fun DtoTypeRef.toLsiType(targetLanguage: LsiLanguage): LsiType {
     val language = targetLanguage.requireDtoTargetLanguage()
     DTO_RENDERABLE_BUILTIN_TYPE_ARITIES[typeName]?.let { expectedArity ->
         require(arguments.size == expectedArity) {
@@ -69,7 +69,7 @@ internal fun LsiLanguage.requireDtoTargetLanguage(): LsiLanguage {
     return this
 }
 
-internal fun LsiTypeRef.boxedForTypeArgument(targetLanguage: LsiLanguage): LsiTypeRef {
+internal fun LsiType.boxedForTypeArgument(targetLanguage: LsiLanguage): LsiType {
     return if (targetLanguage == LsiLanguage.JAVA && this is LsiPrimitiveType) {
         copy(boxed = true)
     } else {
@@ -78,7 +78,7 @@ internal fun LsiTypeRef.boxedForTypeArgument(targetLanguage: LsiLanguage): LsiTy
 }
 
 /** 将冻结类型递归归一化为 DTO 目标语言中的声明坐标。 */
-internal fun LsiTypeRef.toDtoTargetType(targetLanguage: LsiLanguage): LsiTypeRef {
+internal fun LsiType.toDtoTargetType(targetLanguage: LsiLanguage): LsiType {
     val language = targetLanguage.requireDtoTargetLanguage()
     return when (this) {
         is LsiDeclaredType -> copy(
@@ -113,8 +113,8 @@ internal fun LsiTypeRef.toDtoTargetType(targetLanguage: LsiLanguage): LsiTypeRef
 }
 
 /** 判断已生成类型与原生属性类型在目标源码语言中是否具有相同表示。 */
-internal fun LsiTypeRef.hasSameDtoSourceType(
-    other: LsiTypeRef,
+internal fun LsiType.hasSameDtoSourceType(
+    other: LsiType,
     targetLanguage: LsiLanguage,
 ): Boolean {
     val language = targetLanguage.requireDtoTargetLanguage()
@@ -126,7 +126,7 @@ internal fun LsiTypeRef.hasSameDtoSourceType(
     }
 }
 
-private fun LsiTypeRef.toJavaDtoSourceType(boxPrimitive: Boolean = false): LsiTypeRef {
+private fun LsiType.toJavaDtoSourceType(boxPrimitive: Boolean = false): LsiType {
     return when (this) {
         is LsiDeclaredType -> copy(
             arguments = arguments.map { argument ->
@@ -177,7 +177,7 @@ private fun LsiTypeRef.toJavaDtoSourceType(boxPrimitive: Boolean = false): LsiTy
     }
 }
 
-private fun LsiTypeRef.toKotlinDtoSourceType(referenceContext: Boolean = false): LsiTypeRef {
+private fun LsiType.toKotlinDtoSourceType(referenceContext: Boolean = false): LsiType {
     val sourceNullability = kotlinDtoSourceNullability()
     return when (this) {
         is LsiDeclaredType -> {
@@ -268,7 +268,7 @@ private fun LsiTypeRef.toKotlinDtoSourceType(referenceContext: Boolean = false):
     }
 }
 
-private fun LsiTypeRef.kotlinDtoSourceNullability(): LsiNullability {
+private fun LsiType.kotlinDtoSourceNullability(): LsiNullability {
     return if (nullability == LsiNullability.NULLABLE) {
         LsiNullability.NULLABLE
     } else {
@@ -310,7 +310,7 @@ private fun LsiPrimitiveKind.kotlinDtoPrimitiveArrayTypeIdOrNull(): LsiSymbolId?
 }
 
 /** 覆盖 DTO 生成值类型的根可空性。 */
-internal fun LsiTypeRef.withDtoRootNullability(nullable: Boolean): LsiTypeRef {
+internal fun LsiType.withDtoRootNullability(nullable: Boolean): LsiType {
     val nullability = if (nullable) LsiNullability.NULLABLE else LsiNullability.NON_NULL
     return when (this) {
         is LsiDeclaredType -> copy(nullability = nullability)
@@ -323,10 +323,10 @@ internal fun LsiTypeRef.withDtoRootNullability(nullable: Boolean): LsiTypeRef {
 }
 
 /** 按 Java 源码表示规则装箱 DTO 根 primitive 类型。 */
-internal fun LsiTypeRef.withDtoJavaBoxing(
+internal fun LsiType.withDtoJavaBoxing(
     targetLanguage: LsiLanguage,
     force: Boolean,
-): LsiTypeRef {
+): LsiType {
     if (targetLanguage != LsiLanguage.JAVA || this !is LsiPrimitiveType) {
         return this
     }
@@ -334,22 +334,22 @@ internal fun LsiTypeRef.withDtoJavaBoxing(
 }
 
 /** 将当前类型包装为目标语言的 DTO Collection。 */
-internal fun LsiTypeRef.toDtoCollectionType(targetLanguage: LsiLanguage): LsiDeclaredType {
+internal fun LsiType.toDtoCollectionType(targetLanguage: LsiLanguage): LsiDeclaredType {
     return toDtoContainerType(targetLanguage, targetLanguage.dtoCollectionTypeId())
 }
 
 /** 将当前类型包装为目标语言的 DTO List。 */
-internal fun LsiTypeRef.toDtoListType(targetLanguage: LsiLanguage): LsiDeclaredType {
+internal fun LsiType.toDtoListType(targetLanguage: LsiLanguage): LsiDeclaredType {
     return toDtoContainerType(targetLanguage, targetLanguage.dtoListTypeId())
 }
 
 /** 判断当前声明是否已是 Java 或 Kotlin DTO List。 */
-internal fun LsiTypeRef.isDtoListType(): Boolean {
+internal fun LsiType.isDtoListType(): Boolean {
     return this is LsiDeclaredType &&
         (declarationId == JAVA_LIST_TYPE_ID || declarationId == KOTLIN_LIST_TYPE_ID)
 }
 
-private fun LsiTypeRef.toDtoContainerType(
+private fun LsiType.toDtoContainerType(
     targetLanguage: LsiLanguage,
     containerTypeId: LsiSymbolId,
 ): LsiDeclaredType {

@@ -1,11 +1,18 @@
 package site.addzero.lsi.model
 
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiUnresolvedType
 
 /**
  * 收集类型引用中的声明、类型参数和类型使用注解依赖。
  */
-fun MutableSet<LsiSymbolId>.collectTypeRefDependencies(type: LsiTypeRef) {
+fun MutableSet<LsiSymbolId>.collectTypeRefDependencies(type: LsiType) {
     type.annotations.forEach(::collectAnnotationDependencies)
     when (type) {
         is LsiArrayType -> collectTypeRefDependencies(type.elementType)

@@ -1,11 +1,22 @@
 package site.addzero.lsi.model
 
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveType
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiUnresolvedType
+import site.addzero.lsi.type.LsiVariance
 
 data class LsiResolvedProperty(
     val ownerId: LsiSymbolId,
     val declaration: LsiProperty,
-    val type: LsiTypeRef,
+    val type: LsiType,
     val annotations: List<LsiAnnotation>,
     val overrideChain: List<LsiProperty>,
     val inheritanceDistance: Int,
@@ -57,9 +68,9 @@ class LsiTypeSystem(
     }
 
     fun substitute(
-        type: LsiTypeRef,
+        type: LsiType,
         substitutions: Map<LsiSymbolId, LsiTypeArgument>,
-    ): LsiTypeRef {
+    ): LsiType {
         return when (type) {
             is LsiDeclaredType -> type.copy(
                 arguments = type.arguments.map { argument -> substitute(argument, substitutions) },
@@ -146,8 +157,8 @@ class LsiTypeSystem(
 
     /** 判断 source 类型的值能否赋给 target 类型，不依赖 javac 或 KSP 类型对象。 */
     fun isAssignable(
-        source: LsiTypeRef,
-        target: LsiTypeRef,
+        source: LsiType,
+        target: LsiType,
     ): Boolean {
         return isAssignable(source, target, mutableSetOf())
     }
@@ -297,8 +308,8 @@ class LsiTypeSystem(
     }
 
     private fun isAssignable(
-        source: LsiTypeRef,
-        target: LsiTypeRef,
+        source: LsiType,
+        target: LsiType,
         visiting: MutableSet<Pair<String, String>>,
     ): Boolean {
         val nullabilityProvenByTypeParameterBounds =
@@ -405,8 +416,8 @@ class LsiTypeSystem(
     }
 
     private fun areEquivalentTypes(
-        left: LsiTypeRef,
-        right: LsiTypeRef,
+        left: LsiType,
+        right: LsiType,
         visiting: MutableSet<Pair<String, String>>,
     ): Boolean {
         return isAssignable(left, right, visiting) && isAssignable(right, left, visiting)
@@ -547,10 +558,10 @@ fun mergeAnnotations(
     return declared + inherited.filter { annotation -> annotation.type !in declaredTypes }
 }
 
-private fun LsiTypeRef.withUseSiteMetadata(
+private fun LsiType.withUseSiteMetadata(
     useSiteNullability: LsiNullability,
     useSiteAnnotations: List<LsiAnnotation>,
-): LsiTypeRef {
+): LsiType {
     val resolvedNullability = when (useSiteNullability) {
         LsiNullability.NULLABLE -> LsiNullability.NULLABLE
         LsiNullability.PLATFORM -> LsiNullability.PLATFORM

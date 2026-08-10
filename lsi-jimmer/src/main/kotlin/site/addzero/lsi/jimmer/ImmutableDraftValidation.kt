@@ -5,9 +5,9 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationValue
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiTypeDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.model.LsiWorkspace
@@ -843,7 +843,7 @@ private fun ImmutableProp.temporalTarget(): ImmutableDraftTemporalTarget? {
     }
 }
 
-private fun site.addzero.lsi.model.LsiTypeRef.declarationIdOrNull(): LsiSymbolId? {
+private fun site.addzero.lsi.type.LsiType.declarationIdOrNull(): LsiSymbolId? {
     return (this as? LsiDeclaredType)?.declarationId
 }
 

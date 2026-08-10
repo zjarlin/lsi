@@ -3,20 +3,20 @@ package site.addzero.lsi.apt
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiFrontendOptions
 import site.addzero.lsi.model.LsiAnnotation
-import site.addzero.lsi.model.LsiArrayType
-import site.addzero.lsi.model.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunctionType
-import site.addzero.lsi.model.LsiNullability
-import site.addzero.lsi.model.LsiPrimitiveKind
-import site.addzero.lsi.model.LsiPrimitiveType
+import site.addzero.lsi.type.LsiArrayType
+import site.addzero.lsi.type.LsiDeclaredType
+import site.addzero.lsi.type.LsiFunctionType
+import site.addzero.lsi.type.LsiNullability
+import site.addzero.lsi.type.LsiPrimitiveKind
+import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiJvmTypeParameterDescriptor
 import site.addzero.lsi.model.LsiJvmTypeParameterOwner
 import site.addzero.lsi.model.LsiJvmTypeSignatureContext
-import site.addzero.lsi.model.LsiTypeArgument
-import site.addzero.lsi.model.LsiTypeParameter
-import site.addzero.lsi.model.LsiTypeParameterRef
-import site.addzero.lsi.model.LsiTypeRef
-import site.addzero.lsi.model.LsiUnresolvedType
+import site.addzero.lsi.type.LsiTypeArgument
+import site.addzero.lsi.type.LsiTypeParameter
+import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiType
+import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.model.mergeAnnotations
 import site.addzero.lsi.model.toJvmCallableParameterType
 import site.addzero.lsi.model.toJvmReferenceType
@@ -39,7 +39,7 @@ import javax.lang.model.type.WildcardType
 fun TypeMirror.toLsiType(
     processingEnvironment: ProcessingEnvironment,
     frontendOptions: LsiFrontendOptions = LsiFrontendOptions(),
-): LsiTypeRef {
+): LsiType {
     return AptLsiContext(
         processingEnvironment,
         frontendOptions,
@@ -49,7 +49,7 @@ fun TypeMirror.toLsiType(
 internal fun AptLsiContext.toLsiType(
     type: TypeMirror,
     typeParameterIds: Map<TypeParameterElement, LsiSymbolId> = emptyMap(),
-): LsiTypeRef {
+): LsiType {
     return when (type) {
         is ErrorType -> toLsiErrorType(type, typeParameterIds)
         is PrimitiveType -> LsiPrimitiveType(
@@ -289,7 +289,7 @@ private fun AptLsiContext.isImplicitObjectBound(type: TypeMirror): Boolean {
 private fun AptLsiContext.toLsiDeclaredType(
     type: DeclaredType,
     typeParameterIds: Map<TypeParameterElement, LsiSymbolId>,
-): LsiTypeRef {
+): LsiType {
     val typeElement = type.asElement() as TypeElement
     val qualifiedName = typeElement.qualifiedName.toString()
     APT_BOXED_PRIMITIVE_KINDS[qualifiedName]?.let { primitiveKind ->
@@ -313,7 +313,7 @@ private fun AptLsiContext.toLsiDeclaredType(
 private fun AptLsiContext.toLsiErrorType(
     type: ErrorType,
     typeParameterIds: Map<TypeParameterElement, LsiSymbolId>,
-): LsiTypeRef {
+): LsiType {
     val errorElement = type.asElement() as? TypeElement
         ?: return LsiUnresolvedType(
             displayName = type.toString(),
@@ -354,7 +354,7 @@ private fun AptLsiContext.toLsiErrorType(
 private fun AptLsiContext.toLsiTypeParameterRef(
     type: TypeVariable,
     typeParameterIds: Map<TypeParameterElement, LsiSymbolId>,
-): LsiTypeRef {
+): LsiType {
     val parameter = type.asElement() as? TypeParameterElement
         ?: return LsiUnresolvedType(
             displayName = type.toString(),
@@ -375,7 +375,7 @@ private fun AptLsiContext.toLsiTypeParameterRef(
     }
 }
 
-private fun AptLsiContext.toLsiNoType(type: NoType): LsiTypeRef {
+private fun AptLsiContext.toLsiNoType(type: NoType): LsiType {
     return if (type.kind == TypeKind.VOID) {
         LsiPrimitiveType(
             kind = LsiPrimitiveKind.VOID,
@@ -392,7 +392,7 @@ private fun AptLsiContext.toLsiNoType(type: NoType): LsiTypeRef {
 private fun AptLsiContext.toLsiWildcardFallback(
     type: WildcardType,
     typeParameterIds: Map<TypeParameterElement, LsiSymbolId>,
-): LsiTypeRef {
+): LsiType {
     val bound = type.superBound ?: type.extendsBound
     val annotations = toLsiTypeAnnotations(type)
     return if (bound != null) {
@@ -409,9 +409,9 @@ private fun AptLsiContext.toLsiTypeAnnotations(type: TypeMirror): List<LsiAnnota
     return toLsiAnnotations(type.annotationMirrors, null)
 }
 
-private fun LsiTypeRef.withAdditionalAnnotations(
+private fun LsiType.withAdditionalAnnotations(
     additionalAnnotations: List<LsiAnnotation>,
-): LsiTypeRef {
+): LsiType {
     if (additionalAnnotations.isEmpty()) {
         return this
     }
