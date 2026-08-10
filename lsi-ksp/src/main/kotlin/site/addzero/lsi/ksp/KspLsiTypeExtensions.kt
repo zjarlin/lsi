@@ -17,6 +17,7 @@ import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.symbol.Nullability
 import com.google.devtools.ksp.symbol.Origin
 import com.google.devtools.ksp.symbol.Variance
+import com.google.devtools.ksp.validate
 import site.addzero.lsi.model.LsiFrontendOptions
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.anno.LsiAnnotation
@@ -112,6 +113,12 @@ internal class KspLsiTypeContext(
                 displayName = type.toString().ifBlank { declaration.simpleName.asString() },
                 annotations = annotations,
             )
+        if (declaration is KSClassDeclaration && !declaration.validate()) {
+            return LsiUnresolvedType(
+                displayName = qualifiedName,
+                annotations = annotations,
+            )
+        }
         val primitiveKind = qualifiedName.toLsiPrimitiveKind()
         if (primitiveKind != null) {
             return LsiPrimitiveType(

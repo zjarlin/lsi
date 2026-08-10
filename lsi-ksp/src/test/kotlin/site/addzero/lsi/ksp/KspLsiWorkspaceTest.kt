@@ -56,6 +56,7 @@ import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameterRef
+import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.type.LsiVariance
 import site.addzero.lsi.model.LsiWorkspace
 
@@ -1785,6 +1786,45 @@ class KspLsiWorkspaceTest {
 
         assertTrue(exception.message.orEmpty().contains("current round"))
         assertFalse(declarationsRead)
+    }
+
+    @Test
+    fun `freezes reference to invalid source declaration as unresolved type`() {
+        val sourceFile = file("/workspace/src/main/kotlin/demo/Owner.kt")
+        val invalidType = classDeclaration(
+            qualifiedName = "demo.GeneratedView",
+            classKind = ClassKind.CLASS,
+            file = file("/workspace/src/main/kotlin/demo/GeneratedView.kt"),
+            valid = false,
+        )
+        lateinit var owner: KSClassDeclaration
+        val value = property(
+            name = "value",
+            parent = { owner },
+            type = typeReference(type(invalidType)),
+            annotations = emptySequence(),
+            file = sourceFile,
+            line = 2,
+        )
+        owner = classDeclaration(
+            qualifiedName = "demo.Owner",
+            classKind = ClassKind.INTERFACE,
+            file = sourceFile,
+            declarations = { listOf(value) },
+        )
+
+        val workspace = listOf(owner).toLsiWorkspace(
+            resolver = resolver(classesByName = mapOf("demo.GeneratedView" to invalidType)),
+            frontendOptions = frontendOptions,
+            fileScopes = listOf(sourceFile).toKspLsiFileScopePlan().validScopes,
+        )
+
+        assertEquals(
+            "demo.GeneratedView",
+            assertIs<LsiUnresolvedType>(
+                workspace.requireProperty(LsiSymbolId.type("demo.Owner"), "value").type,
+            ).displayName,
+        )
     }
 
     private fun LsiWorkspace.requireProperty(ownerId: LsiSymbolId, name: String): LsiProperty {
