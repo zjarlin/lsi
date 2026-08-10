@@ -3,6 +3,8 @@ package site.addzero.lsi.model
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.method.LsiMethod
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.type.LsiFunctionType
@@ -105,7 +107,7 @@ private fun LsiDeclaration.toSemanticSnapshotLine(options: LsiSemanticSnapshotOp
             visibility.name,
             annotations.toSemanticSnapshot(options),
         ).joinToString("|")
-        is LsiFunction -> listOf(
+        is LsiMethod -> listOf(
             "function",
             id.value,
             name,

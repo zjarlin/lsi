@@ -1,6 +1,7 @@
 package site.addzero.lsi.model
 
 import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.method.LsiMethod
 
 import site.addzero.lsi.clazz.LsiClass
 
@@ -86,7 +87,7 @@ class LsiSourceReferencesTest {
                         },
                     ),
                 ),
-                LsiFunction(
+                LsiMethod(
                     name = "render",
                     receiverType = LsiDeclaredType(LsiSymbolId.type("demo.Receiver")),
                     returnType = LsiDeclaredType(LsiSymbolId.type("demo.Result")),

@@ -9,7 +9,7 @@ import site.addzero.lsi.diagnostic.LsiDiagnosticSeverity
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiDeclaration
 import site.addzero.lsi.type.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.type.LsiFunctionType
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.type.LsiNullability
@@ -301,7 +301,7 @@ private class DtoInterfaceContractResolver(
                 diagnostics,
                 fallbackLocation,
             )
-            is LsiFunction -> collectFunction(
+            is LsiMethod -> collectFunction(
                 dtoType,
                 declaringType,
                 member,
@@ -356,7 +356,7 @@ private class DtoInterfaceContractResolver(
     private fun collectFunction(
         dtoType: DtoType,
         declaringType: LsiClass,
-        function: LsiFunction,
+        function: LsiMethod,
         substitutions: Map<LsiSymbolId, LsiTypeArgument>,
         rootIndex: Int,
         distance: Int,
@@ -675,7 +675,7 @@ private class DtoInterfaceContractResolver(
     private fun illegalFunctionDiagnostic(
         dtoType: DtoType,
         declaringType: LsiClass,
-        function: LsiFunction,
+        function: LsiMethod,
         reason: String,
         fallbackLocation: LsiLocation,
     ): LsiDiagnostic {
@@ -730,7 +730,7 @@ private data class PropCandidate(
     val distance: Int,
 )
 
-private fun LsiFunction.setterPropertyName(returnType: LsiType): String? {
+private fun LsiMethod.setterPropertyName(returnType: LsiType): String? {
     if (
         parameters.size != 1 ||
         !returnType.isVoidLike() ||
@@ -755,7 +755,7 @@ private fun LsiProperty.setterName(): String {
     return "set$suffix"
 }
 
-private fun LsiFunction.isObjectMethod(): Boolean {
+private fun LsiMethod.isObjectMethod(): Boolean {
     if (name == "hashCode" && parameters.isEmpty()) {
         return true
     }

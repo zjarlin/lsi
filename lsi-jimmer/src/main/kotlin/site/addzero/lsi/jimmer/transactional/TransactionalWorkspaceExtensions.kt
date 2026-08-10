@@ -10,9 +10,9 @@ import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.field.LsiField
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiModality
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.clazz.classDeclaration
@@ -202,7 +202,7 @@ private class TransactionalSchemaBuilder {
         language: LsiLanguage,
     ): TransactionalMethod? {
         val directTx = declaration.annotations.annotation(TX_ANNOTATION)
-        val supportedCallable = declaration is LsiFunction ||
+        val supportedCallable = declaration is LsiMethod ||
             declaration is LsiProperty && declaration.origin.source?.language == LsiLanguage.JAVA
         if (!supportedCallable) {
             if (directTx != null) {
@@ -374,7 +374,7 @@ private data class TransactionalParameterAnnotationProjection(
 
 private fun LsiDeclaration.toCallable(): CallableModel? {
     return when (this) {
-        is LsiFunction -> CallableModel(
+        is LsiMethod -> CallableModel(
             name = name,
             sourceKind = TransactionalMethodSourceKind.FUNCTION,
             visibility = visibility,

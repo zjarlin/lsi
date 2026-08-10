@@ -36,12 +36,12 @@ import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.model.LsiFile
 import site.addzero.lsi.model.LsiFileNameStyle
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiImport
 import site.addzero.lsi.model.LsiMember
 import site.addzero.lsi.model.LsiModifier
 import site.addzero.lsi.model.LsiNameStyle
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
@@ -189,7 +189,7 @@ class LsiKotlinPoetRendererTest {
                     modifiers = setOf(LsiModifier.PRIVATE),
                     initializer = LsiCodeBlock.build { name("name") },
                 ),
-                LsiFunction(
+                LsiMethod(
                     name = "message",
                     modifiers = setOf(LsiModifier.PUBLIC),
                     returnType = stringType,
@@ -246,7 +246,7 @@ class LsiKotlinPoetRendererTest {
             name = "Broken",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
-                LsiFunction(
+                LsiMethod(
                     name = "value",
                     returnType = LsiUnresolvedType("Missing"),
                 )
@@ -318,7 +318,7 @@ class LsiKotlinPoetRendererTest {
                     ),
                 )
             ),
-            members = listOf(LsiFunction(name = "value", returnType = annotatedType)),
+            members = listOf(LsiMethod(name = "value", returnType = annotatedType)),
         )
 
         val generated = LsiKotlinPoetRenderer().render(artifact(type, "NestedAnnotation"))
@@ -346,7 +346,7 @@ class LsiKotlinPoetRendererTest {
                 thrownTypes = listOf(exceptionType),
             ),
             members = listOf(
-                LsiFunction(
+                LsiMethod(
                     name = "consume",
                     modifiers = setOf(LsiModifier.PUBLIC, LsiModifier.OVERRIDE),
                     returnType = LsiPrimitiveType(LsiPrimitiveKind.UNIT),
@@ -373,7 +373,7 @@ class LsiKotlinPoetRendererTest {
             name = "Returns",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
-                LsiFunction(
+                LsiMethod(
                     name = "message",
                     returnType = stringType,
                     body = LsiCodeBlock.build {
@@ -394,7 +394,7 @@ class LsiKotlinPoetRendererTest {
             name = "ReturnsBlock",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
-                LsiFunction(
+                LsiMethod(
                     name = "message",
                     returnType = stringType,
                     body = LsiCodeBlock.build {
@@ -433,7 +433,7 @@ class LsiKotlinPoetRendererTest {
                                 nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
                                 initializer = LsiCodeBlock.build { string("empty") },
                             ),
-                            LsiFunction(
+                            LsiMethod(
                                 name = "children*",
                                 nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
                             ),
@@ -510,7 +510,7 @@ class LsiKotlinPoetRendererTest {
                         },
                     ),
                 ),
-                LsiFunction(
+                LsiMethod(
                     name = "update",
                     parameters = listOf(
                         LsiParameter(
@@ -558,7 +558,7 @@ class LsiKotlinPoetRendererTest {
             LsiSymbolId.type("demo.generated.QueryExtensions"),
             "S",
         )
-        val function = LsiFunction(
+        val function = LsiMethod(
             name = "query",
             modifiers = setOf(LsiModifier.INLINE),
             typeParameters = listOf(
@@ -594,7 +594,7 @@ class LsiKotlinPoetRendererTest {
     @Test
     fun `renders fully qualified Kotlin type references without imports`() {
         val externalType = LsiDeclaredType(LsiSymbolId.type("demo.external.External"))
-        val function = LsiFunction(
+        val function = LsiMethod(
             name = "typeName",
             body = LsiCodeBlock.build {
                 statement {
@@ -658,7 +658,7 @@ class LsiKotlinPoetRendererTest {
                         bodyStyle = LsiBodyStyle.EXPRESSION,
                     ),
                 ),
-                LsiFunction(
+                LsiMethod(
                     name = "pick",
                     returnType = stringType,
                     body = LsiCodeBlock.build { text("when (value) { else -> value }") },

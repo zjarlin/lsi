@@ -12,10 +12,10 @@ import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiDeclaration
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.field.LsiField
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.type.LsiFunctionType
 import site.addzero.lsi.type.LsiNullability
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.field.LsiProperty
@@ -200,7 +200,7 @@ private class ClientSchemaBuilder(
             defaultFetcherOwnerId?.let(seedIds::add)
             service.memberIds
                 .mapNotNull(workspace::get)
-                .filter { member -> member is LsiFunction || member is LsiProperty }
+                .filter { member -> member is LsiMethod || member is LsiProperty }
                 .filterNot { member -> member.annotations.hasAnnotation(API_IGNORE_ANNOTATION) }
                 .filter(::isApiOperation)
                 .forEach { operation ->
@@ -259,7 +259,7 @@ private class ClientSchemaBuilder(
                             typeId,
                         )
                     }
-                    is LsiFunction -> if (member.clientDefinitionPropertyName(clientException) != null) {
+                    is LsiMethod -> if (member.clientDefinitionPropertyName(clientException) != null) {
                         member.returnType.collectClientTypeIds(
                             definitionTypeIds,
                             seedIds,
@@ -290,7 +290,7 @@ private class ClientSchemaBuilder(
             fallbackFetcherOwnerId = serviceTypeId,
         )
         when (this) {
-            is LsiFunction -> {
+            is LsiMethod -> {
                 parameters
                     .filterNot { parameter -> parameter.annotations.hasAnnotation(API_IGNORE_ANNOTATION) }
                     .forEach { parameter ->
@@ -409,7 +409,7 @@ private class ClientSchemaBuilder(
     private fun LsiClass.hasUnresolvedServiceSurface(workspace: LsiWorkspace): Boolean {
         return memberIds
             .mapNotNull(workspace::get)
-            .filter { declaration -> declaration is LsiFunction || declaration is LsiProperty }
+            .filter { declaration -> declaration is LsiMethod || declaration is LsiProperty }
             .filterNot { declaration -> declaration.annotations.hasAnnotation(API_IGNORE_ANNOTATION) }
             .filter(::isApiOperation)
             .any(LsiDeclaration::hasUnresolvedClientType)
@@ -432,7 +432,7 @@ private class ClientSchemaBuilder(
                         "'${memberId.value}'",
                 )
             }
-            .filter { declaration -> declaration is LsiFunction || declaration is LsiProperty }
+            .filter { declaration -> declaration is LsiMethod || declaration is LsiProperty }
             .filterNot { declaration -> declaration.annotations.hasAnnotation(API_IGNORE_ANNOTATION) }
             .filter(::isApiOperation)
             .map { declaration ->
@@ -455,7 +455,7 @@ private class ClientSchemaBuilder(
         exceptionResolver: ClientExceptionMetadataResolver,
     ): ClientOperation {
         validateOperation(declaration)
-        val function = declaration as? LsiFunction
+        val function = declaration as? LsiMethod
         val property = declaration as? LsiProperty
         val name = function?.name ?: requireNotNull(property).getterName
         val rawParameters = function?.parameters.orEmpty()
@@ -805,7 +805,7 @@ private class ClientSchemaBuilder(
                             ?: definitionDocumentation?.properties?.get(member.name).normalizedClientDoc(),
                     )
                 }
-                is LsiFunction -> {
+                is LsiMethod -> {
                     val propertyName = member.clientDefinitionPropertyName(clientException)
                         ?: return@forEach
                     val field = fieldsByName[propertyName]
@@ -864,7 +864,7 @@ private class ClientSchemaBuilder(
             )
         }
         val static = when (declaration) {
-            is LsiFunction -> declaration.static
+            is LsiMethod -> declaration.static
             is LsiProperty -> declaration.static
             else -> false
         }
@@ -874,7 +874,7 @@ private class ClientSchemaBuilder(
                 message = "Client API operation '${declaration.id.value}' cannot be static",
             )
         }
-        val typeParameters = (declaration as? LsiFunction)?.typeParameters.orEmpty()
+        val typeParameters = (declaration as? LsiMethod)?.typeParameters.orEmpty()
         if (typeParameters.isNotEmpty()) {
             throw ClientValidationException(
                 declarationId = declaration.id,
@@ -1337,7 +1337,7 @@ private fun LsiProperty.isJavaBeanGetter(): Boolean {
         type.isBooleanLike() && getterName.isJavaBeanGetterName("is")
 }
 
-private fun LsiFunction.clientDefinitionPropertyName(clientException: Boolean): String? {
+private fun LsiMethod.clientDefinitionPropertyName(clientException: Boolean): String? {
     if (
         visibility != LsiVisibility.PUBLIC ||
         static ||
@@ -1397,7 +1397,7 @@ private fun LsiWorkspace.jsonValueType(typeId: LsiSymbolId): LsiType? {
         .filter { member -> member.annotations.hasAnyAnnotation(JSON_VALUE_ANNOTATIONS) }
         .mapNotNull { member ->
             when (member) {
-                is LsiFunction -> member.returnType.takeIf {
+                is LsiMethod -> member.returnType.takeIf {
                     !member.static && member.parameters.isEmpty() && !it.isVoidLike()
                 }
                 is LsiProperty -> member.type.takeIf { !member.static }
@@ -1537,7 +1537,7 @@ private fun LsiDeclaration.hasUnresolvedClientType(): Boolean {
         return true
     }
     return when (this) {
-        is LsiFunction -> {
+        is LsiMethod -> {
             returnType.hasUnresolvedClientType() ||
                 receiverType?.hasUnresolvedClientType() == true ||
                 parameters.any { parameter ->

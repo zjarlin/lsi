@@ -26,9 +26,9 @@ import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiEnumEntry
 import site.addzero.lsi.field.LsiField
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.type.LsiNullability
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.field.LsiProperty
@@ -1137,7 +1137,7 @@ class ClientWorkspaceExtensionsTest {
     }
 
     private fun assertOperationRejected(
-        operation: LsiFunction,
+        operation: LsiMethod,
         messagePart: String,
         serviceGroups: List<String> = emptyList(),
     ) {
@@ -1280,7 +1280,7 @@ class ClientWorkspaceExtensionsTest {
         static: Boolean = false,
         generic: Boolean = false,
         origin: LsiOrigin = SYNTHETIC_ORIGIN,
-    ): LsiFunction {
+    ): LsiMethod {
         val functionId = LsiSymbolId.function(
             owner = ownerId,
             name = name,
@@ -1297,7 +1297,7 @@ class ClientWorkspaceExtensionsTest {
                 origin = origin,
             )
         }
-        return LsiFunction(
+        return LsiMethod(
             id = functionId,
             name = name,
             ownerId = ownerId,

@@ -26,9 +26,9 @@ import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.field.LsiField
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.type.LsiFunctionType
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
@@ -341,7 +341,7 @@ private fun LsiDeclaration.containsUnresolvedTypes(): Boolean {
             }
         is LsiField -> type.containsUnresolvedType()
         is LsiProperty -> type.containsUnresolvedType()
-        is LsiFunction -> returnType.containsUnresolvedType() ||
+        is LsiMethod -> returnType.containsUnresolvedType() ||
             receiverType?.containsUnresolvedType() == true ||
             parameters.any { parameter -> parameter.type.containsUnresolvedType() } ||
             thrownTypes.any(LsiType::containsUnresolvedType)

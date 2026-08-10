@@ -28,12 +28,12 @@ import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.model.LsiCodeBlock
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.field.LsiField
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiImport
 import site.addzero.lsi.model.LsiMember
 import site.addzero.lsi.model.LsiModifier
 import site.addzero.lsi.model.LsiNameStyle
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
@@ -169,7 +169,7 @@ class LsiJavaPoetRendererTest {
                         line()
                     },
                 ),
-                LsiFunction(
+                LsiMethod(
                     name = "message",
                     modifiers = setOf(LsiModifier.PUBLIC),
                     returnType = stringType,
@@ -246,7 +246,7 @@ class LsiJavaPoetRendererTest {
             name = "Broken",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
-                LsiFunction(
+                LsiMethod(
                     name = "value",
                     returnType = site.addzero.lsi.type.LsiUnresolvedType("Missing"),
                 )
@@ -333,7 +333,7 @@ class LsiJavaPoetRendererTest {
                     ),
                 )
             ),
-            members = listOf(LsiFunction(name = "value", returnType = annotatedType)),
+            members = listOf(LsiMethod(name = "value", returnType = annotatedType)),
         )
 
         val generated = LsiJavaPoetRenderer().render(artifact(type, "NestedAnnotation"))
@@ -364,7 +364,7 @@ class LsiJavaPoetRendererTest {
                     ),
                     thrownTypes = listOf(exceptionType),
                 ),
-                LsiFunction(
+                LsiMethod(
                     name = "consume",
                     modifiers = setOf(LsiModifier.PUBLIC, LsiModifier.OVERRIDE),
                     parameters = listOf(
@@ -401,7 +401,7 @@ class LsiJavaPoetRendererTest {
             name = "Returns",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
-                LsiFunction(
+                LsiMethod(
                     name = "message",
                     returnType = stringType,
                     body = LsiCodeBlock.build {
@@ -422,7 +422,7 @@ class LsiJavaPoetRendererTest {
             name = "ReturnsBlock",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
-                LsiFunction(
+                LsiMethod(
                     name = "message",
                     returnType = stringType,
                     body = LsiCodeBlock.build {
@@ -443,7 +443,7 @@ class LsiJavaPoetRendererTest {
 
     @Test
     fun `rejects Kotlin only declaration names and explicit imports`() {
-        val escapedFunction = LsiFunction(
+        val escapedFunction = LsiMethod(
             name = "children*",
             nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
         )
@@ -471,7 +471,7 @@ class LsiJavaPoetRendererTest {
         }
         assertContains(escapedTypeException.message.orEmpty(), "escaped Kotlin type name")
 
-        val escapedParameter = LsiFunction(
+        val escapedParameter = LsiMethod(
             name = "consume",
             parameters = listOf(
                 LsiParameter(
@@ -626,7 +626,7 @@ class LsiJavaPoetRendererTest {
             LsiSymbolId.type("demo.generated.Reified"),
             "S",
         )
-        val function = LsiFunction(
+        val function = LsiMethod(
             name = "query",
             modifiers = setOf(LsiModifier.INLINE),
             typeParameters = listOf(LsiTypeParameter(parameterId, "S")),
@@ -647,7 +647,7 @@ class LsiJavaPoetRendererTest {
             declarationId = LsiSymbolId.type("java.util.List"),
             arguments = listOf(LsiTypeArgument.invariant(stringType)),
         )
-        val function = LsiFunction(
+        val function = LsiMethod(
             name = "cast",
             modifiers = setOf(LsiModifier.PUBLIC),
             parameters = listOf(LsiParameter("value", LsiDeclaredType(LsiSymbolId.type("java.lang.Object")))),
@@ -733,8 +733,8 @@ class LsiJavaPoetRendererTest {
                 )
             ),
             members = listOf(
-                LsiFunction(name = "lower", returnType = LsiDeclaredType(lowercaseId)),
-                LsiFunction(name = "nested", returnType = LsiDeclaredType(nestedId)),
+                LsiMethod(name = "lower", returnType = LsiDeclaredType(lowercaseId)),
+                LsiMethod(name = "nested", returnType = LsiDeclaredType(nestedId)),
             ),
         )
         val artifact = LsiSourceArtifact(
@@ -770,7 +770,7 @@ class LsiJavaPoetRendererTest {
         val type = LsiClass(
             name = "MissingName",
             kind = LsiTypeDeclarationKind.CLASS,
-            members = listOf(LsiFunction(name = "value", returnType = stringType)),
+            members = listOf(LsiMethod(name = "value", returnType = stringType)),
         )
 
         val exception = assertFailsWith<IllegalArgumentException> {
@@ -783,7 +783,7 @@ class LsiJavaPoetRendererTest {
 
     @Test
     fun `rejects expression bodies at the Java adapter boundary`() {
-        val function = LsiFunction(
+        val function = LsiMethod(
             name = "message",
             returnType = stringType,
             body = LsiCodeBlock.build { string("ok") },
@@ -814,7 +814,7 @@ class LsiJavaPoetRendererTest {
         }
         assertContains(annotationException.message.orEmpty(), "forced annotation layout")
 
-        val explicitlyIndentedFunction = LsiFunction(
+        val explicitlyIndentedFunction = LsiMethod(
             name = "create",
             body = LsiCodeBlock.build {
                 preserveExplicitIndentation()

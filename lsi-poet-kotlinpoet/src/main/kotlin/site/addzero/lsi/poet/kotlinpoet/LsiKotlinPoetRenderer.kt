@@ -26,11 +26,11 @@ import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiDelegationTarget
 import site.addzero.lsi.model.LsiEnumEntry
 import site.addzero.lsi.field.LsiField
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiInitializerBlock
 import site.addzero.lsi.model.LsiMember
 import site.addzero.lsi.model.LsiModifier
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.poet.LsiPoetRenderer
 import site.addzero.lsi.clazz.LsiClass
@@ -76,7 +76,7 @@ class LsiKotlinPoetRenderer : LsiPoetRenderer {
 
     /** 将单个 LSI 函数渲染为可嵌入现有 KotlinPoet 类型的结构。 */
     fun renderFunction(
-        function: LsiFunction,
+        function: LsiMethod,
         typeNames: List<LsiClass>,
     ): FunSpec {
         return function.toKotlinFunction(typeNames)
@@ -130,7 +130,7 @@ private fun FileSpec.Builder.addKotlinTopLevelMember(
     typeNames: List<LsiClass>,
 ) {
     when (member) {
-        is LsiFunction -> addFunction(member.toKotlinFunction(typeNames))
+        is LsiMethod -> addFunction(member.toKotlinFunction(typeNames))
         is LsiProperty -> addProperty(member.toKotlinProperty(typeNames))
         is LsiClass -> addType(member.toKotlinTypeSpec(typeNames))
         is LsiConstructor -> error("KotlinPoet renderer cannot emit a top-level constructor")
@@ -204,7 +204,7 @@ private fun TypeSpec.Builder.addKotlinMember(
     when (member) {
         is LsiConstructor -> addFunction(member.toKotlinConstructor(typeNames, primary = false))
         is LsiField -> error("KotlinPoet renderer cannot emit a field: ${member.name}")
-        is LsiFunction -> addFunction(member.toKotlinFunction(typeNames))
+        is LsiMethod -> addFunction(member.toKotlinFunction(typeNames))
         is LsiInitializerBlock -> addKotlinInitializer(member, typeNames)
         is LsiProperty -> addProperty(member.toKotlinProperty(typeNames))
         is LsiClass -> addType(member.toKotlinTypeSpec(typeNames))
@@ -253,7 +253,7 @@ private fun LsiConstructor.toKotlinConstructor(
     return builder.build()
 }
 
-private fun LsiFunction.toKotlinFunction(typeNames: List<LsiClass>): FunSpec {
+private fun LsiMethod.toKotlinFunction(typeNames: List<LsiClass>): FunSpec {
     val builder = FunSpec.builder(name)
         .addModifiers(*modifiers.toKotlinModifiers(KotlinModifierContext.FUNCTION))
     annotations.forEach { annotation -> builder.addAnnotation(annotation.toKotlinSourceAnnotationSpec(typeNames)) }

@@ -3,6 +3,8 @@ package site.addzero.lsi.model
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.method.LsiMethod
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiOriginKind
@@ -447,19 +449,19 @@ internal data class FrozenLsiProperty(
     }
 }
 
-data class LsiFunction(
+internal data class FrozenLsiMethod(
     override val id: LsiSymbolId,
     override val name: String,
-    val ownerId: LsiSymbolId?,
-    val returnType: LsiType,
-    val parameters: List<LsiParameter> = emptyList(),
-    val receiverType: LsiType? = null,
-    val suspending: Boolean = false,
-    val typeParameters: List<LsiTypeParameter> = emptyList(),
-    val thrownTypes: List<LsiType> = emptyList(),
-    val static: Boolean = false,
-    val modality: LsiModality = LsiModality.UNKNOWN,
-    val overrides: List<LsiOverride> = emptyList(),
+    override val ownerId: LsiSymbolId?,
+    override val returnType: LsiType,
+    override val parameters: List<LsiParameter> = emptyList(),
+    override val receiverType: LsiType? = null,
+    override val suspending: Boolean = false,
+    override val typeParameters: List<LsiTypeParameter> = emptyList(),
+    override val thrownTypes: List<LsiType> = emptyList(),
+    override val static: Boolean = false,
+    override val modality: LsiModality = LsiModality.UNKNOWN,
+    override val overrides: List<LsiOverride> = emptyList(),
     override val visibility: LsiVisibility = LsiVisibility.PUBLIC,
     override val documentation: String? = null,
     override val sourceDocumentation: String? = null,
@@ -467,12 +469,12 @@ data class LsiFunction(
     override val location: LsiLocation? = null,
     override val origin: LsiOrigin,
     override val modifiers: Set<LsiModifier> = emptySet(),
-    val nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
-    val reifiedTypeParameterIds: Set<LsiSymbolId> = emptySet(),
-    val body: LsiCodeBlock = LsiCodeBlock.EMPTY,
-    val bodyStyle: LsiBodyStyle = LsiBodyStyle.BLOCK,
-    val renderReturnType: Boolean = true,
-) : LsiDeclaration, LsiMember {
+    override val nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
+    override val reifiedTypeParameterIds: Set<LsiSymbolId> = emptySet(),
+    override val body: LsiCodeBlock = LsiCodeBlock.EMPTY,
+    override val bodyStyle: LsiBodyStyle = LsiBodyStyle.BLOCK,
+    override val renderReturnType: Boolean = true,
+) : LsiMethod {
 
     constructor(
         name: String,
@@ -614,23 +616,23 @@ data class LsiConstructor(
     }
 }
 
-data class LsiParameter(
+internal data class FrozenLsiParameter(
     override val id: LsiSymbolId,
     override val name: String,
-    val callableId: LsiSymbolId,
-    val index: Int,
-    val type: LsiType,
-    val vararg: Boolean = false,
-    val hasDefault: Boolean = false,
+    override val callableId: LsiSymbolId,
+    override val index: Int,
+    override val type: LsiType,
+    override val vararg: Boolean = false,
+    override val hasDefault: Boolean = false,
     override val documentation: String? = null,
     override val sourceDocumentation: String? = null,
     override val annotations: List<LsiAnnotation> = emptyList(),
     override val location: LsiLocation? = null,
     override val origin: LsiOrigin,
     override val modifiers: Set<LsiModifier> = emptySet(),
-    val nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
-    val defaultValue: LsiCodeBlock? = null,
-) : LsiDeclaration {
+    override val nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
+    override val defaultValue: LsiCodeBlock? = null,
+) : LsiParameter {
 
     constructor(
         name: String,

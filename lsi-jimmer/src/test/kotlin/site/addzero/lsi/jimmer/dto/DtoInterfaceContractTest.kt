@@ -13,10 +13,10 @@ import site.addzero.lsi.core.LsiPosition
 import site.addzero.lsi.core.LsiSource
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.type.LsiNullability
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.field.LsiProperty
@@ -64,7 +64,7 @@ class DtoInterfaceContractTest {
                         memberIds = listOf(setterId),
                         origin = binaryOrigin,
                     ),
-                    LsiFunction(
+                    LsiMethod(
                         id = setterId,
                         name = "setName",
                         ownerId = contractTypeId,
@@ -158,7 +158,7 @@ class DtoInterfaceContractTest {
                     ),
                     memberIds = listOf(setterId),
                 ),
-                LsiFunction(
+                LsiMethod(
                     id = setterId,
                     name = "setValue",
                     ownerId = middleTypeId,
@@ -401,7 +401,7 @@ class DtoInterfaceContractTest {
                     contractTypeId,
                     memberIds = listOf(unresolvedId, actionId, genericId),
                 ),
-                LsiFunction(
+                LsiMethod(
                     id = genericId,
                     name = "getValue",
                     ownerId = contractTypeId,
@@ -410,7 +410,7 @@ class DtoInterfaceContractTest {
                     modality = LsiModality.ABSTRACT,
                     origin = origin("contract/Illegal.java"),
                 ),
-                LsiFunction(
+                LsiMethod(
                     id = actionId,
                     name = "execute",
                     ownerId = contractTypeId,
@@ -418,7 +418,7 @@ class DtoInterfaceContractTest {
                     modality = LsiModality.ABSTRACT,
                     origin = origin("contract/Illegal.java"),
                 ),
-                LsiFunction(
+                LsiMethod(
                     id = unresolvedId,
                     name = "setMissing",
                     ownerId = contractTypeId,
@@ -472,7 +472,7 @@ class DtoInterfaceContractTest {
                     contractTypeId,
                     memberIds = listOf(kotlinGetterId, kotlinSetterId, javaGetterId),
                 ),
-                LsiFunction(
+                LsiMethod(
                     id = kotlinGetterId,
                     name = "getName",
                     ownerId = contractTypeId,
@@ -480,7 +480,7 @@ class DtoInterfaceContractTest {
                     modality = LsiModality.ABSTRACT,
                     origin = origin("contract/Functions.kt"),
                 ),
-                LsiFunction(
+                LsiMethod(
                     id = kotlinSetterId,
                     name = "setName",
                     ownerId = contractTypeId,
@@ -498,7 +498,7 @@ class DtoInterfaceContractTest {
                     modality = LsiModality.ABSTRACT,
                     origin = origin("contract/Functions.kt"),
                 ),
-                LsiFunction(
+                LsiMethod(
                     id = javaGetterId,
                     name = "getCode",
                     ownerId = contractTypeId,

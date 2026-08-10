@@ -35,9 +35,9 @@ import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.model.LsiEnumEntry
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.model.LsiFileAnnotationScope
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiOverride
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.field.LsiProperty
@@ -273,7 +273,7 @@ internal class KspLsiWorkspaceBuilder(
             .map { function -> function.toLsiJavaProperty(typeDeclaration) }
         val functions = declaredFunctions
             .filterNot(KSFunctionDeclaration::isLsiJavaPropertyGetter)
-            .map { function -> function.toLsiFunction(typeDeclaration) }
+            .map { function -> function.toLsiMethod(typeDeclaration) }
         val constructors = typeDeclaration.getConstructors()
             .map { constructor -> constructor.toLsiConstructor(typeDeclaration) }
             .toList()
@@ -517,7 +517,7 @@ internal class KspLsiWorkspaceBuilder(
         )
     }
 
-    private fun KSFunctionDeclaration.toLsiFunction(owner: KSClassDeclaration): LsiFunction {
+    private fun KSFunctionDeclaration.toLsiMethod(owner: KSClassDeclaration): LsiMethod {
         val ownerId = owner.toLsiTypeId()
         val functionId = typeContext.toLsiCallableId(this)
         val inheritedTypeParameterIds = typeContext.typeParameterIdsInScope(this)
@@ -529,7 +529,7 @@ internal class KspLsiWorkspaceBuilder(
         val lsiParameters = parameters.mapIndexed { index, parameter ->
             parameter.toLsiParameter(functionId, index, typeParameterIds)
         }
-        return LsiFunction(
+        return LsiMethod(
             id = functionId,
             name = simpleName.asString(),
             ownerId = ownerId,

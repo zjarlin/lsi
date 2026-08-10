@@ -47,7 +47,7 @@ import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.model.LsiFileAnnotationScope
 import site.addzero.lsi.model.LsiFrontendDocumentationConvention
 import site.addzero.lsi.model.LsiFrontendOptions
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiGeneratedPeerDocumentationConvention
 import site.addzero.lsi.type.LsiNullability
 import site.addzero.lsi.field.LsiProperty
@@ -765,7 +765,7 @@ class KspLsiWorkspaceTest {
         val frozenKotlinProperty = kotlinWorkspace.requireProperty(ownerId, "isActive")
         assertEquals(frozenKotlinProperty.id, javaProperty.id)
         assertEquals(frozenKotlinProperty.name, javaProperty.name)
-        assertTrue(defaultJavaWorkspace.declarationsOfType<LsiFunction>().none { function ->
+        assertTrue(defaultJavaWorkspace.declarationsOfType<LsiMethod>().none { function ->
             function.ownerId == ownerId && function.name == "isActive"
         })
     }
@@ -827,7 +827,7 @@ class KspLsiWorkspaceTest {
         assertTrue(frozenField.mutable)
         assertEquals(LsiLanguage.JAVA, frozenField.origin.source?.language)
         assertEquals("getData", frozenProperty.getterName)
-        assertTrue(workspace.declarationsOfType<LsiFunction>().none { function ->
+        assertTrue(workspace.declarationsOfType<LsiMethod>().none { function ->
             function.ownerId == ownerId && function.name == "getData"
         })
     }
@@ -1561,7 +1561,7 @@ class KspLsiWorkspaceTest {
                 frontendOptions = frontendOptions,
                 fileScopes = listOfNotNull(service.containingFile).toKspLsiFileScopePlan().validScopes,
             )
-            .declarationsOfType<LsiFunction>()
+            .declarationsOfType<LsiMethod>()
             .single()
 
         assertTrue(function.suspending)
@@ -1643,7 +1643,7 @@ class KspLsiWorkspaceTest {
                 frontendOptions = frontendOptions,
                 fileScopes = listOfNotNull(factory.containingFile).toKspLsiFileScopePlan().validScopes,
             )
-            .declarationsOfType<LsiFunction>()
+            .declarationsOfType<LsiMethod>()
 
         assertEquals(
             setOf(
@@ -1664,7 +1664,7 @@ class KspLsiWorkspaceTest {
                     ),
                 ),
             ),
-            functions.mapTo(linkedSetOf(), LsiFunction::id),
+            functions.mapTo(linkedSetOf(), LsiMethod::id),
         )
         assertTrue(functions.single { function -> function.parameters.last().vararg }.parameters.last().vararg)
     }
@@ -1740,8 +1740,8 @@ class KspLsiWorkspaceTest {
                 frontendOptions = frontendOptions,
                 fileScopes = listOfNotNull(factory.containingFile).toKspLsiFileScopePlan().validScopes,
             )
-            .declarationsOfType<LsiFunction>()
-            .mapTo(linkedSetOf(), LsiFunction::id)
+            .declarationsOfType<LsiMethod>()
+            .mapTo(linkedSetOf(), LsiMethod::id)
 
         assertEquals(
             setOf(

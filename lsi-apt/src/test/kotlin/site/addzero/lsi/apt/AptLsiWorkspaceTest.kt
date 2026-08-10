@@ -13,7 +13,7 @@ import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.model.LsiFrontendDocumentationConvention
 import site.addzero.lsi.model.LsiFrontendOptions
 import site.addzero.lsi.model.LsiGeneratedPeerDocumentationConvention
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.type.LsiNullability
 import site.addzero.lsi.model.LsiPackageAnnotationScope
 import site.addzero.lsi.type.LsiPrimitiveKind
@@ -708,7 +708,7 @@ class AptLsiWorkspaceTest {
         val active = workspace.requireProperty(childId, "active")
         assertEquals("isActive", active.getterName)
         assertEquals(LsiPrimitiveKind.BOOLEAN, assertIs<LsiPrimitiveType>(active.type).kind)
-        val version = workspace.declarationsOfType<LsiFunction>()
+        val version = workspace.declarationsOfType<LsiMethod>()
             .single { function -> function.ownerId == childId && function.name == "version" }
         assertTrue(version.static)
 
@@ -923,7 +923,7 @@ class AptLsiWorkspaceTest {
 
         assertTrue(compilation.success, compilation.diagnostics)
         val ownerId = LsiSymbolId.type("demo.Factory")
-        val functions = compilation.workspace.declarationsOfType<LsiFunction>()
+        val functions = compilation.workspace.declarationsOfType<LsiMethod>()
             .filter { function -> function.ownerId == ownerId }
         assertEquals(
             setOf(
@@ -963,7 +963,7 @@ class AptLsiWorkspaceTest {
                     listOf("type:java.util.List<type:java.lang.Integer>"),
                 ),
             ),
-            functions.mapTo(linkedSetOf(), LsiFunction::id),
+            functions.mapTo(linkedSetOf(), LsiMethod::id),
         )
     }
 
@@ -1067,8 +1067,8 @@ class AptLsiWorkspaceTest {
             .single { property -> property.ownerId == ownerId && property.name == name }
     }
 
-    private fun LsiWorkspace.requireFunction(ownerId: LsiSymbolId, name: String): LsiFunction {
-        return declarationsOfType<LsiFunction>()
+    private fun LsiWorkspace.requireFunction(ownerId: LsiSymbolId, name: String): LsiMethod {
+        return declarationsOfType<LsiMethod>()
             .single { function -> function.ownerId == ownerId && function.name == name }
     }
 

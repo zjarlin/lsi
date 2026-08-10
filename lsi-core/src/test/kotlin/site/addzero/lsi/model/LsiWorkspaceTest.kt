@@ -3,6 +3,8 @@ package site.addzero.lsi.model
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.clazz.copy
 import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.method.LsiMethod
+import site.addzero.lsi.method.copy
 
 import site.addzero.lsi.type.*
 
@@ -61,7 +63,7 @@ class LsiWorkspaceTest {
         val typeId = LsiSymbolId.type("demo.Model")
         val oldFunctionId = LsiSymbolId.function(typeId, "consume", listOf("unresolved:Value"))
         val newFunctionId = LsiSymbolId.function(typeId, "consume", listOf("type:demo.Value"))
-        val oldFunction = LsiFunction(
+        val oldFunction = LsiMethod(
             id = oldFunctionId,
             name = "consume",
             ownerId = typeId,

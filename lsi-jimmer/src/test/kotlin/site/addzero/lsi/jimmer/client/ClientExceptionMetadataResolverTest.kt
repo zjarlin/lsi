@@ -15,7 +15,7 @@ import site.addzero.lsi.model.LsiAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.type.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
@@ -183,7 +183,7 @@ class ClientExceptionMetadataResolverTest {
         exceptionTypes: List<LsiClass>,
     ): ClientOperation {
         val operationId = LsiSymbolId.function(SERVICE_ID, "execute")
-        val operation = LsiFunction(
+        val operation = LsiMethod(
             id = operationId,
             name = "execute",
             ownerId = SERVICE_ID,

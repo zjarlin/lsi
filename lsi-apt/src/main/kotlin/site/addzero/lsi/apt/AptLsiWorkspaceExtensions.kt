@@ -12,9 +12,9 @@ import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
 import site.addzero.lsi.model.LsiEnumEntry
 import site.addzero.lsi.field.LsiField
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiOverride
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.model.LsiPackageAnnotationScope
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
@@ -386,7 +386,7 @@ class AptLsiWorkspaceBuilder(
         return if (isLsiPropertyGetter()) {
             toLsiProperty(owner)
         } else {
-            toLsiFunction(owner)
+            toLsiMethod(owner)
         }
     }
 
@@ -412,7 +412,7 @@ class AptLsiWorkspaceBuilder(
         )
     }
 
-    private fun ExecutableElement.toLsiFunction(owner: TypeElement): LsiFunction {
+    private fun ExecutableElement.toLsiMethod(owner: TypeElement): LsiMethod {
         val ownerId = LsiSymbolId.type(owner.qualifiedName.toString())
         val functionId = context.toLsiCallableId(this)
         val inheritedTypeParameterIds = context.typeParameterIdsInScope(this)
@@ -429,7 +429,7 @@ class AptLsiWorkspaceBuilder(
                 vararg = isVarArgs && index == parameters.lastIndex,
             )
         }
-        return LsiFunction(
+        return LsiMethod(
             id = functionId,
             name = simpleName.toString(),
             ownerId = ownerId,

@@ -2,6 +2,8 @@ package site.addzero.lsi.model
 
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.method.LsiMethod
+import site.addzero.lsi.method.LsiParameter
 
 import site.addzero.lsi.clazz.LsiClass
 
@@ -66,7 +68,7 @@ class LsiSourceModelTest {
                             type = LsiPrimitiveType(LsiPrimitiveKind.LONG),
                             mutable = false,
                         ),
-                        LsiFunction(
+                        LsiMethod(
                             name = "book",
                             returnType = LsiDeclaredType(bookTypeId),
                             body = body,
@@ -194,7 +196,7 @@ class LsiSourceModelTest {
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiFunction(
+            LsiMethod(
                 name = "consume",
                 parameters = listOf(
                     LsiParameter(
@@ -218,7 +220,7 @@ class LsiSourceModelTest {
             kind = LsiTypeDeclarationKind.CLASS,
             nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
         )
-        val function = LsiFunction(
+        val function = LsiMethod(
             name = "children*",
             nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
         )
@@ -254,7 +256,7 @@ class LsiSourceModelTest {
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiFunction(
+            LsiMethod(
                 name = "broken`name",
                 nameStyle = LsiNameStyle.KOTLIN_ESCAPED,
             )
@@ -305,7 +307,7 @@ class LsiSourceModelTest {
             type = producerType,
             typeReferenceStyle = LsiTypeReferenceStyle.SAME_PACKAGE_OUTER_QUALIFIED,
         )
-        val expression = LsiFunction(
+        val expression = LsiMethod(
             name = "producer",
             returnType = producerType,
             body = LsiCodeBlock.build { name("producer") },
@@ -335,7 +337,7 @@ class LsiSourceModelTest {
         assertEquals(LsiCodeBlockIndentation.EXPLICIT, composedIndentation.indentation)
         assertEquals(LsiAnnotationArgumentLayout.SINGLE_LINE, annotation.argumentLayout)
         assertFailsWith<IllegalArgumentException> {
-            LsiFunction(name = "empty", bodyStyle = LsiBodyStyle.EXPRESSION)
+            LsiMethod(name = "empty", bodyStyle = LsiBodyStyle.EXPRESSION)
         }
         assertFailsWith<IllegalArgumentException> {
             LsiAccessor(bodyStyle = LsiBodyStyle.EXPRESSION)
@@ -380,7 +382,7 @@ class LsiSourceModelTest {
             "S",
         )
         val parameter = LsiTypeParameter(parameterId, "S")
-        val function = LsiFunction(
+        val function = LsiMethod(
             name = "query",
             modifiers = setOf(LsiModifier.INLINE),
             typeParameters = listOf(parameter),
@@ -389,14 +391,14 @@ class LsiSourceModelTest {
 
         assertEquals(setOf(parameterId), function.reifiedTypeParameterIds)
         assertFailsWith<IllegalArgumentException> {
-            LsiFunction(
+            LsiMethod(
                 name = "query",
                 typeParameters = listOf(parameter),
                 reifiedTypeParameterIds = setOf(parameterId),
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            LsiFunction(
+            LsiMethod(
                 name = "query",
                 modifiers = setOf(LsiModifier.INLINE),
                 reifiedTypeParameterIds = setOf(parameterId),

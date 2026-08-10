@@ -26,12 +26,12 @@ import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiDelegationTarget
 import site.addzero.lsi.model.LsiEnumEntry
 import site.addzero.lsi.field.LsiField
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiInitializerBlock
 import site.addzero.lsi.model.LsiMember
 import site.addzero.lsi.model.LsiModifier
 import site.addzero.lsi.model.LsiNameStyle
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
 import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.poet.LsiPoetRenderer
 import site.addzero.lsi.clazz.LsiClass
@@ -68,7 +68,7 @@ class LsiJavaPoetRenderer : LsiPoetRenderer {
 
     /** 将单个 LSI 函数渲染为可嵌入现有 JavaPoet 类型的结构。 */
     fun renderFunction(
-        function: LsiFunction,
+        function: LsiMethod,
         typeNames: List<LsiClass>,
     ): MethodSpec {
         return function.toJavaMethod(typeNames)
@@ -205,7 +205,7 @@ private fun TypeSpec.Builder.addJavaMember(
     when (member) {
         is LsiConstructor -> addMethod(member.toJavaConstructor(typeNames))
         is LsiField -> addField(member.toJavaField(typeNames, currentPackageName))
-        is LsiFunction -> addMethod(member.toJavaMethod(typeNames))
+        is LsiMethod -> addMethod(member.toJavaMethod(typeNames))
         is LsiInitializerBlock -> addJavaInitializer(member, typeNames)
         is LsiProperty -> error("JavaPoet renderer cannot emit a Kotlin property: ${member.name}")
         is LsiClass -> addType(member.toJavaTypeSpec(typeNames, currentPackageName))
@@ -254,7 +254,7 @@ private fun LsiConstructor.toJavaConstructor(
     return builder.build()
 }
 
-private fun LsiFunction.toJavaMethod(
+private fun LsiMethod.toJavaMethod(
     typeNames: List<LsiClass>,
 ): MethodSpec {
     require(nameStyle == LsiNameStyle.IDENTIFIER) {

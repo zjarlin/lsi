@@ -2,6 +2,8 @@ package site.addzero.lsi.model
 
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.method.LsiMethod
+import site.addzero.lsi.method.LsiParameter
 
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.core.LsiSymbolId
@@ -31,7 +33,7 @@ private fun MutableSet<LsiSymbolId>.collect(declaration: LsiDeclaration) {
         }
         is LsiField -> collect(declaration.type)
         is LsiProperty -> collect(declaration.type)
-        is LsiFunction -> {
+        is LsiMethod -> {
             collect(declaration.returnType)
             declaration.receiverType?.let(::collect)
             declaration.parameters.forEach(::collect)

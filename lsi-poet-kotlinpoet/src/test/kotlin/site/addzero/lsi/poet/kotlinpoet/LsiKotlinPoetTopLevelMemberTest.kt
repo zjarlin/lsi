@@ -8,7 +8,7 @@ import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.codegen.LsiSourceArtifact
 import site.addzero.lsi.model.LsiCodeBlock
 import site.addzero.lsi.model.LsiFile
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 
@@ -20,7 +20,7 @@ class LsiKotlinPoetTopLevelMemberTest {
             name = "References",
             kind = LsiTypeDeclarationKind.CLASS,
             members = listOf(
-                LsiFunction(
+                LsiMethod(
                     name = "render",
                     body = LsiCodeBlock.build {
                         statement {

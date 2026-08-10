@@ -2,6 +2,8 @@ package site.addzero.lsi.model
 
 import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.method.LsiMethod
+import site.addzero.lsi.method.LsiParameter
 
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.type.LsiTypeParameter
@@ -74,7 +76,7 @@ private fun MutableSet<LsiSymbolId>.collectSourceMemberDependencies(member: LsiM
             collectTypeRefDependencies(member.type)
             member.initializer?.let(::collectSourceCodeDependencies)
         }
-        is LsiFunction -> {
+        is LsiMethod -> {
             member.typeParameters.forEach(::collectSourceTypeParameterDependencies)
             member.receiverType?.let(::collectTypeRefDependencies)
             member.parameters.forEach(::collectSourceParameterDependencies)

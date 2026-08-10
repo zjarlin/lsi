@@ -7,7 +7,7 @@ import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
 import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.type.LsiDeclaredType
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.type.LsiFunctionType
 import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.type.LsiNullability
@@ -653,8 +653,8 @@ private class ImmutableSchemaBuilder {
         workspace: LsiWorkspace,
     ) {
         type.memberIds
-            .mapNotNull { memberId -> workspace[memberId] as? LsiFunction }
-            .sortedBy(LsiFunction::id)
+            .mapNotNull { memberId -> workspace[memberId] as? LsiMethod }
+            .sortedBy(LsiMethod::id)
             .forEach { function ->
                 if (function.modality == LsiModality.ABSTRACT) {
                     throw ImmutablePrecompileException(

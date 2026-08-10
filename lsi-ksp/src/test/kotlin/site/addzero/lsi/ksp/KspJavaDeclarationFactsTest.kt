@@ -17,7 +17,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import site.addzero.lsi.core.LsiSymbolId
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiFrontendOptions
 import site.addzero.lsi.type.LsiPrimitiveKind
@@ -83,9 +83,9 @@ class KspJavaDeclarationFactsTest {
                 }
                 .id,
         )
-        val functionIds = workspace.declarationsOfType<LsiFunction>()
+        val functionIds = workspace.declarationsOfType<LsiMethod>()
             .filter { function -> function.ownerId == ownerId }
-            .mapTo(linkedSetOf(), LsiFunction::id)
+            .mapTo(linkedSetOf(), LsiMethod::id)
         assertEquals(
             setOf(
                 LsiSymbolId.function(ownerId, "raw", listOf("primitive:int")),
@@ -105,7 +105,7 @@ class KspJavaDeclarationFactsTest {
             ),
             functionIds,
         )
-        val vararg = workspace.declarationsOfType<LsiFunction>()
+        val vararg = workspace.declarationsOfType<LsiMethod>()
             .single { function -> function.name == "vararg" }
             .parameters
             .single()

@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import site.addzero.lsi.codegen.ArtifactAggregationMode
 import site.addzero.lsi.codegen.LsiSourceArtifact
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiOriginKind
@@ -183,7 +184,7 @@ class LsiClassNameTest {
             packageName = "demo.generated",
             fileName = "Result",
             members = listOf(
-                LsiFunction(
+                LsiMethod(
                     name = "value",
                     returnType = LsiDeclaredType(referencedId),
                 )

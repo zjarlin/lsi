@@ -18,9 +18,10 @@ import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.field.LsiField
-import site.addzero.lsi.model.LsiFunction
+import site.addzero.lsi.method.LsiMethod
 import site.addzero.lsi.model.LsiModality
-import site.addzero.lsi.model.LsiParameter
+import site.addzero.lsi.method.LsiParameter
+import site.addzero.lsi.method.copy
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.field.LsiProperty
@@ -419,8 +420,8 @@ class TransactionalWorkspaceExtensionsTest {
         receiverType: LsiDeclaredType? = null,
         suspending: Boolean = false,
         origin: LsiOrigin,
-    ): LsiFunction {
-        return LsiFunction(
+    ): LsiMethod {
+        return LsiMethod(
             id = LsiSymbolId.function(TYPE_ID, name),
             name = name,
             ownerId = TYPE_ID,
