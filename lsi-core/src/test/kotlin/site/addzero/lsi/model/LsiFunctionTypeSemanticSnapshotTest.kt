@@ -1,5 +1,7 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.field.LsiProperty
+
 import site.addzero.lsi.clazz.LsiClass
 
 import site.addzero.lsi.type.*

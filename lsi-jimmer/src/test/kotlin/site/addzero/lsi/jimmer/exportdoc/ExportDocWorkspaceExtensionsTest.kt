@@ -15,12 +15,12 @@ import site.addzero.lsi.model.LsiAnnotationArgument
 import site.addzero.lsi.model.LsiAnnotationArgumentOrigin
 import site.addzero.lsi.model.LsiAnnotationValue
 import site.addzero.lsi.type.LsiDeclaredType
-import site.addzero.lsi.model.LsiField
+import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.model.LsiFileAnnotationScope
 import site.addzero.lsi.model.LsiPackageAnnotationScope
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
-import site.addzero.lsi.model.LsiProperty
+import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType

@@ -25,13 +25,13 @@ import site.addzero.lsi.model.LsiCodePart
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiDelegationTarget
 import site.addzero.lsi.model.LsiEnumEntry
-import site.addzero.lsi.model.LsiField
+import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.model.LsiFunction
 import site.addzero.lsi.model.LsiInitializerBlock
 import site.addzero.lsi.model.LsiMember
 import site.addzero.lsi.model.LsiModifier
 import site.addzero.lsi.model.LsiParameter
-import site.addzero.lsi.model.LsiProperty
+import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.poet.LsiPoetRenderer
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeReferenceStyle

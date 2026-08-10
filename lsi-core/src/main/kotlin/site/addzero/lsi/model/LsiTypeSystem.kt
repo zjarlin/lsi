@@ -2,6 +2,7 @@ package site.addzero.lsi.model
 
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.clazz.directSuperTypes
+import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.type.LsiDeclaredType

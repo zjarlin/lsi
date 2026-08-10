@@ -1,6 +1,8 @@
 package site.addzero.lsi.model
 
 import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.field.LsiField
+import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.core.LsiLocation
 import site.addzero.lsi.core.LsiOrigin
 import site.addzero.lsi.core.LsiOriginKind
@@ -327,13 +329,13 @@ data class LsiEnumEntry(
     }
 }
 
-data class LsiField(
+internal data class FrozenLsiField(
     override val id: LsiSymbolId,
     override val name: String,
-    val ownerId: LsiSymbolId,
-    val type: LsiType,
-    val mutable: Boolean = false,
-    val static: Boolean = false,
+    override val ownerId: LsiSymbolId,
+    override val type: LsiType,
+    override val mutable: Boolean = false,
+    override val static: Boolean = false,
     override val visibility: LsiVisibility = LsiVisibility.PUBLIC,
     override val documentation: String? = null,
     override val sourceDocumentation: String? = null,
@@ -341,9 +343,9 @@ data class LsiField(
     override val location: LsiLocation? = null,
     override val origin: LsiOrigin,
     override val modifiers: Set<LsiModifier> = emptySet(),
-    val initializer: LsiCodeBlock? = null,
-    val typeReferenceStyle: LsiTypeReferenceStyle = LsiTypeReferenceStyle.IMPORTED,
-) : LsiDeclaration, LsiMember {
+    override val initializer: LsiCodeBlock? = null,
+    override val typeReferenceStyle: LsiTypeReferenceStyle = LsiTypeReferenceStyle.IMPORTED,
+) : LsiField {
 
     constructor(
         name: String,
@@ -374,16 +376,16 @@ data class LsiField(
     }
 }
 
-data class LsiProperty(
+internal data class FrozenLsiProperty(
     override val id: LsiSymbolId,
     override val name: String,
-    val ownerId: LsiSymbolId,
-    val type: LsiType,
-    val getterName: String = name,
-    val mutable: Boolean = false,
-    val static: Boolean = false,
-    val modality: LsiModality = LsiModality.UNKNOWN,
-    val overrides: List<LsiOverride> = emptyList(),
+    override val ownerId: LsiSymbolId,
+    override val type: LsiType,
+    override val getterName: String = name,
+    override val mutable: Boolean = false,
+    override val static: Boolean = false,
+    override val modality: LsiModality = LsiModality.UNKNOWN,
+    override val overrides: List<LsiOverride> = emptyList(),
     override val visibility: LsiVisibility = LsiVisibility.PUBLIC,
     override val documentation: String? = null,
     override val sourceDocumentation: String? = null,
@@ -391,12 +393,12 @@ data class LsiProperty(
     override val location: LsiLocation? = null,
     override val origin: LsiOrigin,
     override val modifiers: Set<LsiModifier> = emptySet(),
-    val nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
-    val initializer: LsiCodeBlock? = null,
-    val receiverType: LsiType? = null,
-    val getter: LsiAccessor? = null,
-    val setter: LsiAccessor? = null,
-) : LsiDeclaration, LsiMember {
+    override val nameStyle: LsiNameStyle = LsiNameStyle.IDENTIFIER,
+    override val initializer: LsiCodeBlock? = null,
+    override val receiverType: LsiType? = null,
+    override val getter: LsiAccessor? = null,
+    override val setter: LsiAccessor? = null,
+) : LsiProperty {
 
     constructor(
         name: String,

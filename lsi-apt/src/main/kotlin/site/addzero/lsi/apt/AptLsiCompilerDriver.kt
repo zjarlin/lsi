@@ -25,12 +25,12 @@ import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.model.LsiConstructor
 import site.addzero.lsi.model.LsiDeclaration
 import site.addzero.lsi.type.LsiDeclaredType
-import site.addzero.lsi.model.LsiField
+import site.addzero.lsi.field.LsiField
 import site.addzero.lsi.model.LsiFunction
 import site.addzero.lsi.type.LsiFunctionType
 import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.type.LsiPrimitiveType
-import site.addzero.lsi.model.LsiProperty
+import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType

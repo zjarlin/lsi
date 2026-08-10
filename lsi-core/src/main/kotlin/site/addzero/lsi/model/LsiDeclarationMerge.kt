@@ -1,5 +1,8 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.field.copy
+
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiDeclaredType
 import site.addzero.lsi.type.LsiPrimitiveKind

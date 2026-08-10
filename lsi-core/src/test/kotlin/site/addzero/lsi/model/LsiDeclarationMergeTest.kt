@@ -1,5 +1,8 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.field.LsiProperty
+import site.addzero.lsi.field.copy
+
 import site.addzero.lsi.type.*
 
 import kotlin.test.Test
