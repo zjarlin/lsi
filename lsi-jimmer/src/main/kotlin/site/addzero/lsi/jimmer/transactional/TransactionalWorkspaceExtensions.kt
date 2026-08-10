@@ -15,6 +15,7 @@ import site.addzero.lsi.model.LsiModality
 import site.addzero.lsi.model.LsiParameter
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.classDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.model.LsiTypeSystem
@@ -122,12 +123,12 @@ private class TransactionalSchemaBuilder {
             if (superType.declarationId in ROOT_OBJECT_TYPE_IDS) {
                 return@forEach
             }
-            val hierarchyEntry = workspace.typeHierarchyEntry(superType.declarationId) ?: return@forEach
-            if (hierarchyEntry.kind in CLASS_LIKE_TYPE_KINDS) {
+            val superDeclaration = workspace.classDeclaration(superType.declarationId) ?: return@forEach
+            if (superDeclaration.kind in CLASS_LIKE_TYPE_KINDS) {
                 throw TransactionalValidationException(
                     declarationId = type.id,
                     message = "Transactional class '${type.qualifiedName}' cannot inherit class " +
-                        "'${hierarchyEntry.qualifiedName}'",
+                        "'${superDeclaration.qualifiedName}'",
                 )
             }
         }

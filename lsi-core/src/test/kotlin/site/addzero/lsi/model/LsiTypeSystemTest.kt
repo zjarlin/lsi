@@ -431,14 +431,12 @@ class LsiTypeSystemTest {
     }
 
     @Test
-    fun `uses fallback hierarchy only when workspace has no entry`() {
+    fun `uses fallback type only when workspace has no declaration`() {
         val childId = LsiSymbolId.type("sample.Child")
         val baseId = LsiSymbolId.type("sample.Base")
-        val fallback = LsiTypeHierarchyEntry(
+        val fallback = type(
             id = childId,
-            qualifiedName = "sample.Child",
-            kind = LsiTypeDeclarationKind.CLASS,
-            directSuperTypes = listOf(LsiDeclaredType(baseId)),
+            superTypes = listOf(LsiDeclaredType(baseId)),
         )
 
         assertTrue(
@@ -450,7 +448,7 @@ class LsiTypeSystemTest {
         assertFalse(
             LsiTypeSystem(
                 workspace = LsiWorkspace(declarations = listOf(type(childId))),
-                fallbackTypeHierarchy = listOf(fallback),
+                fallbackTypes = listOf(fallback),
             ).isAssignable(
                 LsiDeclaredType(childId),
                 LsiDeclaredType(baseId),
@@ -705,7 +703,7 @@ class LsiTypeSystemTest {
     }
 
     @Test
-    fun `resolves generic super type through external hierarchy`() {
+    fun `resolves generic super type through frozen declarations`() {
         val entityId = LsiSymbolId.type("sample.Entity")
         val middleId = LsiSymbolId.type("sample.Middle")
         val baseId = LsiSymbolId.type("sample.Base")
@@ -722,12 +720,10 @@ class LsiTypeSystemTest {
                 ),
             ),
         )
-        val middle = LsiTypeHierarchyEntry(
+        val middle = type(
             id = middleId,
-            qualifiedName = "sample.Middle",
-            kind = LsiTypeDeclarationKind.CLASS,
-            typeParameters = listOf(LsiTypeParameter(middleParameterId, "T")),
-            directSuperTypes = listOf(
+            parameters = listOf(LsiTypeParameter(middleParameterId, "T")),
+            superTypes = listOf(
                 LsiDeclaredType(
                     declarationId = baseId,
                     arguments = listOf(
@@ -743,15 +739,12 @@ class LsiTypeSystemTest {
                 ),
             ),
         )
-        val base = LsiTypeHierarchyEntry(
+        val base = type(
             id = baseId,
-            qualifiedName = "sample.Base",
-            kind = LsiTypeDeclarationKind.INTERFACE,
-            typeParameters = listOf(LsiTypeParameter(baseParameterId, "E")),
+            parameters = listOf(LsiTypeParameter(baseParameterId, "E")),
         )
         val workspace = LsiWorkspace(
-            declarations = listOf(entity),
-            typeHierarchy = listOf(middle, base),
+            declarations = listOf(entity, middle, base),
         )
 
         val resolved = LsiTypeSystem(workspace).resolveSuperType(entityId, baseId)

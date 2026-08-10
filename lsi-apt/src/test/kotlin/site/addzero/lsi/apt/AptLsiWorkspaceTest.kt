@@ -866,7 +866,6 @@ class AptLsiWorkspaceTest {
         assertEquals("label", workspace.requireProperty(externalValueId, "label").name)
         val instantId = LsiSymbolId.type("java.time.Instant")
         assertTrue(assertIs<LsiClass>(workspace[instantId]).memberIds.isEmpty())
-        assertNotNull(workspace.typeHierarchyEntry(instantId))
         val objectId = LsiSymbolId.type("java.lang.Object")
         assertTrue(assertIs<LsiClass>(workspace[objectId]).memberIds.isEmpty())
         assertTrue(workspace.declarationsOfType<LsiProperty>().none { property ->

@@ -44,7 +44,6 @@ import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiType
-import site.addzero.lsi.model.LsiTypeHierarchyEntry
 import site.addzero.lsi.model.LsiTypeSeed
 import site.addzero.lsi.model.LsiTypeSeedMode
 import site.addzero.lsi.model.LsiWorkspace
@@ -131,7 +130,6 @@ internal class KspLsiWorkspaceBuilder(
         return LsiWorkspace(
             sources = sources,
             declarations = declarations,
-            typeHierarchy = freezeTypeHierarchy(declarations.referencedTypeIds()),
             annotationScopes = annotationScopes,
         )
     }
@@ -227,47 +225,6 @@ internal class KspLsiWorkspaceBuilder(
                 .forEach(pendingTypeIds::addLast)
         }
         return declarationsByTypeId.values.flatten()
-    }
-
-    private fun freezeTypeHierarchy(seedIds: Set<LsiSymbolId>): List<LsiTypeHierarchyEntry> {
-        val entries = linkedMapOf<LsiSymbolId, LsiTypeHierarchyEntry>()
-        val pending = ArrayDeque(seedIds.sorted())
-        while (pending.isNotEmpty()) {
-            val typeId = pending.removeFirst()
-            if (typeId in entries) {
-                continue
-            }
-            val declaration = resolver.getClassDeclarationByName(typeId.requireTypeQualifiedName()) ?: continue
-            val (typeParameters, typeParameterIds) = typeContext.toLsiTypeParameters(
-                ownerId = typeId,
-                parameters = declaration.typeParameters,
-            )
-            val directSuperTypes = declaration.superTypes
-                .mapNotNull { superType ->
-                    if (superType.resolve().isError) {
-                        null
-                    } else {
-                        typeContext.toLsiType(superType, typeParameterIds) as? site.addzero.lsi.type.LsiDeclaredType
-                    }
-                }
-                .filterNot { superType -> superType.declarationId == typeId }
-                .filterNot { superType ->
-                    declaration.classKind.isImplicitObjectSuperType(superType)
-                }
-                .distinct()
-                .toList()
-            entries[typeId] = LsiTypeHierarchyEntry(
-                id = typeId,
-                qualifiedName = typeId.requireTypeQualifiedName(),
-                kind = declaration.classKind.toLsiTypeDeclarationKind(),
-                typeParameters = typeParameters,
-                directSuperTypes = directSuperTypes,
-                source = context.source(declaration),
-                isExternal = true,
-            )
-            directSuperTypes.mapTo(pending) { superType -> superType.declarationId }
-        }
-        return entries.values.toList()
     }
 
     private fun collectTypeDeclarations(rootType: KSClassDeclaration): List<KSClassDeclaration> {

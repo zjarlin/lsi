@@ -1521,7 +1521,6 @@ class KspLsiWorkspaceTest {
         assertTrue(workspace.declarationsOfType<LsiProperty>().none { property ->
             property.ownerId == instantId
         })
-        assertNotNull(workspace.typeHierarchyEntry(instantId))
         val objectId = LsiSymbolId.type("java.lang.Object")
         val objectSnapshot = assertIs<LsiClass>(workspace[objectId])
         assertTrue(objectSnapshot.memberIds.isEmpty())

@@ -1,7 +1,6 @@
 package site.addzero.lsi.jimmer
 
 import site.addzero.lsi.core.LsiLanguage
-import site.addzero.lsi.core.LsiSourceKind
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.model.LsiAnnotation
 import site.addzero.lsi.model.LsiAnnotationUseSiteTarget
@@ -1751,8 +1750,7 @@ private fun LsiType.containsUnresolvedType(workspace: LsiWorkspace): Boolean {
     return when (this) {
         is LsiUnresolvedType -> true
         is LsiDeclaredType ->
-            workspace.hasMissingSourceTypeDeclaration(declarationId) ||
-                arguments.any { argument -> argument.type?.containsUnresolvedType(workspace) == true }
+            arguments.any { argument -> argument.type?.containsUnresolvedType(workspace) == true }
         is LsiArrayType -> elementType.containsUnresolvedType(workspace)
         is LsiFunctionType ->
             receiverType?.containsUnresolvedType(workspace) == true ||
@@ -1762,14 +1760,6 @@ private fun LsiType.containsUnresolvedType(workspace: LsiWorkspace): Boolean {
         is LsiTypeParameterRef,
         -> false
     }
-}
-
-private fun LsiWorkspace.hasMissingSourceTypeDeclaration(typeId: LsiSymbolId): Boolean {
-    if (contains(typeId)) {
-        return false
-    }
-    val sourceKind = typeHierarchyEntry(typeId)?.source?.kind ?: return false
-    return sourceKind == LsiSourceKind.SOURCE || sourceKind == LsiSourceKind.GENERATED
 }
 
 private fun LsiAnnotation.containsUnresolvedType(workspace: LsiWorkspace): Boolean {

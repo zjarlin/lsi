@@ -36,7 +36,6 @@ import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeHierarchyEntry
 import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
@@ -836,7 +835,7 @@ class DtoConfigContractTest {
         implementationTypeId: LsiSymbolId = FILTER_TYPE_ID,
         implementationKind: LsiTypeDeclarationKind = LsiTypeDeclarationKind.CLASS,
         implementationSuperTypes: List<LsiDeclaredType>,
-        hierarchy: List<LsiTypeHierarchyEntry> = emptyList(),
+        hierarchy: List<LsiClass> = emptyList(),
         implementationTypeParameters: List<LsiTypeParameter> = emptyList(),
         enclosingTypeId: LsiSymbolId? = null,
         enclosingVisibility: LsiVisibility = LsiVisibility.PUBLIC,
@@ -903,8 +902,7 @@ class DtoConfigContractTest {
             )
         }
         val workspace = LsiWorkspace(
-            declarations = listOfNotNull(enclosingDeclaration, implementation) + constructors,
-            typeHierarchy = hierarchy,
+            declarations = listOfNotNull(enclosingDeclaration, implementation) + constructors + hierarchy,
         )
         return workspace.resolveDtoConfigContracts(
             graph = graph(implementationTypeId, kind, targetPackageName),
@@ -1066,20 +1064,22 @@ class DtoConfigContractTest {
             typeId: LsiSymbolId,
             typeParameters: List<LsiTypeParameter> = emptyList(),
             directSuperTypes: List<LsiDeclaredType> = emptyList(),
-        ): LsiTypeHierarchyEntry {
-            return LsiTypeHierarchyEntry(
+        ): LsiClass {
+            return LsiClass(
                 id = typeId,
+                name = typeId.requireTypeQualifiedName().substringAfterLast('.'),
                 qualifiedName = typeId.requireTypeQualifiedName(),
                 kind = LsiTypeDeclarationKind.CLASS,
                 typeParameters = typeParameters,
-                directSuperTypes = directSuperTypes,
+                superTypes = directSuperTypes,
+                origin = BINARY_ORIGIN,
             )
         }
 
         private fun tableHierarchy(
             tableTypeId: LsiSymbolId,
             entityTypeId: LsiSymbolId,
-        ): LsiTypeHierarchyEntry {
+        ): LsiClass {
             return hierarchy(
                 typeId = tableTypeId,
                 directSuperTypes = listOf(declared(TABLE_TYPE_ID, declared(entityTypeId))),

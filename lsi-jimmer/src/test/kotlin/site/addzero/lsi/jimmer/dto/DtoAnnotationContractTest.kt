@@ -204,7 +204,6 @@ class DtoAnnotationContractTest {
         val workspace = LsiWorkspace(
             sources = fixture.workspace.sources,
             declarations = declarations,
-            typeHierarchy = fixture.workspace.typeHierarchy,
             annotationScopes = fixture.workspace.annotationScopes,
         )
         val schema = immutableSchema(

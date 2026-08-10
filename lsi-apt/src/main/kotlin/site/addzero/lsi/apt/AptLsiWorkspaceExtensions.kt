@@ -21,7 +21,6 @@ import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeHierarchyEntry
 import site.addzero.lsi.model.LsiTypeSeed
 import site.addzero.lsi.model.LsiTypeSeedMode
 import site.addzero.lsi.model.LsiWorkspace
@@ -134,7 +133,6 @@ class AptLsiWorkspaceBuilder(
         return LsiWorkspace(
             sources = sources,
             declarations = declarations,
-            typeHierarchy = freezeTypeHierarchy(declarations.referencedTypeIds()),
             annotationScopes = annotationScopes,
         )
     }
@@ -222,38 +220,6 @@ class AptLsiWorkspaceBuilder(
                 .forEach(pendingTypeIds::addLast)
         }
         return declarationsByTypeId.values.flatten()
-    }
-
-    private fun freezeTypeHierarchy(seedIds: Set<LsiSymbolId>): List<LsiTypeHierarchyEntry> {
-        val entries = linkedMapOf<LsiSymbolId, LsiTypeHierarchyEntry>()
-        val pending = ArrayDeque(seedIds.sorted())
-        while (pending.isNotEmpty()) {
-            val typeId = pending.removeFirst()
-            if (typeId in entries) {
-                continue
-            }
-            val typeElement = context.elements.getTypeElement(typeId.requireTypeQualifiedName()) ?: continue
-            val (typeParameters, typeParameterIds) = context.toLsiTypeParameters(
-                ownerId = typeId,
-                parameters = typeElement.typeParameters,
-            )
-            val directSuperTypes = context.types.directSupertypes(typeElement.asType())
-                .filterIsInstance<DeclaredType>()
-                .mapNotNull { superType ->
-                    context.toLsiType(superType, typeParameterIds) as? site.addzero.lsi.type.LsiDeclaredType
-                }
-            entries[typeId] = LsiTypeHierarchyEntry(
-                id = typeId,
-                qualifiedName = typeElement.qualifiedName.toString(),
-                kind = typeElement.kind.toLsiTypeDeclarationKind(),
-                typeParameters = typeParameters,
-                directSuperTypes = directSuperTypes,
-                source = context.source(typeElement),
-                isExternal = true,
-            )
-            directSuperTypes.mapTo(pending) { superType -> superType.declarationId }
-        }
-        return entries.values.toList()
     }
 
     private fun collectTypeElements(rootType: TypeElement): List<TypeElement> {

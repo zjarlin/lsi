@@ -1,6 +1,8 @@
 package site.addzero.lsi.jimmer
 
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.clazz.classDeclaration
+import site.addzero.lsi.clazz.directSuperTypes
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.collectAnnotationDependencies
 import site.addzero.lsi.model.collectTypeRefDependencies
@@ -34,12 +36,12 @@ fun MutableSet<LsiSymbolId>.collectImmutableTypeHierarchyDependencies(
         if (!visited.add(typeId)) continue
         add(typeId)
         val immutableType = schema.typesById[typeId] ?: continue
-        workspace.typeHierarchyEntry(typeId)?.let { hierarchy ->
-            hierarchy.typeParameters.forEach { parameter ->
+        workspace.classDeclaration(typeId)?.let { declaration ->
+            declaration.typeParameters.forEach { parameter ->
                 add(parameter.id)
                 parameter.upperBounds.forEach(::collectTypeRefDependencies)
             }
-            hierarchy.directSuperTypes.forEach(::collectTypeRefDependencies)
+            declaration.directSuperTypes.forEach(::collectTypeRefDependencies)
         }
         immutableType.annotations.forEach(::collectAnnotationDependencies)
         addAll(immutableType.typeParameterIds)

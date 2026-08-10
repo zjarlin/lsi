@@ -12,6 +12,7 @@ import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.classDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
@@ -134,7 +135,7 @@ private class TypedTupleSchemaBuilder(
         val declaredType = type as? LsiDeclaredType
         val entityTypeId = declaredType?.declarationId?.takeIf(entityTypeIds::contains)
         if (entityTypeId != null) {
-            val entityTypeName = workspace.typeHierarchyEntry(entityTypeId)?.qualifiedName
+            val entityTypeName = workspace.classDeclaration(entityTypeId)?.qualifiedName
                 ?: entityTypeId.requireTypeQualifiedName()
             val packageName = entityTypeName.substringBeforeLast('.', missingDelimiterValue = "")
             val simpleName = entityTypeName.substringAfterLast('.')
@@ -259,12 +260,12 @@ private class TypedTupleSchemaBuilder(
                     if (superType.declarationId in ROOT_OBJECT_TYPE_IDS) {
                         return@forEach
                     }
-                    val hierarchyEntry = workspace.typeHierarchyEntry(superType.declarationId)
-                    if (hierarchyEntry != null && hierarchyEntry.kind in CLASS_LIKE_TYPE_KINDS) {
+                    val superDeclaration = workspace.classDeclaration(superType.declarationId)
+                    if (superDeclaration != null && superDeclaration.kind in CLASS_LIKE_TYPE_KINDS) {
                         throw TypedTupleValidationException(
                             declarationId = type.id,
                             message = "Typed tuple '${type.qualifiedName}' cannot inherit class " +
-                                "'${hierarchyEntry.qualifiedName}'",
+                                "'${superDeclaration.qualifiedName}'",
                         )
                     }
                 }

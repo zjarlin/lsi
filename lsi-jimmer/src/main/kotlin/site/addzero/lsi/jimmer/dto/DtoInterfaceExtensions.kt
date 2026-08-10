@@ -18,6 +18,7 @@ import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.model.LsiProperty
 import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.classDeclaration
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
@@ -601,7 +602,7 @@ private class DtoInterfaceContractResolver(
         } else {
             declarationsByQualifiedName[typeRef.typeName]?.id
                 ?: LsiSymbolId.type(typeRef.typeName).takeIf { id ->
-                    workspace.typeHierarchyEntry(id) != null
+                    workspace.classDeclaration(id) != null
                 }
         }
         if (typeId == null) {
@@ -634,7 +635,7 @@ private class DtoInterfaceContractResolver(
         if (validateDeclaredArity) {
             val expectedArgumentCount = STANDARD_TYPE_ARGUMENT_COUNTS[typeRef.typeName]
                 ?: (workspace[typeId] as? LsiClass)?.typeParameters?.size
-                ?: workspace.typeHierarchyEntry(typeId)?.typeParameters?.size
+                ?: workspace.classDeclaration(typeId)?.typeParameters?.size
             if (expectedArgumentCount != null && expectedArgumentCount != arguments.size) {
                 diagnostics += invalidDtoTypeRefDiagnostic(
                     dtoType,
@@ -654,7 +655,7 @@ private class DtoInterfaceContractResolver(
     private fun selectAvailableTypeId(candidates: List<String>): LsiSymbolId {
         return candidates
             .map(LsiSymbolId::type)
-            .firstOrNull { id -> workspace.contains(id) || workspace.typeHierarchyEntry(id) != null }
+            .firstOrNull { id -> workspace.contains(id) || workspace.classDeclaration(id) != null }
             ?: LsiSymbolId.type(candidates.first())
     }
 

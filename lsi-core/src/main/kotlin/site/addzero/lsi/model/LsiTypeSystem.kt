@@ -1,6 +1,7 @@
 package site.addzero.lsi.model
 
 import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.directSuperTypes
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiArrayType
 import site.addzero.lsi.type.LsiDeclaredType
@@ -49,23 +50,23 @@ class LsiInheritedPropertyConflictException(
  */
 class LsiTypeSystem(
     private val workspace: LsiWorkspace,
-    fallbackTypeHierarchy: Collection<LsiTypeHierarchyEntry> = emptyList(),
+    fallbackTypes: Collection<LsiClass> = emptyList(),
 ) {
 
-    private val fallbackTypeHierarchyById: Map<LsiSymbolId, LsiTypeHierarchyEntry>
+    private val fallbackTypesById: Map<LsiSymbolId, LsiClass>
 
     init {
-        val duplicateFallbackIds = fallbackTypeHierarchy
-            .groupingBy(LsiTypeHierarchyEntry::id)
+        val duplicateFallbackIds = fallbackTypes
+            .groupingBy(LsiClass::id)
             .eachCount()
             .filterValues { count -> count > 1 }
             .keys
             .sorted()
         require(duplicateFallbackIds.isEmpty()) {
-            "Duplicate fallback LSI type hierarchy ids: " +
+            "Duplicate fallback LSI type ids: " +
                 duplicateFallbackIds.joinToString { id -> id.value }
         }
-        fallbackTypeHierarchyById = fallbackTypeHierarchy.associateBy(LsiTypeHierarchyEntry::id)
+        fallbackTypesById = fallbackTypes.associateBy(LsiClass::id)
     }
 
     fun substitute(
@@ -111,7 +112,7 @@ class LsiTypeSystem(
         typeId: LsiSymbolId,
         superTypeId: LsiSymbolId,
     ): LsiDeclaredType? {
-        val type = typeHierarchyEntry(typeId)?.selfType() ?: return null
+        val type = typeDeclaration(typeId)?.selfType() ?: return null
         return resolveSuperType(type, superTypeId)
     }
 
@@ -120,14 +121,14 @@ class LsiTypeSystem(
         type: LsiDeclaredType,
         superTypeId: LsiSymbolId,
     ): LsiDeclaredType? {
-        val hierarchyEntry = typeHierarchyEntry(type.declarationId) ?: return null
-        val normalizedType = hierarchyEntry.normalizeArguments(type)
+        val declaration = typeDeclaration(type.declarationId) ?: return null
+        val normalizedType = declaration.normalizeArguments(type)
         if (normalizedType.declarationId == superTypeId) {
             return normalizedType
         }
-        val substitutions = hierarchyEntry.substitutionsFrom(normalizedType)
+        val substitutions = declaration.substitutionsFrom(normalizedType)
         val pending = ArrayDeque<LsiDeclaredType>()
-        hierarchyEntry.directSuperTypes
+        declaration.directSuperTypes
             .mapTo(pending) { superType ->
                 (substitute(superType, substitutions) as LsiDeclaredType).copy(
                     nullability = normalizedType.nullability,
@@ -136,17 +137,17 @@ class LsiTypeSystem(
         val visited = mutableSetOf<String>()
         while (pending.isNotEmpty()) {
             val current = pending.removeFirst()
-            val currentHierarchyEntry = typeHierarchyEntry(current.declarationId)
-            val normalizedCurrent = currentHierarchyEntry?.normalizeArguments(current) ?: current
+            val currentDeclaration = typeDeclaration(current.declarationId)
+            val normalizedCurrent = currentDeclaration?.normalizeArguments(current) ?: current
             if (!visited.add(normalizedCurrent.stableSignature())) {
                 continue
             }
             if (normalizedCurrent.declarationId == superTypeId) {
                 return normalizedCurrent
             }
-            val hierarchyEntry = currentHierarchyEntry ?: continue
-            val substitutions = hierarchyEntry.substitutionsFrom(normalizedCurrent)
-            hierarchyEntry.directSuperTypes
+            val currentType = currentDeclaration ?: continue
+            val substitutions = currentType.substitutionsFrom(normalizedCurrent)
+            currentType.directSuperTypes
                 .mapTo(pending) { inheritedType ->
                     (substitute(inheritedType, substitutions) as LsiDeclaredType).copy(
                         nullability = normalizedCurrent.nullability,
@@ -354,10 +355,10 @@ class LsiTypeSystem(
         target: LsiDeclaredType,
         visiting: MutableSet<Pair<String, String>>,
     ): Boolean {
-        val sourceHierarchyEntry = typeHierarchyEntry(source.declarationId)
-        val normalizedInputSource = sourceHierarchyEntry?.normalizeArguments(source) ?: source
-        val targetHierarchyEntry = typeHierarchyEntry(target.declarationId)
-        targetHierarchyEntry?.normalizeArguments(target)
+        val sourceDeclaration = typeDeclaration(source.declarationId)
+        val normalizedInputSource = sourceDeclaration?.normalizeArguments(source) ?: source
+        val targetDeclaration = typeDeclaration(target.declarationId)
+        targetDeclaration?.normalizeArguments(target)
         val resolvedSource = if (normalizedInputSource.declarationId == target.declarationId) {
             normalizedInputSource
         } else {
@@ -366,13 +367,13 @@ class LsiTypeSystem(
         if (target.arguments.isEmpty()) {
             return true
         }
-        val normalizedSource = targetHierarchyEntry?.normalizeArguments(resolvedSource) ?: resolvedSource
-        val normalizedTarget = targetHierarchyEntry?.normalizeArguments(target) ?: target
+        val normalizedSource = targetDeclaration?.normalizeArguments(resolvedSource) ?: resolvedSource
+        val normalizedTarget = targetDeclaration?.normalizeArguments(target) ?: target
         if (normalizedSource.arguments.size != normalizedTarget.arguments.size) {
             return false
         }
         return normalizedSource.arguments.indices.all { index ->
-            val declarationVariance = targetHierarchyEntry
+            val declarationVariance = targetDeclaration
                 ?.typeParameters
                 ?.getOrNull(index)
                 ?.variance
@@ -451,18 +452,14 @@ class LsiTypeSystem(
     }
 
     private fun typeParameter(id: LsiSymbolId): LsiTypeParameter? {
-        return (workspace.typeHierarchy + fallbackTypeHierarchyById.values)
+        return (workspace.declarationsOfType<LsiClass>() + fallbackTypesById.values)
             .asSequence()
-            .flatMap { entry -> entry.typeParameters.asSequence() }
+            .flatMap { declaration -> declaration.typeParameters.asSequence() }
             .firstOrNull { parameter -> parameter.id == id }
     }
 
-    private fun typeHierarchyEntry(id: LsiSymbolId): LsiTypeHierarchyEntry? {
-        return workspace.typeHierarchyEntry(id) ?: fallbackTypeHierarchyById[id]
-    }
-
-    private fun LsiTypeHierarchyEntry.identitySubstitutions(): Map<LsiSymbolId, LsiTypeArgument> {
-        return typeParameters.identitySubstitutions()
+    private fun typeDeclaration(id: LsiSymbolId): LsiClass? {
+        return workspace[id] as? LsiClass ?: fallbackTypesById[id]
     }
 
     private fun LsiClass.identitySubstitutions(): Map<LsiSymbolId, LsiTypeArgument> {
@@ -475,19 +472,13 @@ class LsiTypeSystem(
         }
     }
 
-    private fun LsiTypeHierarchyEntry.selfType(): LsiDeclaredType {
+    private fun LsiClass.selfType(): LsiDeclaredType {
         return LsiDeclaredType(
             declarationId = id,
             arguments = typeParameters.map { parameter ->
                 LsiTypeArgument.invariant(LsiTypeParameterRef(parameter.id))
             },
         )
-    }
-
-    private fun LsiTypeHierarchyEntry.substitutionsFrom(
-        resolvedType: LsiDeclaredType,
-    ): Map<LsiSymbolId, LsiTypeArgument> {
-        return typeParameters.substitutionsFrom(normalizeArguments(resolvedType))
     }
 
     private fun LsiClass.substitutionsFrom(
@@ -506,7 +497,7 @@ class LsiTypeSystem(
         }
     }
 
-    private fun LsiTypeHierarchyEntry.normalizeArguments(type: LsiDeclaredType): LsiDeclaredType {
+    private fun LsiClass.normalizeArguments(type: LsiDeclaredType): LsiDeclaredType {
         return type.normalizeArguments(id, typeParameters.size)
     }
 

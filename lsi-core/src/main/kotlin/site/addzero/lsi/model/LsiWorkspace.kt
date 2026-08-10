@@ -10,7 +10,6 @@ import site.addzero.lsi.core.LsiSymbolId
 class LsiWorkspace(
     sources: Collection<LsiSource> = emptyList(),
     declarations: Collection<LsiDeclaration> = emptyList(),
-    typeHierarchy: Collection<LsiTypeHierarchyEntry> = emptyList(),
     annotationScopes: Collection<LsiAnnotationScope> = emptyList(),
 ) {
     val sources: List<LsiSource> = sources.distinct().sorted()
@@ -22,10 +21,6 @@ class LsiWorkspace(
     val annotationScopes: List<LsiAnnotationScope>
 
     private val annotationScopeMap: Map<LsiSymbolId, LsiAnnotationScope>
-
-    val typeHierarchy: List<LsiTypeHierarchyEntry>
-
-    private val typeHierarchyMap: Map<LsiSymbolId, LsiTypeHierarchyEntry>
 
     init {
         val duplicates = declarations
@@ -52,21 +47,6 @@ class LsiWorkspace(
         this.annotationScopes = annotationScopes.sortedBy(LsiAnnotationScope::id)
         annotationScopeMap = this.annotationScopes.associateBy(LsiAnnotationScope::id)
 
-        val duplicateHierarchyIds = typeHierarchy
-            .groupingBy(LsiTypeHierarchyEntry::id)
-            .eachCount()
-            .filterValues { count -> count > 1 }
-            .keys
-            .sorted()
-        require(duplicateHierarchyIds.isEmpty()) {
-            "Duplicate LSI type hierarchy ids: ${duplicateHierarchyIds.joinToString { id -> id.value }}"
-        }
-        val hierarchyById = typeHierarchy.associateByTo(linkedMapOf(), LsiTypeHierarchyEntry::id)
-        this.declarations.filterIsInstance<LsiClass>().forEach { declaration ->
-            hierarchyById[declaration.id] = LsiTypeHierarchyEntry.from(declaration)
-        }
-        this.typeHierarchy = hierarchyById.values.sortedBy(LsiTypeHierarchyEntry::id)
-        typeHierarchyMap = this.typeHierarchy.associateBy(LsiTypeHierarchyEntry::id)
     }
 
     operator fun get(id: LsiSymbolId): LsiDeclaration? = declarationMap[id]
@@ -74,8 +54,6 @@ class LsiWorkspace(
     fun annotationScope(id: LsiSymbolId): LsiAnnotationScope? = annotationScopeMap[id]
 
     inline fun <reified T : LsiDeclaration> declarationsOfType(): List<T> = declarations.filterIsInstance<T>()
-
-    fun typeHierarchyEntry(id: LsiSymbolId): LsiTypeHierarchyEntry? = typeHierarchyMap[id]
 
     fun contains(id: LsiSymbolId): Boolean = id in declarationMap || id in annotationScopeMap
 
@@ -90,7 +68,6 @@ class LsiWorkspace(
         if (
             newer.declarations.isEmpty() &&
             newer.sources.isEmpty() &&
-            newer.typeHierarchy.isEmpty() &&
             newer.annotationScopes.isEmpty() &&
             refreshedTypeIds.isEmpty()
         ) {
@@ -99,7 +76,6 @@ class LsiWorkspace(
         if (
             declarations.isEmpty() &&
             sources.isEmpty() &&
-            typeHierarchy.isEmpty() &&
             annotationScopes.isEmpty()
         ) {
             return newer
@@ -129,17 +105,9 @@ class LsiWorkspace(
         newer.annotationScopes.forEach { annotationScope ->
             mergedAnnotationScopes[annotationScope.id] = annotationScope
         }
-        val mergedTypeHierarchy = typeHierarchy
-            .asSequence()
-            .filterNot { entry -> entry.id in refreshedDeclarationTypeIds }
-            .associateByTo(linkedMapOf(), LsiTypeHierarchyEntry::id)
-        newer.typeHierarchy.forEach { entry ->
-            mergedTypeHierarchy[entry.id] = entry
-        }
         return LsiWorkspace(
             sources = sources + newer.sources,
             declarations = mergedDeclarations.values,
-            typeHierarchy = mergedTypeHierarchy.values,
             annotationScopes = mergedAnnotationScopes.values,
         )
     }

@@ -28,7 +28,6 @@ import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.clazz.copy
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeHierarchyEntry
 import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.model.LsiVisibility
 import site.addzero.lsi.model.LsiWorkspace
@@ -242,20 +241,18 @@ class TransactionalWorkspaceExtensionsTest {
     }
 
     @Test
-    fun `accepts external runtime exception subtype from hierarchy`() {
+    fun `accepts external runtime exception subtype from frozen type`() {
         val completionExceptionId = LsiSymbolId.type("java.util.concurrent.CompletionException")
         val workspace = workspace(thrownType = LsiDeclaredType(completionExceptionId))
-        val hierarchyEntry = LsiTypeHierarchyEntry(
+        val externalType = type(
             id = completionExceptionId,
             qualifiedName = "java.util.concurrent.CompletionException",
-            kind = LsiTypeDeclarationKind.CLASS,
-            directSuperTypes = listOf(LsiDeclaredType(RUNTIME_EXCEPTION)),
+            superTypes = listOf(LsiDeclaredType(RUNTIME_EXCEPTION)),
         )
 
         val schema = LsiWorkspace(
             sources = workspace.sources,
-            declarations = workspace.declarations,
-            typeHierarchy = workspace.typeHierarchy + hierarchyEntry,
+            declarations = workspace.declarations + externalType,
         ).toTransactionalSchema()
 
         val find = schema.types.single().methods.single { method -> method.name == "find" }
@@ -323,7 +320,6 @@ class TransactionalWorkspaceExtensionsTest {
                     declaration
                 }
             } + marker,
-            typeHierarchy = workspace.typeHierarchy,
             annotationScopes = workspace.annotationScopes,
         )
     }

@@ -4,6 +4,8 @@ import java.security.MessageDigest
 import site.addzero.lsi.jimmer.ImmutableSchema
 import site.addzero.lsi.core.LsiLanguage
 import site.addzero.lsi.core.LsiLocation
+import site.addzero.lsi.core.LsiOrigin
+import site.addzero.lsi.core.LsiOriginKind
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.diagnostic.LsiDiagnostic
 import site.addzero.lsi.diagnostic.LsiDiagnosticSeverity
@@ -22,7 +24,6 @@ import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.model.LsiTypeDeclarationKind
-import site.addzero.lsi.model.LsiTypeHierarchyEntry
 import site.addzero.lsi.type.LsiTypeParameter
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
@@ -312,7 +313,7 @@ private class DtoAnnotationContractResolver(
 ) {
     private val annotationTypeSystem = LsiTypeSystem(
         workspace = workspace,
-        fallbackTypeHierarchy = JVM_PRIMITIVE_WRAPPER_TYPE_HIERARCHY,
+        fallbackTypes = JVM_PRIMITIVE_WRAPPER_TYPES,
     )
 
     fun resolve(graph: DtoGraph): DtoAnnotationContract {
@@ -1632,25 +1633,22 @@ private val PRIMITIVE_WRAPPER_TYPE_IDS = mapOf(
     LsiPrimitiveKind.VOID to LsiSymbolId.type("java.lang.Void"),
 )
 
-private val JVM_PRIMITIVE_WRAPPER_TYPE_HIERARCHY = buildList {
+private val JVM_PRIMITIVE_WRAPPER_TYPES = buildList {
     add(
-        LsiTypeHierarchyEntry(
+        builtInType(
             id = JAVA_OBJECT_TYPE_ID,
-            qualifiedName = JAVA_OBJECT_TYPE_ID.requireTypeQualifiedName(),
             kind = LsiTypeDeclarationKind.CLASS,
         )
     )
     add(
-        LsiTypeHierarchyEntry(
+        builtInType(
             id = JAVA_SERIALIZABLE_TYPE_ID,
-            qualifiedName = JAVA_SERIALIZABLE_TYPE_ID.requireTypeQualifiedName(),
             kind = LsiTypeDeclarationKind.INTERFACE,
         )
     )
     add(
-        LsiTypeHierarchyEntry(
+        builtInType(
             id = JAVA_COMPARABLE_TYPE_ID,
-            qualifiedName = JAVA_COMPARABLE_TYPE_ID.requireTypeQualifiedName(),
             kind = LsiTypeDeclarationKind.INTERFACE,
             typeParameters = listOf(
                 LsiTypeParameter(JAVA_COMPARABLE_PARAMETER_ID, "T"),
@@ -1658,11 +1656,10 @@ private val JVM_PRIMITIVE_WRAPPER_TYPE_HIERARCHY = buildList {
         )
     )
     add(
-        LsiTypeHierarchyEntry(
+        builtInType(
             id = JAVA_NUMBER_TYPE_ID,
-            qualifiedName = JAVA_NUMBER_TYPE_ID.requireTypeQualifiedName(),
             kind = LsiTypeDeclarationKind.CLASS,
-            directSuperTypes = listOf(
+            superTypes = listOf(
                 LsiDeclaredType(JAVA_OBJECT_TYPE_ID),
                 LsiDeclaredType(JAVA_SERIALIZABLE_TYPE_ID),
             ),
@@ -1689,18 +1686,35 @@ private val JVM_PRIMITIVE_WRAPPER_TYPE_HIERARCHY = buildList {
             }
         }
         add(
-            LsiTypeHierarchyEntry(
+            builtInType(
                 id = wrapperTypeId,
-                qualifiedName = wrapperTypeId.requireTypeQualifiedName(),
                 kind = if (kind == LsiPrimitiveKind.UNIT) {
                     LsiTypeDeclarationKind.OBJECT
                 } else {
                     LsiTypeDeclarationKind.CLASS
                 },
-                directSuperTypes = directSuperTypes,
+                superTypes = directSuperTypes,
             )
         )
     }
+}
+
+private fun builtInType(
+    id: LsiSymbolId,
+    kind: LsiTypeDeclarationKind,
+    typeParameters: List<LsiTypeParameter> = emptyList(),
+    superTypes: List<LsiType> = emptyList(),
+): LsiClass {
+    val qualifiedName = id.requireTypeQualifiedName()
+    return LsiClass(
+        id = id,
+        name = qualifiedName.substringAfterLast('.'),
+        qualifiedName = qualifiedName,
+        kind = kind,
+        typeParameters = typeParameters,
+        superTypes = superTypes,
+        origin = LsiOrigin(LsiOriginKind.BINARY),
+    )
 }
 
 private val LSI_LOCATION_COMPARATOR = compareBy<LsiLocation>(

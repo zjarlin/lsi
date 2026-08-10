@@ -16,6 +16,8 @@ import site.addzero.lsi.type.LsiNullability
 import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.classDeclaration
+import site.addzero.lsi.clazz.directSuperTypes
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
@@ -517,20 +519,17 @@ private class DtoConfigContractResolver(
                     matches += GenericMatch(current, path)
                     return
                 }
-                val declaration = workspace[current.declarationId] as? LsiClass
-                val hierarchy = workspace.typeHierarchyEntry(current.declarationId)
-                if (hierarchy == null && declaration == null) {
+                val declaration = workspace.classDeclaration(current.declarationId)
+                if (declaration == null) {
                     if (current.declarationId !in TERMINAL_TYPE_IDS) {
                         unresolvedDisplayNames += current.declarationId.requireTypeQualifiedName()
                     }
                     return
                 }
-                val typeParameters = declaration?.typeParameters ?: requireNotNull(hierarchy).typeParameters
-                val substitutions = typeParameters
+                val substitutions = declaration.typeParameters
                     .zip(current.arguments)
                     .associate { (parameter, argument) -> parameter.id to argument }
-                val directSuperTypes = declaration?.superTypes ?: requireNotNull(hierarchy).directSuperTypes
-                directSuperTypes
+                declaration.directSuperTypes
                     .map { superType -> typeSystem.substitute(superType, substitutions) }
                     .sortedBy(LsiType::stableSignature)
                     .forEach { superType ->
