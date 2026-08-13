@@ -2,6 +2,7 @@ package site.addzero.lsi.type
 
 import site.addzero.lsi.anno.LsiAnnotation
 import site.addzero.lsi.core.LsiSymbolId
+import site.addzero.lsi.model.mergeAnnotations
 
 enum class LsiNullability {
     NON_NULL,
@@ -248,6 +249,24 @@ fun LsiUnresolvedType.copy(
     nullability: LsiNullability = this.nullability,
     annotations: List<LsiAnnotation> = this.annotations,
 ): LsiUnresolvedType = LsiUnresolvedType(displayName, nullability, annotations)
+
+/** 合并类型使用处补充的注解，并由补充注解覆盖同类型的原注解。 */
+fun LsiType.withAdditionalAnnotations(
+    additionalAnnotations: List<LsiAnnotation>,
+): LsiType {
+    if (additionalAnnotations.isEmpty()) {
+        return this
+    }
+    val mergedAnnotations = mergeAnnotations(additionalAnnotations, annotations)
+    return when (this) {
+        is LsiDeclaredType -> copy(annotations = mergedAnnotations)
+        is LsiFunctionType -> copy(annotations = mergedAnnotations)
+        is LsiTypeParameterRef -> copy(annotations = mergedAnnotations)
+        is LsiPrimitiveType -> copy(annotations = mergedAnnotations)
+        is LsiArrayType -> copy(annotations = mergedAnnotations)
+        is LsiUnresolvedType -> copy(annotations = mergedAnnotations)
+    }
+}
 
 /** 语言无关的类型参数声明接口。 */
 interface LsiTypeParameter {

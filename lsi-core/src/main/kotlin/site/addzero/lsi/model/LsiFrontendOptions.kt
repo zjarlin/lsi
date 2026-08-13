@@ -1,5 +1,6 @@
 package site.addzero.lsi.model
 
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.core.LsiSymbolId
 
 /**
@@ -13,6 +14,17 @@ data class LsiFrontendOptions(
     val fullExternalDeclarationAnnotationTypeIds: Set<LsiSymbolId> = emptySet(),
     val documentationConvention: LsiFrontendDocumentationConvention? = null,
 )
+
+/** 判断外部声明是否必须在前端阶段冻结完整结构。 */
+fun LsiClass.requiresFullExternalDeclaration(
+    options: LsiFrontendOptions,
+): Boolean {
+    return kind == LsiTypeDeclarationKind.ANNOTATION ||
+        kind == LsiTypeDeclarationKind.ENUM ||
+        annotations.any { annotation ->
+            annotation.type in options.fullExternalDeclarationAnnotationTypeIds
+        }
+}
 
 /**
  * 从注解及生成的同伴类型恢复文档时使用的平台中立约定。

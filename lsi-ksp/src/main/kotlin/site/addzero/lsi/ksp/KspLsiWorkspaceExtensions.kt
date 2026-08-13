@@ -50,6 +50,7 @@ import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.copy
 import site.addzero.lsi.model.toJvmCallableParameterType
 import site.addzero.lsi.model.mergeLsiTypeSeeds
+import site.addzero.lsi.model.requiresFullExternalDeclaration
 import site.addzero.lsi.type.toAnnotationMemberType
 
 fun Resolver.toLsiWorkspace(
@@ -784,16 +785,6 @@ private fun mergeProjectedAnnotationChannels(
             }
         }
     }
-}
-
-private fun LsiClass.requiresFullExternalDeclaration(
-    frontendOptions: LsiFrontendOptions,
-): Boolean {
-    return kind == LsiTypeDeclarationKind.ANNOTATION ||
-        kind == LsiTypeDeclarationKind.ENUM ||
-        annotations.any { annotation ->
-            annotation.type in frontendOptions.fullExternalDeclarationAnnotationTypeIds
-        }
 }
 
 private fun KSClassDeclaration.isLsiJavaDeclaration(): Boolean {

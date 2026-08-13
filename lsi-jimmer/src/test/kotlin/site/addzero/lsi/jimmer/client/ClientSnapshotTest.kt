@@ -2,6 +2,7 @@ package site.addzero.lsi.jimmer.client
 
 import kotlin.test.Test
 import kotlin.test.assertNotEquals
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiVariance
@@ -42,7 +43,7 @@ class ClientSnapshotTest {
                 fetchBy = ClientFetchBy(
                     value = "DETAIL_FETCHER",
                     ownerTypeId = LsiSymbolId.type("demo.Fetchers"),
-                    ownerTypeName = ClientTypeName.parse("demo.Fetchers"),
+                    ownerTypeName = clientTypeName("demo.Fetchers"),
                     targetEntityTypeId = LsiSymbolId.type("demo.Entity"),
                     documentation = "Detail fetcher.",
                 )
@@ -122,16 +123,18 @@ class ClientSnapshotTest {
     fun `fingerprint distinguishes nested type name boundaries`() {
         val definition = schema().definitions.single()
         val literalDollarName = definition.copy(
-            typeName = ClientTypeName(
+            typeName = LsiClass(
+                typeId = LsiSymbolId.type("demo.Outer\$Inner"),
                 packageName = "demo",
                 simpleNames = listOf("Outer\$Inner"),
-            )
+            ),
         )
         val nestedName = definition.copy(
-            typeName = ClientTypeName(
+            typeName = LsiClass(
+                typeId = LsiSymbolId.type("demo.Outer.Inner"),
                 packageName = "demo",
                 simpleNames = listOf("Outer", "Inner"),
-            )
+            ),
         )
 
         assertDefinitionOrderChanges(literalDollarName, nestedName)
@@ -164,7 +167,7 @@ class ClientSnapshotTest {
             definitions = listOf(
                 ClientTypeDefinition(
                     id = DEFINITION_ID,
-                    typeName = ClientTypeName.parse(DEFINITION_ID.requireTypeQualifiedName()),
+                    typeName = clientTypeName(DEFINITION_ID.requireTypeQualifiedName()),
                     kind = ClientDefinitionKind.OBJECT,
                     apiIgnore = false,
                     doc = null,
@@ -196,7 +199,17 @@ class ClientSnapshotTest {
     private fun declaredType(qualifiedName: String): ClientDeclaredTypeRef {
         return ClientDeclaredTypeRef(
             typeId = LsiSymbolId.type(qualifiedName),
-            typeName = ClientTypeName.parse(qualifiedName),
+            typeName = clientTypeName(qualifiedName),
+        )
+    }
+
+    private fun clientTypeName(qualifiedName: String): LsiClass {
+        val packageName = qualifiedName.substringBeforeLast('.', missingDelimiterValue = "")
+        val simpleName = qualifiedName.substringAfterLast('.')
+        return LsiClass(
+            typeId = LsiSymbolId.type(qualifiedName),
+            packageName = packageName,
+            simpleNames = listOf(simpleName),
         )
     }
 

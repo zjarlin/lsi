@@ -97,15 +97,6 @@ private class TypedTupleSchemaBuilder(
             .takeUnless { tupleProperties -> tupleProperties.any(::isDtoProperty) }
             ?.mapIndexed { index, property -> property.toBaseTableSelection(index) }
             ?.let(::TypedTupleBaseTableProjection)
-        val dependencies = TypedTupleDependencies(
-            typeIds = (listOf(type.id) + properties.flatMap(TypedTupleProperty::typeDependencyIds))
-                .distinct()
-                .sorted(),
-            memberIds = (properties.map(TypedTupleProperty::sourceMemberId) + preparedType.construction.constructorId)
-                .filterNotNull()
-                .distinct()
-                .sorted(),
-        )
         return TypedTupleType(
             id = type.id,
             qualifiedName = type.qualifiedName,
@@ -115,7 +106,6 @@ private class TypedTupleSchemaBuilder(
             properties = properties,
             construction = preparedType.construction,
             baseTableProjection = baseTableProjection,
-            dependencies = dependencies,
         )
     }
 

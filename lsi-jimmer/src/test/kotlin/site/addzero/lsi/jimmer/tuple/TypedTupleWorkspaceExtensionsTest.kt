@@ -141,7 +141,7 @@ class TypedTupleWorkspaceExtensionsTest {
         assertEquals(listOf(1, 0), construction.arguments.map { it.propertyIndex })
         assertEquals(constructor.parameters.map(LsiParameter::id), construction.arguments.map { it.parameterId })
         assertEquals(listOf("count", "title"), construction.arguments.map { it.parameterName })
-        assertEquals(listOf(constructor.id, title.id, count.id).sorted(), model.dependencies.memberIds)
+        assertEquals(listOf(constructor.id, title.id, count.id).sorted(), model.memberDependencyIds)
     }
 
     @Test
@@ -187,7 +187,7 @@ class TypedTupleWorkspaceExtensionsTest {
 
         assertEquals(LsiLanguage.KOTLIN, model.sourceLanguage)
         assertEquals(listOf("title", "count"), model.properties.map(TypedTupleProperty::name))
-        assertFalse(bodyValue.id in model.dependencies.memberIds)
+        assertFalse(bodyValue.id in model.memberDependencyIds)
         val construction = assertIs<TypedTupleKotlinConstructorConstruction>(model.construction)
         assertEquals(primary.id, construction.constructorId)
         assertEquals(listOf("title", "count"), construction.arguments.map { it.parameterName })
@@ -255,12 +255,12 @@ class TypedTupleWorkspaceExtensionsTest {
         )
         assertEquals(
             listOf(annotationId, payloadId, bookId, tupleId, listId).sorted(),
-            model.dependencies.typeIds,
+            model.typeDependencyIds,
         )
-        assertEquals(listOf(books.id, count.id, primary.id).sorted(), model.dependencies.memberIds)
+        assertEquals(listOf(books.id, count.id, primary.id).sorted(), model.memberDependencyIds)
         assertEquals(
             setOf(tupleSource, bookSource),
-            workspace.originatingSources(model.dependencies.symbolIds),
+            workspace.originatingSources(model.dependencySymbolIds),
         )
     }
 

@@ -27,6 +27,7 @@ import site.addzero.lsi.model.LsiTypeSeed
 import site.addzero.lsi.model.LsiTypeSeedMode
 import site.addzero.lsi.model.LsiWorkspace
 import site.addzero.lsi.model.mergeLsiTypeSeeds
+import site.addzero.lsi.model.requiresFullExternalDeclaration
 import site.addzero.lsi.type.toAnnotationMemberType
 import site.addzero.lsi.model.toJvmCallableParameterType
 import site.addzero.lsi.core.LsiSourceKind
@@ -653,16 +654,6 @@ private data class KotlinAnnotationMetadata(
     val varargNames: Set<String>,
     val declarationIndicesByName: Map<String, Int>,
 )
-
-private fun LsiClass.requiresFullExternalDeclaration(
-    frontendOptions: LsiFrontendOptions,
-): Boolean {
-    return kind == LsiTypeDeclarationKind.ANNOTATION ||
-        kind == LsiTypeDeclarationKind.ENUM ||
-        annotations.any { annotation ->
-            annotation.type in frontendOptions.fullExternalDeclarationAnnotationTypeIds
-        }
-}
 
 private fun ElementKind.toLsiTypeDeclarationKind(): LsiTypeDeclarationKind {
     return when (this) {

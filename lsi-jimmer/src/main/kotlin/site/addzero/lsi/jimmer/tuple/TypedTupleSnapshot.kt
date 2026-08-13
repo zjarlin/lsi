@@ -17,7 +17,7 @@ fun TypedTupleSchema.normalizedSnapshot(): String {
                 tuple.packageName,
                 tuple.simpleName,
             )
-            tuple.dependencies.typeIds.forEach { typeId ->
+            tuple.typeDependencyIds.forEach { typeId ->
                 appendRecord("type-dependency", tuple.id.value, typeId.value)
             }
             tuple.properties.map(TypedTupleProperty::id).distinct().sorted().forEach { propertyId ->
@@ -67,10 +67,10 @@ private fun TypedTupleSchema.renderSnapshot(): String {
                 tuple.simpleName,
                 tuple.sourceLanguage.name,
             )
-            tuple.dependencies.typeIds.forEach { typeId ->
+            tuple.typeDependencyIds.forEach { typeId ->
                 appendRecord("render-type-dependency", tuple.id.value, typeId.value)
             }
-            tuple.dependencies.memberIds.forEach { memberId ->
+            tuple.memberDependencyIds.forEach { memberId ->
                 appendRecord("render-member-dependency", tuple.id.value, memberId.value)
             }
             tuple.properties.sortedBy(TypedTupleProperty::index).forEach { property ->

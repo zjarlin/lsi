@@ -36,7 +36,7 @@ import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
 import site.addzero.lsi.type.LsiUnresolvedType
 import site.addzero.lsi.type.LsiVariance
-import site.addzero.lsi.type.copy
+import site.addzero.lsi.type.withAdditionalAnnotations
 import site.addzero.lsi.model.mergeAnnotations
 import site.addzero.lsi.model.toJvmCallableParameterType
 import site.addzero.lsi.model.toJvmReferenceType
@@ -406,23 +406,6 @@ internal class KspLsiTypeContext(
             "Boolean", "Byte", "Short", "Integer", "Long", "Character", "Float", "Double", "Void" -> true
             else -> null
         }
-    }
-}
-
-private fun LsiType.withAdditionalAnnotations(
-    additionalAnnotations: List<LsiAnnotation>,
-): LsiType {
-    if (additionalAnnotations.isEmpty()) {
-        return this
-    }
-    val mergedAnnotations = mergeAnnotations(additionalAnnotations, annotations)
-    return when (this) {
-        is LsiDeclaredType -> copy(annotations = mergedAnnotations)
-        is LsiFunctionType -> copy(annotations = mergedAnnotations)
-        is LsiTypeParameterRef -> copy(annotations = mergedAnnotations)
-        is LsiPrimitiveType -> copy(annotations = mergedAnnotations)
-        is LsiArrayType -> copy(annotations = mergedAnnotations)
-        is LsiUnresolvedType -> copy(annotations = mergedAnnotations)
     }
 }
 

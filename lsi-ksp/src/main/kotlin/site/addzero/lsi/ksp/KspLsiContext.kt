@@ -155,7 +155,7 @@ internal class KspLsiContext(
             return false
         }
         val suffix = methodName.substring(prefix.length)
-        return suffix == propertyName || suffix.decapitalizeFirst() == propertyName
+        return suffix == propertyName || suffix.replaceFirstChar { char -> char.lowercaseChar() } == propertyName
     }
 
     private fun KSAnnotation.isDocumentation(
@@ -258,8 +258,4 @@ private fun String.toLsiSourceKind(): LsiSourceKind {
     } else {
         LsiSourceKind.SOURCE
     }
-}
-
-private fun String.decapitalizeFirst(): String {
-    return first().lowercaseChar() + substring(1)
 }

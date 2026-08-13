@@ -1,5 +1,6 @@
 package site.addzero.lsi.jimmer.client
 
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.core.LsiSymbolId
 import site.addzero.lsi.type.LsiPrimitiveKind
 import site.addzero.lsi.type.LsiVariance
@@ -57,47 +58,6 @@ data class ClientService(
     val operations: List<ClientOperation>,
 )
 
-/** 保留嵌套层级的 Client 类型名称。 */
-data class ClientTypeName(
-    val packageName: String?,
-    val simpleNames: List<String>,
-) {
-    init {
-        require(packageName == packageName?.trim()?.takeIf(String::isNotEmpty)) {
-            "Client type package name must be normalized: '$packageName'"
-        }
-        require(simpleNames.isNotEmpty()) { "Client type name requires at least one simple name" }
-        require(simpleNames.all { name -> name.isNotBlank() && name == name.trim() }) {
-            "Client type simple names must be non-blank and normalized"
-        }
-    }
-
-    /** 点分隔的完整类型名。 */
-    val qualifiedName: String = buildString {
-        packageName?.let { value ->
-            append(value)
-            append('.')
-        }
-        append(simpleNames.joinToString("."))
-    }
-
-    companion object {
-        /** 从完整类型名创建 Client 类型名称。 */
-        fun parse(qualifiedName: String): ClientTypeName {
-            require(qualifiedName.isNotBlank()) { "Client qualified type name cannot be blank" }
-            val packageSeparator = qualifiedName.lastIndexOf('.')
-            return if (packageSeparator == -1) {
-                ClientTypeName(packageName = null, simpleNames = listOf(qualifiedName))
-            } else {
-                ClientTypeName(
-                    packageName = qualifiedName.substring(0, packageSeparator).takeIf(String::isNotEmpty),
-                    simpleNames = listOf(qualifiedName.substring(packageSeparator + 1)),
-                )
-            }
-        }
-    }
-}
-
 /** Client 类型定义的结构类别。 */
 enum class ClientDefinitionKind {
     IMMUTABLE,
@@ -108,7 +68,7 @@ enum class ClientDefinitionKind {
 /** Client 资源中的类型定义。 */
 data class ClientTypeDefinition(
     val id: LsiSymbolId,
-    val typeName: ClientTypeName,
+    val typeName: LsiClass,
     val kind: ClientDefinitionKind,
     val apiIgnore: Boolean,
     val doc: String?,
@@ -249,7 +209,7 @@ sealed interface ClientTypeRef {
 /** 声明类型的 Client 引用。 */
 data class ClientDeclaredTypeRef(
     val typeId: LsiSymbolId,
-    val typeName: ClientTypeName,
+    val typeName: LsiClass,
     val arguments: List<ClientTypeArgument> = emptyList(),
     override val nullable: Boolean = false,
     override val fetchBy: ClientFetchBy? = null,
@@ -272,7 +232,7 @@ data class ClientArrayTypeRef(
 /** 类型参数的 Client 引用。 */
 data class ClientTypeParameterRef(
     val parameterId: LsiSymbolId,
-    val ownerTypeName: ClientTypeName,
+    val ownerTypeName: LsiClass,
     val name: String,
     override val nullable: Boolean = false,
     override val fetchBy: ClientFetchBy? = null,
@@ -307,7 +267,7 @@ data class ClientTypeArgument(
 data class ClientFetchBy(
     val value: String,
     val ownerTypeId: LsiSymbolId,
-    val ownerTypeName: ClientTypeName,
+    val ownerTypeName: LsiClass,
     val targetEntityTypeId: LsiSymbolId,
     val documentation: String?,
 ) {

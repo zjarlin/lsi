@@ -27,7 +27,6 @@ data class TypedTupleType(
     val properties: List<TypedTupleProperty>,
     val construction: TypedTupleConstruction,
     val baseTableProjection: TypedTupleBaseTableProjection? = null,
-    val dependencies: TypedTupleDependencies,
 ) {
     init {
         require(sourceLanguage == LsiLanguage.JAVA || sourceLanguage == LsiLanguage.KOTLIN) {
@@ -67,6 +66,23 @@ data class TypedTupleType(
         }
     }
 }
+
+/** 当前 tuple 引用的全部类型符号。 */
+val TypedTupleType.typeDependencyIds: List<LsiSymbolId>
+    get() = (listOf(id) + properties.flatMap(TypedTupleProperty::typeDependencyIds))
+        .distinct()
+        .sorted()
+
+/** 当前 tuple 引用的全部成员符号。 */
+val TypedTupleType.memberDependencyIds: List<LsiSymbolId>
+    get() = (properties.map(TypedTupleProperty::sourceMemberId) + construction.constructorId)
+        .filterNotNull()
+        .distinct()
+        .sorted()
+
+/** 当前 tuple 引用的全部稳定符号。 */
+val TypedTupleType.dependencySymbolIds: List<LsiSymbolId>
+    get() = (typeDependencyIds + memberDependencyIds).distinct().sorted()
 
 /** TypedTuple 属性的稳定源身份与类型。 */
 data class TypedTupleProperty(
@@ -225,22 +241,4 @@ data class TypedTupleConstructorArgument(
         require(parameterIndex >= 0) { "Typed tuple constructor parameter index cannot be negative" }
         require(parameterName.isNotBlank()) { "Typed tuple constructor parameter name cannot be blank" }
     }
-}
-
-/** TypedTuple 语义所依赖的全部类型与成员符号。 */
-data class TypedTupleDependencies(
-    val typeIds: List<LsiSymbolId>,
-    val memberIds: List<LsiSymbolId>,
-) {
-    init {
-        require(typeIds == typeIds.distinct().sorted()) {
-            "Typed tuple type dependencies must be distinct and sorted"
-        }
-        require(memberIds == memberIds.distinct().sorted()) {
-            "Typed tuple member dependencies must be distinct and sorted"
-        }
-    }
-
-    val symbolIds: List<LsiSymbolId>
-        get() = (typeIds + memberIds).distinct().sorted()
 }

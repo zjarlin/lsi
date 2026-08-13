@@ -21,6 +21,7 @@ import site.addzero.lsi.type.LsiPrimitiveType
 import site.addzero.lsi.field.LsiProperty
 import site.addzero.lsi.type.LsiTypeArgument
 import site.addzero.lsi.clazz.LsiClass
+import site.addzero.lsi.clazz.toLsiClasses
 import site.addzero.lsi.model.LsiTypeDeclarationKind
 import site.addzero.lsi.type.LsiTypeParameterRef
 import site.addzero.lsi.type.LsiType
@@ -1450,24 +1451,24 @@ private fun LsiClass.isPolymorphicBranchOf(ownerTypeId: LsiSymbolId): Boolean {
     return value.type.declaredTypeId() == ownerTypeId
 }
 
-private fun LsiWorkspace.clientTypeName(typeId: LsiSymbolId): ClientTypeName {
+private fun LsiWorkspace.clientTypeName(typeId: LsiSymbolId): LsiClass {
     val declaration = this[typeId] as? LsiClass
-    if (declaration == null) {
-        val qualifiedName = typeId.requireTypeQualifiedName().replace('$', '.')
-        return ClientTypeName.parse(qualifiedName)
+    if (declaration != null) {
+        val sourceName = toLsiClasses(listOf(typeId)).single()
+        return LsiClass(
+            typeId = sourceName.id,
+            packageName = sourceName.packageName,
+            simpleNames = sourceName.simpleNames,
+        )
     }
-    val simpleNames = ArrayDeque<String>()
-    var current: LsiClass = declaration
-    simpleNames.addFirst(current.name)
-    while (true) {
-        val enclosingTypeId = current.enclosingTypeId ?: break
-        current = this[enclosingTypeId] as? LsiClass ?: break
-        simpleNames.addFirst(current.name)
-    }
-    val packageName = current.qualifiedName
-        .removeSuffix(".${current.name}")
-        .takeIf { value -> value != current.qualifiedName && value.isNotEmpty() }
-    return ClientTypeName(packageName, simpleNames.toList())
+    val qualifiedName = typeId.requireTypeQualifiedName().replace('$', '.')
+    val packageName = qualifiedName.substringBeforeLast('.', missingDelimiterValue = "")
+    val simpleName = qualifiedName.substringAfterLast('.')
+    return LsiClass(
+        typeId = LsiSymbolId.type(qualifiedName),
+        packageName = packageName,
+        simpleNames = listOf(simpleName),
+    )
 }
 
 private fun LsiWorkspace.typeParameterOwner(parameterId: LsiSymbolId): LsiClass? {
@@ -1476,7 +1477,7 @@ private fun LsiWorkspace.typeParameterOwner(parameterId: LsiSymbolId): LsiClass?
     }
 }
 
-private fun ClientTypeName.toMetaQualifiedName(): String {
+private fun LsiClass.toMetaQualifiedName(): String {
     return when (qualifiedName) {
         "kotlin.Any" -> "java.lang.Object"
         else -> qualifiedName
@@ -1514,7 +1515,7 @@ private fun LsiWorkspace.fetcherMember(
         .firstOrNull()
 }
 
-private fun ClientTypeName.isDefinitionRequired(): Boolean {
+private fun LsiClass.isDefinitionRequired(): Boolean {
     if (qualifiedName.startsWith("<")) {
         return false
     }
@@ -1742,7 +1743,11 @@ private val IMMUTABLE_TYPE_ANNOTATIONS = setOf(
 )
 
 private val OBJECT_TYPE_ID = LsiSymbolId.type("java.lang.Object")
-private val OBJECT_TYPE_NAME = ClientTypeName("java.lang", listOf("Object"))
+private val OBJECT_TYPE_NAME = LsiClass(
+    typeId = OBJECT_TYPE_ID,
+    packageName = "java.lang",
+    simpleNames = listOf("Object"),
+)
 private val CLIENT_CANONICAL_TYPE_IDS = mapOf(
     LsiSymbolId.type("kotlin.collections.MutableList") to LsiSymbolId.type("java.util.List"),
 )

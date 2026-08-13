@@ -2,6 +2,7 @@ package site.addzero.lsi.jimmer.client
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
+import site.addzero.lsi.clazz.LsiClass
 import site.addzero.lsi.type.LsiVariance
 
 /** 生成可用于跨前端比较的稳定 Client 快照。 */
@@ -188,9 +189,9 @@ private fun ClientTypeRef.canonicalText(): String {
     }
 }
 
-private fun ClientTypeName.canonicalText(): String {
+private fun LsiClass.canonicalText(): String {
     return listOf(
-        packageName.orEmpty(),
+        packageName,
         simpleNames.canonicalListText(),
     ).canonicalListText()
 }

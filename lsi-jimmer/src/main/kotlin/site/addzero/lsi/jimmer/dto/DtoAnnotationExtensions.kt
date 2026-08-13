@@ -575,12 +575,15 @@ private class DtoAnnotationContractResolver(
         val language = declaration.annotationDeclarationLanguage()
         val kotlinValueVararg = language == LsiLanguage.KOTLIN &&
             declaration.annotationMembers.any { member -> member.name == "value" && member.vararg }
-        val targetPolicy = declaration.dtoAnnotationTargetPolicy()
+        val targetPolicy = declaration.annotationTargetPolicy()
         return DtoAnnotationDeclaration(
             typeId = typeId,
             language = language,
             targetDeclared = targetPolicy.declared,
-            allowedPlacements = targetPolicy.allowedPlacements,
+            allowedPlacements = targetPolicy.targets
+                .mapNotNull(LsiAnnotationTarget::toDtoPlacement)
+                .distinct()
+                .sorted(),
             argumentTypes = declaration.annotationMembers.associate { member ->
                 member.name to member.type.toDtoAnnotationMemberType()
             }.toSortedMap(),
@@ -1100,19 +1103,6 @@ private fun LsiClass.annotationDeclarationLanguage(): LsiLanguage {
     return LsiLanguage.JAVA
 }
 
-private fun LsiClass.dtoAnnotationTargetPolicy(): DtoAnnotationTargetPolicy {
-    val policy = annotationTargetPolicy()
-    return DtoAnnotationTargetPolicy(
-        declared = policy.declared,
-        allowedPlacements = policy.targets.mapNotNull(LSI_TARGET_PLACEMENTS::get).distinct().sorted(),
-    )
-}
-
-private data class DtoAnnotationTargetPolicy(
-    val declared: Boolean,
-    val allowedPlacements: List<DtoAnnotationPlacement>,
-)
-
 private fun DtoTypeRef.toLsiTypeOrNull(): LsiType? {
     val primitiveKind = DTO_PRIMITIVE_KINDS[typeName]
     if (primitiveKind != null) {
@@ -1501,23 +1491,29 @@ private val PROP_APPLICATION_PLACEMENTS = setOf(
     DtoAnnotationPlacement.PROPERTY,
 )
 
-private val LSI_TARGET_PLACEMENTS = mapOf(
-    LsiAnnotationTarget.TYPE to DtoAnnotationPlacement.TYPE,
-    LsiAnnotationTarget.ANNOTATION_TYPE to DtoAnnotationPlacement.ANNOTATION_TYPE,
-    LsiAnnotationTarget.CONSTRUCTOR to DtoAnnotationPlacement.CONSTRUCTOR,
-    LsiAnnotationTarget.FIELD to DtoAnnotationPlacement.FIELD,
-    LsiAnnotationTarget.METHOD to DtoAnnotationPlacement.GETTER,
-    LsiAnnotationTarget.PARAMETER to DtoAnnotationPlacement.PARAMETER,
-    LsiAnnotationTarget.TYPE_USE to DtoAnnotationPlacement.TYPE_USE,
-    LsiAnnotationTarget.TYPE_PARAMETER to DtoAnnotationPlacement.TYPE_PARAMETER,
-    LsiAnnotationTarget.LOCAL_VARIABLE to DtoAnnotationPlacement.LOCAL_VARIABLE,
-    LsiAnnotationTarget.PROPERTY to DtoAnnotationPlacement.PROPERTY,
-    LsiAnnotationTarget.GETTER to DtoAnnotationPlacement.GETTER,
-    LsiAnnotationTarget.SETTER to DtoAnnotationPlacement.SETTER,
-    LsiAnnotationTarget.EXPRESSION to DtoAnnotationPlacement.EXPRESSION,
-    LsiAnnotationTarget.FILE to DtoAnnotationPlacement.FILE,
-    LsiAnnotationTarget.TYPE_ALIAS to DtoAnnotationPlacement.TYPE_ALIAS,
-)
+private fun LsiAnnotationTarget.toDtoPlacement(): DtoAnnotationPlacement? {
+    return when (this) {
+        LsiAnnotationTarget.TYPE -> DtoAnnotationPlacement.TYPE
+        LsiAnnotationTarget.ANNOTATION_TYPE -> DtoAnnotationPlacement.ANNOTATION_TYPE
+        LsiAnnotationTarget.CONSTRUCTOR -> DtoAnnotationPlacement.CONSTRUCTOR
+        LsiAnnotationTarget.FIELD -> DtoAnnotationPlacement.FIELD
+        LsiAnnotationTarget.METHOD -> DtoAnnotationPlacement.GETTER
+        LsiAnnotationTarget.PARAMETER -> DtoAnnotationPlacement.PARAMETER
+        LsiAnnotationTarget.TYPE_USE -> DtoAnnotationPlacement.TYPE_USE
+        LsiAnnotationTarget.TYPE_PARAMETER -> DtoAnnotationPlacement.TYPE_PARAMETER
+        LsiAnnotationTarget.LOCAL_VARIABLE -> DtoAnnotationPlacement.LOCAL_VARIABLE
+        LsiAnnotationTarget.PROPERTY -> DtoAnnotationPlacement.PROPERTY
+        LsiAnnotationTarget.GETTER -> DtoAnnotationPlacement.GETTER
+        LsiAnnotationTarget.SETTER -> DtoAnnotationPlacement.SETTER
+        LsiAnnotationTarget.EXPRESSION -> DtoAnnotationPlacement.EXPRESSION
+        LsiAnnotationTarget.FILE -> DtoAnnotationPlacement.FILE
+        LsiAnnotationTarget.TYPE_ALIAS -> DtoAnnotationPlacement.TYPE_ALIAS
+        LsiAnnotationTarget.PACKAGE,
+        LsiAnnotationTarget.MODULE,
+        LsiAnnotationTarget.RECORD_COMPONENT,
+        -> null
+    }
+}
 
 private val DTO_PRIMITIVE_KINDS = mapOf(
     "Boolean" to LsiPrimitiveKind.BOOLEAN,
