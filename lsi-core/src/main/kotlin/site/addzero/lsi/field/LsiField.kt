@@ -41,6 +41,13 @@ interface LsiField {
   val isStatic: Boolean
 
   /**
+   * 是否为无存储字段、由具体 getter 实现的计算属性。
+   * 抽象属性和普通 Java/Kotlin 存储字段返回 false。
+   */
+  val isComputed: Boolean
+    get() = false
+
+  /**
    * 判断是否为常量字段
    */
   val isConstant: Boolean

@@ -12,6 +12,15 @@ dependencies {
 
     compileOnly(libs.findLibrary("com-squareup-kotlinpoet").get())
     compileOnly(libs.findLibrary("com-squareup-kotlinpoet-ksp").get())
+    testImplementation(kotlin("test-junit"))
+    testImplementation("dev.zacsweers.kctfork:ksp:0.7.1") {
+        exclude(module = "symbol-processing-api")
+    }
+}
+
+tasks.test {
+    useJUnit()
+    maxHeapSize = "2g"
 }
 
 description = "LSI系统的KSP实现模块"

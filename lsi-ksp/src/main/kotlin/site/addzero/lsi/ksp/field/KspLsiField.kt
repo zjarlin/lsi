@@ -1,6 +1,7 @@
 package site.addzero.lsi.ksp.field
 
 import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
@@ -50,6 +51,11 @@ class KspLsiField(
 
     override val isConstant by lazy {
         ksPropertyDeclaration.modifiers.contains(Modifier.CONST)
+    }
+
+    override val isComputed by lazy {
+        // 抽象属性虽然没有存储字段，仍然是实体的持久化属性。
+        !ksPropertyDeclaration.isAbstract() && !ksPropertyDeclaration.hasBackingField
     }
   override val isEnum
       get() = ksPropertyDeclaration.isEnum()
@@ -140,4 +146,3 @@ class KspLsiField(
         )
     }
 }
-
