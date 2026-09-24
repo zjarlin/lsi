@@ -29,7 +29,8 @@ class AptLsiAnnotation(private val annotationMirror: AnnotationMirror) : LsiAnno
         val v = value.value
         return when (v) {
             is AnnotationMirror -> AptLsiAnnotation(v)
-            is List<*> -> v.firstNotNullOfOrNull { (it as? AnnotationValue)?.value?.toString() } ?: v.firstOrNull()?.toString()
+            // 注解数组保留顺序、所有元素及嵌套结构，不能退化成首个元素的文本。
+            is List<*> -> v.map { extractValue(it as AnnotationValue) }
             else -> v?.toString()?.removeSurrounding("\"")
         }
     }
